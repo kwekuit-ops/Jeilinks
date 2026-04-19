@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  password   String
+  phone      String?
+  role       String   @default("USER")
+  balance    Decimal  @default(0)
+  storeSlug  String?  @unique
+  createdAt  DateTime @default(now())
+  orders     Order[]
+}
+
+// SQLite doesn't natively support enums, but Prisma simulates them. We map enums normally. Note: PRISMA sqlite enums are strings under the hood but are supported at the type level. Wait, Prisma does not support enums in SQLite yet... 
+// Actually, Prisma still does not support Enums natively in SQLite. I will change the enums to String type to make this work locally out of the box.
+
+// changing back enums to Strings and Role to String
+model Bundle {
+  id         String   @id @default(cuid())
+  network    String
+  size       String
+  userPrice         Decimal  
+  agentPrice        Decimal  
+  supplierProductId Int?
+  supplierPrice     Decimal?
+  isActive          Boolean  @default(true)
+  orders     Order[]
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  userId           String
+  bundleId         String
+  phone            String
+  amount           Decimal     
+  status           String      @default("PENDING")
+  paystackRef      String?     @unique
+  supplierOrderId  String?
+  agentId          String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  user             User        @relation(fields: [userId], references: [id])
+  bundle           Bundle      @relation(fields: [bundleId], references: [id])
+}
+
+model SystemSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
