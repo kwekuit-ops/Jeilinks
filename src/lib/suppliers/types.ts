@@ -10,6 +10,7 @@ export interface StandardProduct {
 export interface OrderResponse {
   success: boolean;
   supplierOrderId?: string;
+  supplier_order_id?: string;
   error?: string;
   status?: string;
 }

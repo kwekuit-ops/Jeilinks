@@ -18,7 +18,7 @@ export function TopUpButton({ email }: { email: string }) {
       toast.success(`Wallet topped up by GHS ${result.amount}!`);
       setShowInput(false);
     } else {
-      toast.error(result.error);
+      toast.error(result.error || "Failed to top up wallet");
     }
     setIsProcessing(false);
   };

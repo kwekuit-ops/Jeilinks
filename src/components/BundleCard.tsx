@@ -90,7 +90,6 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
       toast.error("Please enter a valid phone number");
       return;
     }
-    initializePayment({ onSuccess, onClose });
   };
 
   return (

@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { placeOrderOnSupplier } from "@/lib/supplierBridge";
+import { OrderResponse } from "@/lib/suppliers/types";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -71,13 +72,18 @@ export async function POST(req: Request) {
     });
 
     if (supplierRes.success) {
-      await prisma.order.update({
-        where: { id: order.id },
-        data: { 
-          status: "PROCESSING",
-          supplierOrderId: supplierRes.supplier_order_id 
-        },
-      });
+      const res = supplierRes as OrderResponse;
+      const supplierOrderId = res.supplierOrderId || res.supplier_order_id;
+      
+      if (supplierOrderId) {
+        await prisma.order.update({
+          where: { id: order.id },
+          data: { 
+            status: "PROCESSING",
+            supplierOrderId: supplierOrderId
+          },
+        });
+      }
     } else {
       console.error("Supplier error:", supplierRes.error);
       // We don't necessarily fail the whole request since payment was successful
