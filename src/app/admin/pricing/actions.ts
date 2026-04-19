@@ -51,7 +51,7 @@ export async function syncSupplierProducts() {
       const existing = await prisma.bundle.findFirst({
         where: {
           OR: [
-            { supplierProductId: prod.id },
+            { supplierProductId: Number(prod.id) },
             { 
               network: prod.network,
               size: prod.size 
@@ -66,7 +66,7 @@ export async function syncSupplierProducts() {
           data: {
             network: prod.network,
             size: prod.size,
-            supplierProductId: prod.id,
+            supplierProductId: Number(prod.id),
             // Keep existing prices if they set custom ones, optionally we can auto-update the base prices.
             // But let's just make sure the IDs hit. If it was blank, let's set the supplier's default prices:
             userPrice: existing.userPrice ? existing.userPrice : prod.price,
@@ -82,7 +82,7 @@ export async function syncSupplierProducts() {
           data: {
              network: prod.network,
              size: prod.size,
-             supplierProductId: prod.id,
+             supplierProductId: Number(prod.id),
              userPrice: prod.price || 0,
              agentPrice: prod.resellerPrice || prod.price || 0,
              supplierPrice: prod.resellerPrice || prod.price || 0,
