@@ -155,7 +155,6 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
             <span>Buy Now</span>
           </button>
         )}
-        )}
         
         {role === "AGENT" && (
           <div className="mt-4 pt-4 border-t border-dashed text-center">
