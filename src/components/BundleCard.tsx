@@ -93,22 +93,24 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl bg-card p-6 shadow-md transition-all hover:shadow-xl hover:-translate-y-1 border border-border/50">
-      <div className={`absolute top-0 right-0 px-4 py-1 rounded-bl-xl text-xs font-bold uppercase tracking-wider ${networkColors[bundle.network] || 'bg-primary text-white'}`}>
-        {bundle.network}
-      </div>
-      
-      <div className="flex items-center space-x-4 mb-4">
-        <div className={`p-3 rounded-xl ${networkColors[bundle.network] || 'bg-primary text-white'} opacity-90`}>
-          <Smartphone className="h-6 w-6" />
+    <div className="group relative flex flex-col h-full justify-between overflow-hidden rounded-2xl bg-card p-6 shadow-md transition-all hover:shadow-xl hover:-translate-y-1 border border-border/50">
+      <div>
+        <div className={`absolute top-0 right-0 px-4 py-1 rounded-bl-xl text-xs font-bold uppercase tracking-wider ${networkColors[bundle.network] || 'bg-primary text-white'}`}>
+          {bundle.network}
         </div>
-        <div>
-          <h3 className="text-xl font-bold font-outfit">{bundle.size}</h3>
-          <p className="text-sm text-muted-foreground">Mobile Data Bundle</p>
+        
+        <div className="flex items-center space-x-4 mb-4">
+          <div className={`p-3 rounded-xl ${networkColors[bundle.network] || 'bg-primary text-white'} opacity-90`}>
+            <Smartphone className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold font-outfit">{bundle.size}</h3>
+            <p className="text-sm text-muted-foreground">Mobile Data Bundle</p>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 mt-auto">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Price</span>
           <span className="text-2xl font-bold text-primary font-outfit">{formatCurrency(price)}</span>
@@ -153,13 +155,14 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
             <span>Buy Now</span>
           </button>
         )}
+        )}
+        
+        {role === "AGENT" && (
+          <div className="mt-4 pt-4 border-t border-dashed text-center">
+            <p className="text-[10px] text-green-500 font-bold uppercase tracking-tighter">Agent Wholesale Pricing Applied</p>
+          </div>
+        )}
       </div>
-      
-      {role === "AGENT" && (
-        <div className="mt-4 pt-4 border-t border-dashed text-center">
-          <p className="text-[10px] text-green-500 font-bold uppercase tracking-tighter">Agent Wholesale Pricing Applied</p>
-        </div>
-      )}
     </div>
   );
 }
