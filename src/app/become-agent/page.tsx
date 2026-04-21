@@ -1,13 +1,11 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { usePaystackPayment } from "react-paystack";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { upgradeToAgent } from "./actions";
 import { ShieldCheck, Zap, TrendingUp, Store } from "lucide-react";
-
 import PaystackButton from "@/components/PaystackButton";
 
 export default function BecomeAgentPage() {

@@ -7,8 +7,8 @@ import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { Toaster } from "react-hot-toast";
 import { getSystemSettings } from "@/app/admin/settings/actions";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", preload: false });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", preload: false });
 
 export const metadata: Metadata = {
   title: "JEILINKS - Mobile Data Reseller",

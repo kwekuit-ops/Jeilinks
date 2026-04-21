@@ -1,7 +1,7 @@
 "use client";
 
-import { usePaystackPayment } from "react-paystack";
-import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { useState } from "react";
 
 interface PaystackButtonProps {
     email: string;
@@ -14,42 +14,10 @@ interface PaystackButtonProps {
     disabled?: boolean;
 }
 
-export default function PaystackButton({ 
-    email, 
-    amount, 
-    publicKey, 
-    onSuccess, 
-    onClose, 
-    label, 
-    className,
-    disabled 
-}: PaystackButtonProps) {
-    const [mounted, setMounted] = useState(false);
+// Dynamically import the inner button so react-paystack (which accesses `window`
+// at module evaluation time) is never loaded during SSR/prerendering.
+const PaystackInner = dynamic(() => import("./PaystackButtonInner"), { ssr: false });
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    const config = {
-        reference: (new Date()).getTime().toString(),
-        email,
-        amount: Math.round(amount * 100), // convert to pesewas
-        publicKey: publicKey || process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
-        currency: "GHS",
-    };
-
-    const initializePayment = usePaystackPayment(config);
-
-    if (!mounted) return null;
-
-    return (
-        <button
-            type="button"
-            className={className}
-            disabled={disabled}
-            onClick={() => initializePayment({ onSuccess, onClose })}
-        >
-            {label}
-        </button>
-    );
+export default function PaystackButton(props: PaystackButtonProps) {
+    return <PaystackInner {...props} />;
 }

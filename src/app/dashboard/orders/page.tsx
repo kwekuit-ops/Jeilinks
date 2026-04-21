@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { formatCurrency, cn } from "@/lib/utils";
-import { CheckCircle2, Clock, RotateCcw, AlertCircle, Search, Filter } from "lucide-react";
+import { CheckCircle2, Clock, RotateCcw, AlertCircle, Search, Filter, ClipboardList } from "lucide-react";
 import { redirect } from "next/navigation";
 
 export default async function UserOrdersPage() {
@@ -106,7 +106,7 @@ export default async function UserOrdersPage() {
                 <tr>
                   <td colSpan={6} className="px-10 py-20 text-center">
                     <div className="flex flex-col items-center justify-center opacity-30">
-                        <History className="h-16 w-16 mb-4" />
+                        <ClipboardList className="h-16 w-16 mb-4" />
                         <p className="text-xl font-bold">No history found</p>
                         <p className="text-sm">Your data bundle purchases will appear here.</p>
                     </div>

@@ -85,7 +85,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                         </div>
                         <div className="flex justify-between items-center text-xs text-muted-foreground">
                             <span>Payment Reference</span>
-                            <span className="font-mono">{order.paystackRef.substring(0, 12)}...</span>
+                            <span className="font-mono">{order.paystackRef ? order.paystackRef.substring(0, 12) + "..." : "N/A"}</span>
                         </div>
                         <div className="mt-4 pt-4 border-t border-dashed flex justify-between items-center">
                             <span className="font-bold">Total Paid</span>
