@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+
 import { formatCurrency } from "@/lib/utils";
 import { Users, ShoppingBag, DollarSign, Zap, Wallet } from "lucide-react";
 import { getActiveSupplier } from "@/lib/suppliers";

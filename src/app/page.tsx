@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+
 import { BundleTabs } from "@/components/BundleTabs";
 import { Zap, ShieldCheck, Clock } from "lucide-react";
 

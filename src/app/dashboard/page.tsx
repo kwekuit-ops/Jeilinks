@@ -1,6 +1,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+
 import { formatCurrency, cn } from "@/lib/utils";
 import { Wallet, History, MessageCircle, ArrowRight, CheckCircle2, Clock, RotateCcw, AlertCircle, Zap } from "lucide-react";
 import Link from "next/link";

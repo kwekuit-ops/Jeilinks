@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+
 import { Globe } from "lucide-react";
 import { PricingEditor } from "./PricingEditor";
 import { SyncButton } from "./SyncButton";

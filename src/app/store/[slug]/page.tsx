@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+
 import { BundleTabs } from "@/components/BundleTabs";
 import { notFound } from "next/navigation";
 import { User, Store, ShieldCheck, MessageCircle } from "lucide-react";

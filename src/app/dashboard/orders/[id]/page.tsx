@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+
 import { formatCurrency, cn } from "@/lib/utils";
 import { ChevronLeft, Receipt, Phone, Hash, Calendar, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import Link from "next/link";

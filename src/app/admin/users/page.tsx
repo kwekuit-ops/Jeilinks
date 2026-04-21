@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+
 import { formatCurrency, cn } from "@/lib/utils";
 import { UserCog, Plus, Trash2, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 

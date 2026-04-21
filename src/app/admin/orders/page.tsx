@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+
 import { formatCurrency, cn } from "@/lib/utils";
 import { ShoppingBag, Search, Filter, CheckCircle, XCircle, Clock } from "lucide-react";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
