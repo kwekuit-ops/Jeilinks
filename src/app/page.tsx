@@ -1,11 +1,12 @@
 import prisma from "@/lib/prisma";
+import type { Bundle } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
 import { BundleTabs } from "@/components/BundleTabs";
 import { Zap, ShieldCheck, Clock } from "lucide-react";
 
 export default async function Home() {
-  let bundles = [];
+  let bundles: Bundle[] = [];
   try {
     bundles = await prisma.bundle.findMany({
       where: { isActive: true },
