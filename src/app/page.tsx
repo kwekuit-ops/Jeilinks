@@ -5,13 +5,18 @@ import { BundleTabs } from "@/components/BundleTabs";
 import { Zap, ShieldCheck, Clock } from "lucide-react";
 
 export default async function Home() {
-  const bundles = await prisma.bundle.findMany({
-    where: { isActive: true },
-    orderBy: [
-      { network: 'asc' },
-      { userPrice: 'asc' }
-    ]
-  });
+  let bundles = [];
+  try {
+    bundles = await prisma.bundle.findMany({
+      where: { isActive: true },
+      orderBy: [
+        { network: 'asc' },
+        { userPrice: 'asc' }
+      ]
+    });
+  } catch (error) {
+    console.error("Home page bundle fetch error:", error);
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
