@@ -22,8 +22,13 @@ export async function saveSystemSettings(settings: Record<string, string>) {
 }
 
 export async function getSystemSettings() {
-  const settings = await prisma.systemSetting.findMany();
-  const map: Record<string, string> = {};
-  settings.forEach(s => map[s.key] = s.value);
-  return map;
+  try {
+    const settings = await prisma.systemSetting.findMany();
+    const map: Record<string, string> = {};
+    settings.forEach(s => map[s.key] = s.value);
+    return map;
+  } catch (error) {
+    console.error("Database connection error in getSystemSettings:", error);
+    return {};
+  }
 }
