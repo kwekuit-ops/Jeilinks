@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+export const dynamic = "force-dynamic";
+
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
