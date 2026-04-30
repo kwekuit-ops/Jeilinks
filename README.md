@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JEILINKS - Mobile Data Reselling Platform
 
-## Getting Started
+JEILINKS is a premium mobile data reselling platform built for Ghana. It allows users to purchase MTN, Telecel, and AirtelTigo data bundles instantly and provides an opportunity for entrepreneurs to become agents and start their own data business.
 
-First, run the development server:
+## 🚀 Live Preview
+You can access the live platform at: **[Insert your Vercel URL here]**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Features
+- **Fast Delivery**: Data bundles delivered within 1 to 30 minutes.
+- **Multi-Network Support**: MTN, Telecel (Vodafone), and AirtelTigo.
+- **Agent System**: Register as an agent to get wholesale prices and your own branded store.
+- **Secure Payments**: Powered by Paystack for safe and reliable transactions.
+- **Order Tracking**: Track the status of your data delivery in real-time.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
+- **Framework**: Next.js 14+ (App Router)
+- **Database**: PostgreSQL (Prisma ORM)
+- **Authentication**: NextAuth.js
+- **Payments**: Paystack API
+- **Styling**: Tailwind CSS & Lucide Icons
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📖 How to Use
+1. **Users**: Simply select a bundle, enter your phone number, and pay via Paystack.
+2. **Agents**: Register via the "Become an Agent" page and top up your wallet to start selling at discounted rates.
+3. **Admins**: Manage bundles, pricing, and supplier API settings via the secure Admin dashboard.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Built with ❤️ for Ghana 🇬🇭
