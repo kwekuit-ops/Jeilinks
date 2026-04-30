@@ -21,18 +21,18 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="flex justify-center space-x-2 md:space-x-4 overflow-x-auto pb-4 mb-8 scrollbar-hide">
+      <div className="flex justify-center space-x-2 md:space-x-4 overflow-x-auto pb-4 mb-4 md:mb-8 scrollbar-hide">
         {networks.map((network) => (
           <button
             key={network}
             onClick={() => setActiveTab(network)}
             className={cn(
-              "px-6 py-3 rounded-full font-bold text-sm md:text-base transition-all whitespace-nowrap border",
+              "px-3 md:px-6 py-2 md:py-3 rounded-full font-bold text-xs md:text-base transition-all whitespace-nowrap border",
               activeTab === network
                 ? network === "MTN" ? "bg-mtn text-black border-mtn shadow-lg shadow-mtn/30"
-                  : network === "AirtelTigo" ? "bg-airteltigo text-white border-airteltigo shadow-lg shadow-airteltigo/30"
-                  : "bg-telecel text-white border-telecel shadow-lg shadow-telecel/30"
-                : "bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
+                : network === "AirtelTigo" ? "bg-airteltigo text-white border-airteltigo shadow-lg shadow-airteltigo/30"
+                : "bg-telecel text-white border-telecel shadow-lg shadow-telecel/30"
+              : "bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}
           >
             {network}
