@@ -84,33 +84,33 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
 
   return (
     <div className={`group relative transition-all duration-300 bg-card border border-border/50 rounded-xl overflow-hidden ${isExpanding ? 'ring-2 ring-primary shadow-2xl' : 'hover:shadow-lg hover:border-primary/30'}`}>
-      <div className="p-2.5 md:p-6 flex items-center justify-between gap-1.5 md:gap-4">
-        <div className="flex items-center space-x-1.5 md:space-x-4">
-          <div className={`p-1.5 md:p-3 rounded-lg md:rounded-xl bg-muted/50 ${networkColors[bundle.network]}`}>
-            <Smartphone className="h-4 w-4 md:h-6 md:w-6" />
+      <div className="p-3.5 md:p-6 flex items-center justify-between gap-1.5 md:gap-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
+          <div className={`p-2 md:p-3 rounded-lg md:rounded-xl bg-muted/50 ${networkColors[bundle.network]}`}>
+            <Smartphone className="h-5 w-5 md:h-6 md:w-6" />
           </div>
           <div>
-            <h3 className="text-xs md:text-lg font-bold font-outfit leading-tight">{bundle.size}</h3>
-            <p className="text-[7px] md:text-xs text-muted-foreground uppercase font-black tracking-widest">{bundle.network}</p>
+            <h3 className="text-sm md:text-lg font-bold font-outfit leading-tight">{bundle.size}</h3>
+            <p className="text-[8px] md:text-xs text-muted-foreground uppercase font-black tracking-widest">{bundle.network}</p>
           </div>
         </div>
  
-        <div className="flex items-center space-x-1.5 md:space-x-6">
+        <div className="flex items-center space-x-2 md:space-x-6">
           <div className="text-right">
-            <p className="text-[7px] md:text-xs text-muted-foreground font-medium uppercase leading-none mb-0.5">Price</p>
-            <p className="text-[13px] md:text-xl font-bold text-primary font-outfit leading-none">{formatCurrency(price)}</p>
+            <p className="text-[8px] md:text-xs text-muted-foreground font-medium uppercase leading-none mb-0.5">Price</p>
+            <p className="text-[15px] md:text-xl font-bold text-primary font-outfit leading-none">{formatCurrency(price)}</p>
           </div>
           
           <button
             onClick={handleBuyClick}
-            className={`flex items-center space-x-1 md:space-x-2 px-2.5 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold transition-all ${
+            className={`flex items-center space-x-1 md:space-x-2 px-3 md:px-6 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold transition-all ${
               isExpanding 
                 ? 'bg-secondary text-foreground' 
                 : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95'
             }`}
           >
-            {isExpanding ? <X className="h-3 w-3 md:h-4 md:w-4" /> : <Zap className="h-3 w-3 md:h-4 md:w-4" />}
-            <span className="text-[9px] md:text-sm">{isExpanding ? "Cancel" : "Buy"}</span>
+            {isExpanding ? <X className="h-3.5 w-3.5 md:h-4 md:w-4" /> : <Zap className="h-3.5 w-3.5 md:h-4 md:w-4" />}
+            <span className="text-[10px] md:text-sm">{isExpanding ? "Cancel" : "Buy"}</span>
           </button>
         </div>
       </div>
