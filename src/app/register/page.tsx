@@ -30,7 +30,7 @@ export default function RegisterPage() {
         router.push("/login");
       } else {
         const data = await res.json();
-        toast.error(data.message || "Something went wrong");
+        toast.error(data.details ? `${data.message}: ${data.details}` : (data.message || "Something went wrong"));
       }
     } catch (error) {
       toast.error("An error occurred");
