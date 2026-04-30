@@ -184,43 +184,32 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                         <button
                             onClick={handleWalletPay}
                             disabled={!/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, "")) || isLoading}
-                            className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-green-200 hover:bg-green-700 active:scale-95 transition-all disabled:opacity-50"
+                            className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
                         >
-                            {isLoading ? "Processing..." : "Pay with Wallet Balance"}
+                            {isLoading ? "Processing..." : "Confirm & Pay with Wallet"}
                         </button>
-                        <div className="flex items-center justify-center space-x-2">
-                            <div className="h-px bg-border flex-1" />
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase">OR</span>
-                            <div className="h-px bg-border flex-1" />
-                        </div>
-                        <PaystackButton
-                            email={session?.user?.email || ""}
-                            amount={price}
-                            publicKey={paystackKey}
-                            label="Pay with MoMo / Card"
-                            className="w-full bg-muted text-foreground py-3 rounded-xl font-bold text-sm hover:bg-muted/80 transition-all disabled:opacity-50"
-                            disabled={!/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, "")) || isLoading}
-                            onSuccess={handleSuccess}
-                            onClose={() => setIsExpanding(false)}
-                        />
+                        <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
+                            Payment will be deducted from your JEILINKS balance
+                        </p>
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {userBalance !== null && userBalance < price && (
-                            <div className="bg-orange-50 border border-orange-100 p-3 rounded-xl flex items-center space-x-2">
-                                <span className="text-[10px] text-orange-600 font-bold uppercase">Insufficient Wallet Balance: {formatCurrency(userBalance)}</span>
-                            </div>
-                        )}
-                        <PaystackButton
-                            email={session?.user?.email || ""}
-                            amount={price}
-                            publicKey={paystackKey}
-                            label={isLoading ? "Processing..." : "Confirm & Pay with MoMo"}
-                            className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 mt-4"
-                            disabled={!/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, "")) || isLoading}
-                            onSuccess={handleSuccess}
-                            onClose={() => setIsExpanding(false)}
-                        />
+                        <div className="bg-red-50 border border-red-100 p-4 rounded-2xl text-center space-y-2">
+                            <p className="text-xs text-red-600 font-black uppercase tracking-widest">Insufficient Wallet Balance</p>
+                            <p className="text-xl font-black font-outfit">{formatCurrency(userBalance || 0)}</p>
+                            <p className="text-[10px] text-red-500 font-bold">You need {formatCurrency(price)} to buy this bundle.</p>
+                        </div>
+                        
+                        <Link 
+                            href="/dashboard"
+                            className="block w-full bg-primary text-primary-foreground text-center py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+                        >
+                            Top Up Wallet First
+                        </Link>
+                        
+                        <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
+                            Add funds to your wallet to complete this purchase
+                        </p>
                     </div>
                 )}
             </div>
