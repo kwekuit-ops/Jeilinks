@@ -40,7 +40,7 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
         ))}
       </div>
 
-      <div className="flex flex-col space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col space-y-3 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {filteredBundles.map((bundle) => (
           <BundleListItem key={bundle.id} bundle={bundle} agentId={agentId} />
         ))}
