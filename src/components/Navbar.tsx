@@ -14,6 +14,7 @@ export function Navbar() {
 
   const navigation = [
     { name: "Home", href: "/" },
+    { name: "Shop", href: "/shop" },
     { name: "Dashboard", href: "/dashboard", auth: true },
     { name: "Admin", href: "/admin", admin: true },
   ];

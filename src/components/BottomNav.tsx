@@ -18,8 +18,8 @@ export function BottomNav() {
       icon: Home,
     },
     {
-      name: "Buy Data",
-      href: "/#bundles",
+      name: "Shop",
+      href: "/shop",
       icon: ShoppingBag,
     },
     {
