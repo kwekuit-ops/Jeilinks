@@ -5,16 +5,17 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { Toaster } from "react-hot-toast";
 import { getSystemSettings } from "@/app/admin/settings/actions";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", preload: false });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", preload: false });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", preload: true });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", preload: true });
 
 export const metadata: Metadata = {
   title: "JEILINKS - Mobile Data Reseller",
-  description: "Fast, affordable mobile data for MTN, Telecel, and AirtelTigo. Become an agent and start earning today.",
+  description: "Fast, reliable mobile data for MTN, Telecel, and AirtelTigo. Delivered within 1 to 30 minutes.",
 };
 
 export default async function RootLayout({
@@ -33,6 +34,7 @@ export default async function RootLayout({
           <main className="flex-grow">
             {children}
           </main>
+          <Footer />
           <FloatingWhatsApp number={supportNumber} />
           <Toaster position="bottom-right" />
         </Providers>

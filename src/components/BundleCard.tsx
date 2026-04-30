@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PaystackButton from "./PaystackButton";
+import { getSystemSettings } from "@/app/admin/settings/actions";
 
 interface BundleCardProps {
   bundle: {
@@ -25,6 +26,15 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [paystackKey, setPaystackKey] = useState("");
+
+  useEffect(() => {
+    async function loadSettings() {
+      const settings = await getSystemSettings();
+      setPaystackKey(settings["NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY"] || process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "");
+    }
+    loadSettings();
+  }, []);
 
   const role = (session?.user as any)?.role || "USER";
   const price = role === "AGENT" ? bundle.agentPrice : bundle.userPrice;
@@ -86,8 +96,9 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
         return;
     }
 
-    if (!phoneNumber || phoneNumber.length < 10) {
-      toast.error("Please enter a valid phone number");
+    const ghPhoneRegex = /^(02|05)\d{8}$/;
+    if (!phoneNumber || !ghPhoneRegex.test(phoneNumber.replace(/\s/g, ""))) {
+      toast.error("Please enter a valid Ghanaian phone number (e.g. 024XXXXXXX or 054XXXXXXX)");
       return;
     }
   };
@@ -138,7 +149,7 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
             <PaystackButton
               email={session?.user?.email || "guest@jeilinks.com"}
               amount={price}
-              publicKey=""
+              publicKey={paystackKey}
               label={isLoading ? "Processing..." : "Confirm & Pay"}
               className="w-full bg-primary text-primary-foreground py-3 rounded-2xl font-bold font-outfit shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
               disabled={!phoneNumber || isLoading}

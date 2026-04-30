@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BundleCard } from "./BundleCard";
+import { BundleListItem } from "./BundleListItem";
 import { cn } from "@/lib/utils";
 
 interface Bundle {
@@ -20,7 +20,7 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
   const filteredBundles = bundles.filter((b) => b.network.toLowerCase() === activeTab.toLowerCase());
 
   return (
-    <div>
+    <div className="max-w-4xl mx-auto">
       <div className="flex justify-center space-x-2 md:space-x-4 overflow-x-auto pb-4 mb-8 scrollbar-hide">
         {networks.map((network) => (
           <button
@@ -40,12 +40,12 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {filteredBundles.map((bundle) => (
-          <BundleCard key={bundle.id} bundle={bundle} agentId={agentId} />
+          <BundleListItem key={bundle.id} bundle={bundle} agentId={agentId} />
         ))}
         {filteredBundles.length === 0 && (
-          <div className="col-span-full py-16 text-center text-muted-foreground glass rounded-3xl border border-dashed">
+          <div className="py-16 text-center text-muted-foreground glass rounded-3xl border border-dashed">
             <p>No bundles available for {activeTab} at the moment.</p>
           </div>
         )}

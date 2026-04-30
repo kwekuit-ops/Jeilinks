@@ -15,6 +15,13 @@ export async function POST(req: Request) {
   try {
     const { bundleId, phone, paystackRef, amount, agentId } = await req.json();
     
+    // Sanitize and Validate Phone
+    const sanitizedPhone = phone.replace(/\D/g, "");
+    const ghPhoneRegex = /^(02|05)\d{8}$/;
+    if (!ghPhoneRegex.test(sanitizedPhone)) {
+        return NextResponse.json({ message: "Invalid Ghanaian phone number" }, { status: 400 });
+    }
+    
     // Fetch Paystack Secret from DB or ENV
     const setting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
     const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
@@ -53,7 +60,7 @@ export async function POST(req: Request) {
       data: {
         userId: (session.user as any).id,
         bundleId: bundle.id,
-        phone,
+        phone: sanitizedPhone,
         amount: Number(amount),
         paystackRef,
         agentId: agentId || null,
@@ -67,7 +74,7 @@ export async function POST(req: Request) {
     // 4. Trigger Supplier Bridge
     const supplierRes = await placeOrderOnSupplier({
       supplierProductId: bundle.supplierProductId!,
-      phone: order.phone,
+      phone: sanitizedPhone,
       reference: order.id, // Using internal ID as reference for the supplier
     });
 
