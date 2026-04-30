@@ -42,8 +42,8 @@ export function BottomNav() {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pointer-events-none">
-      <div className="mx-auto max-w-lg bg-background/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl shadow-primary/20 p-2 flex items-center justify-around pointer-events-auto ring-1 ring-black/5">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+      <div className="w-full bg-background/95 backdrop-blur-xl border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.05)] px-2 pt-2 pb-safe flex items-center justify-around pointer-events-auto">
         {navItems.map((item) => {
           if (item.auth && !session) return null;
           
@@ -55,20 +55,20 @@ export function BottomNav() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center min-w-[64px] py-1 rounded-xl transition-all duration-300 gap-1",
+                "flex flex-col items-center justify-center flex-1 py-2 transition-all duration-300 gap-1",
                 isActive 
-                  ? "text-primary scale-110" 
+                  ? "text-primary" 
                   : "text-muted-foreground hover:text-primary/70"
               )}
             >
               <div className={cn(
-                "p-1.5 rounded-lg transition-colors",
-                isActive ? "bg-primary/10" : "bg-transparent"
+                "transition-transform duration-300",
+                isActive ? "scale-110" : "scale-100"
               )}>
                 <Icon className={cn("h-5 w-5", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
               </div>
               <span className={cn(
-                "text-[10px] font-bold uppercase tracking-tight",
+                "text-[9px] font-bold uppercase tracking-tight",
                 isActive ? "opacity-100" : "opacity-70"
               )}>
                 {item.name}
