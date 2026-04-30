@@ -95,22 +95,22 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
           </div>
         </div>
 
-        <div className="flex items-center space-x-6">
-          <div className="text-right hidden sm:block">
-            <p className="text-xs text-muted-foreground font-medium">Price</p>
-            <p className="text-xl font-bold text-primary font-outfit">{formatCurrency(price)}</p>
+        <div className="flex items-center space-x-2 md:space-x-6">
+          <div className="text-right">
+            <p className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase">Price</p>
+            <p className="text-base md:text-xl font-bold text-primary font-outfit">{formatCurrency(price)}</p>
           </div>
           
           <button
             onClick={handleBuyClick}
-            className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-bold transition-all ${
+            className={`flex items-center space-x-2 px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold transition-all ${
               isExpanding 
                 ? 'bg-secondary text-foreground' 
                 : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95'
             }`}
           >
             {isExpanding ? <X className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
-            <span className="hidden sm:inline">{isExpanding ? "Cancel" : "Buy Now"}</span>
+            <span className="text-sm">{isExpanding ? "Cancel" : "Buy"}</span>
           </button>
         </div>
       </div>
