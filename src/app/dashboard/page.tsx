@@ -20,40 +20,31 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: (session.user as any).id },
-    include: {
-      orders: {
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        include: { bundle: true }
+  const [user, totalOrdersCount] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: (session.user as any).id },
+      include: {
+        orders: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          include: { bundle: true }
+        }
       }
-    }
-  });
+    }),
+    prisma.order.count({
+      where: {
+        OR: [
+          { userId: (session.user as any).id },
+          { agentId: (session.user as any).id }
+        ],
+        status: "COMPLETED"
+      }
+    })
+  ]);
 
   if (!user) return null;
 
-  // Calculate Rank based on total completed orders (Personal + Store Sales)
-  const totalOrdersCount = await prisma.order.count({
-    where: {
-      OR: [
-        { userId: user.id },
-        { agentId: user.id }
-      ],
-      status: "COMPLETED"
-    }
-  });
-
-  const getRank = (count: number) => {
-    if (count > 200) return { name: "Platinum", color: "bg-indigo-500", icon: "💎" };
-    if (count > 50) return { name: "Gold", color: "bg-yellow-500", icon: "🥇" };
-    if (count > 10) return { name: "Silver", color: "bg-slate-400", icon: "🥈" };
-    return { name: "Bronze", color: "bg-orange-600", icon: "🥉" };
-  };
-
-  const rank = getRank(totalOrdersCount);
-
-  // If Admin, also fetch Supplier Balance for the dashboard
+  // If Admin, also fetch Supplier Balance
   let supplierBalance = 0;
   if (user.role === "ADMIN") {
       const supplier = await getActiveSupplier();
