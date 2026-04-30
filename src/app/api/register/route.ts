@@ -5,8 +5,10 @@ import bcrypt from "bcryptjs";
 export async function POST(req: Request) {
   try {
     const { name, email, password } = await req.json();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
 
-    if (!name || !email || !password) {
+    if (!cleanName || !cleanEmail || !password) {
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 }
@@ -14,12 +16,12 @@ export async function POST(req: Request) {
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: cleanEmail },
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { message: "User already exists" },
+        { message: "An account with this email already exists. Please login instead." },
         { status: 400 }
       );
     }
@@ -28,8 +30,8 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.create({
       data: {
-        name,
-        email,
+        name: cleanName,
+        email: cleanEmail,
         password: hashedPassword,
         // First user becomes ADMIN (optional logic, but helpful for setup)
         role: (await prisma.user.count()) === 0 ? "ADMIN" : "USER",
