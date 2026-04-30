@@ -26,18 +26,62 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanding, setIsExpanding] = useState(false);
-  const [paystackKey, setPaystackKey] = useState("");
+  const [userBalance, setUserBalance] = useState<number | null>(null);
 
   useEffect(() => {
-    async function loadSettings() {
+    async function loadData() {
       const settings = await getSystemSettings();
       setPaystackKey(settings["NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY"] || process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "");
+      
+      if (session) {
+          try {
+            const res = await fetch('/api/user/balance');
+            const data = await res.json();
+            if (res.ok) setUserBalance(data.balance);
+          } catch (e) {
+            console.error("Balance fetch error:", e);
+          }
+      }
     }
-    loadSettings();
-  }, []);
+    loadData();
+  }, [session]);
 
   const role = (session?.user as any)?.role || "USER";
   const price = role === "AGENT" ? bundle.agentPrice : bundle.userPrice;
+
+  const handleWalletPay = async () => {
+    if (!phoneNumber || !/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, ""))) {
+      toast.error("Please enter a valid Ghanaian phone number");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bundleId: bundle.id,
+          phone: phoneNumber,
+          amount: price,
+          agentId: agentId || null,
+          paymentMethod: "WALLET"
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Order placed successfully via Wallet!");
+        router.push("/dashboard");
+      } else {
+        toast.error(data.message || "Wallet payment failed");
+      }
+    } catch (error) {
+      toast.error("An error occurred during wallet payment");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const networkColors: Record<string, string> = {
     MTN: "text-mtn",
@@ -132,21 +176,54 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   className="w-full rounded-xl border border-input bg-background px-4 py-4 text-lg font-bold outline-none focus:ring-2 focus:ring-primary shadow-inner"
                 />
-                <p className="mt-2 text-[10px] text-muted-foreground text-center font-bold uppercase tracking-wider">
-                    Enter the number to receive this {bundle.size} bundle
-                </p>
             </div>
 
-            <PaystackButton
-              email={session?.user?.email || ""}
-              amount={price}
-              publicKey={paystackKey}
-              label={isLoading ? "Processing..." : "Confirm & Pay Now"}
-              className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 mt-4"
-              disabled={!/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, "")) || isLoading}
-              onSuccess={handleSuccess}
-              onClose={() => setIsExpanding(false)}
-            />
+            <div className="space-y-4">
+                {(userBalance !== null && userBalance >= price) ? (
+                    <div className="space-y-3">
+                        <button
+                            onClick={handleWalletPay}
+                            disabled={!/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, "")) || isLoading}
+                            className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-green-200 hover:bg-green-700 active:scale-95 transition-all disabled:opacity-50"
+                        >
+                            {isLoading ? "Processing..." : "Pay with Wallet Balance"}
+                        </button>
+                        <div className="flex items-center justify-center space-x-2">
+                            <div className="h-px bg-border flex-1" />
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase">OR</span>
+                            <div className="h-px bg-border flex-1" />
+                        </div>
+                        <PaystackButton
+                            email={session?.user?.email || ""}
+                            amount={price}
+                            publicKey={paystackKey}
+                            label="Pay with MoMo / Card"
+                            className="w-full bg-muted text-foreground py-3 rounded-xl font-bold text-sm hover:bg-muted/80 transition-all disabled:opacity-50"
+                            disabled={!/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, "")) || isLoading}
+                            onSuccess={handleSuccess}
+                            onClose={() => setIsExpanding(false)}
+                        />
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {userBalance !== null && userBalance < price && (
+                            <div className="bg-orange-50 border border-orange-100 p-3 rounded-xl flex items-center space-x-2">
+                                <span className="text-[10px] text-orange-600 font-bold uppercase">Insufficient Wallet Balance: {formatCurrency(userBalance)}</span>
+                            </div>
+                        )}
+                        <PaystackButton
+                            email={session?.user?.email || ""}
+                            amount={price}
+                            publicKey={paystackKey}
+                            label={isLoading ? "Processing..." : "Confirm & Pay with MoMo"}
+                            className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 mt-4"
+                            disabled={!/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, "")) || isLoading}
+                            onSuccess={handleSuccess}
+                            onClose={() => setIsExpanding(false)}
+                        />
+                    </div>
+                )}
+            </div>
             
             {role === "AGENT" && (
               <p className="text-center text-[10px] text-green-600 font-bold uppercase mt-4">

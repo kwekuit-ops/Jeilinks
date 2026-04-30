@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { bundleId, phone, paystackRef, amount, agentId } = await req.json();
+    const { bundleId, phone, paystackRef, amount, agentId, paymentMethod = "PAYSTACK" } = await req.json();
     
     // Sanitize and Validate Phone
     const sanitizedPhone = phone.replace(/\D/g, "");
@@ -22,28 +22,27 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: "Invalid Ghanaian phone number" }, { status: 400 });
     }
     
-    // Fetch Paystack Secret from DB or ENV
-    const setting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
-    const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
+    // 1. PAYMENT VERIFICATION
+    if (paymentMethod === "PAYSTACK") {
+        // Fetch Paystack Secret from DB or ENV
+        const setting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
+        const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
 
-    if (!paystackSecret) {
-        return NextResponse.json({ message: "Payment setup incomplete" }, { status: 500 });
-    }
+        if (!paystackSecret) {
+            return NextResponse.json({ message: "Payment setup incomplete" }, { status: 500 });
+        }
 
-    // 1. Verify Paystack Payment (Server-side)
-    const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
-      headers: {
-        Authorization: `Bearer ${paystackSecret}`,
-      },
-    });
+        // Verify Paystack Payment
+        const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
+          headers: {
+            Authorization: `Bearer ${paystackSecret}`,
+          },
+        });
 
-    const verifyData = await verifyRes.json();
-
-    if (!verifyRes.ok || verifyData.data.status !== "success") {
-       // Check if it's already a wallet payment or if verification failed
-       if (verifyData.data.status !== "success") {
-          return NextResponse.json({ message: "Payment verification failed" }, { status: 400 });
-       }
+        const verifyData = await verifyRes.json();
+        if (!verifyRes.ok || verifyData.data.status !== "success") {
+            return NextResponse.json({ message: "Payment verification failed" }, { status: 400 });
+        }
     }
 
     // 2. Fetch Bundle info
@@ -55,27 +54,49 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Bundle not found" }, { status: 404 });
     }
 
-    // 3. Create Order in DB
-    const order = await prisma.order.create({
-      data: {
-        userId: (session.user as any).id,
-        bundleId: bundle.id,
-        phone: sanitizedPhone,
-        amount: Number(amount),
-        paystackRef,
-        agentId: agentId || null,
-        status: "PENDING",
-      },
-      include: {
-        bundle: true
-      }
+    // 3. DATABASE UPDATES (Transaction)
+    const order = await prisma.$transaction(async (tx) => {
+        // If wallet payment, check and deduct balance
+        if (paymentMethod === "WALLET") {
+            const user = await tx.user.findUnique({
+                where: { id: (session.user as any).id },
+                select: { balance: true }
+            });
+
+            if (!user || Number(user.balance) < Number(amount)) {
+                throw new Error("Insufficient wallet balance");
+            }
+
+            // Deduct balance
+            await tx.user.update({
+                where: { id: (session.user as any).id },
+                data: { balance: { decrement: Number(amount) } }
+            });
+        }
+
+        // Create Order
+        return await tx.order.create({
+            data: {
+                userId: (session.user as any).id,
+                bundleId: bundle.id,
+                phone: sanitizedPhone,
+                amount: Number(amount),
+                paystackRef: paymentMethod === "WALLET" ? `WALLET-${Date.now()}` : paystackRef,
+                paymentMethod,
+                agentId: agentId || null,
+                status: "PENDING",
+            },
+            include: {
+                bundle: true
+            }
+        });
     });
 
     // 4. Trigger Supplier Bridge
     const supplierRes = await placeOrderOnSupplier({
       supplierProductId: bundle.supplierProductId!,
       phone: sanitizedPhone,
-      reference: order.id, // Using internal ID as reference for the supplier
+      reference: order.id, 
     });
 
     if (supplierRes.success) {
@@ -91,16 +112,12 @@ export async function POST(req: Request) {
           },
         });
       }
-    } else {
-      console.error("Supplier error:", supplierRes.error);
-      // We don't necessarily fail the whole request since payment was successful
-      // Admin might need to handle this manually or retry
     }
 
     return NextResponse.json(order, { status: 201 });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Order error:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ message: error.message || "Internal server error" }, { status: 500 });
   }
 }
