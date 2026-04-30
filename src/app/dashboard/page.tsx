@@ -44,6 +44,15 @@ export default async function DashboardPage() {
 
   if (!user) return null;
 
+  const getRank = (count: number) => {
+    if (count > 200) return { name: "Platinum", color: "bg-indigo-500", icon: "💎" };
+    if (count > 50) return { name: "Gold", color: "bg-yellow-500", icon: "🥇" };
+    if (count > 10) return { name: "Silver", color: "bg-slate-400", icon: "🥈" };
+    return { name: "Bronze", color: "bg-orange-600", icon: "🥉" };
+  };
+
+  const rank = getRank(totalOrdersCount);
+
   // If Admin, also fetch Supplier Balance
   let supplierBalance = 0;
   if (user.role === "ADMIN") {

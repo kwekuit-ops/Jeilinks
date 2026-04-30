@@ -6,6 +6,7 @@ import { Smartphone, Zap, ArrowRight, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import PaystackButton from "./PaystackButton";
 import { getSystemSettings } from "@/app/admin/settings/actions";
 
@@ -27,6 +28,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanding, setIsExpanding] = useState(false);
   const [userBalance, setUserBalance] = useState<number | null>(null);
+  const [paystackKey, setPaystackKey] = useState("");
 
   useEffect(() => {
     async function loadData() {
