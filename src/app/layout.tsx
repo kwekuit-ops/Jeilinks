@@ -7,6 +7,7 @@ import Providers from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
+import { BottomNav } from "@/components/BottomNav";
 import { Toaster } from "react-hot-toast";
 import { getSystemSettings } from "@/app/admin/settings/actions";
 
@@ -31,10 +32,11 @@ export default async function RootLayout({
       <body className={`${inter.variable} ${outfit.variable} font-sans antialiased min-h-screen flex flex-col`}>
         <Providers>
           <Navbar />
-          <main className="flex-grow">
+          <main className="flex-grow pb-24 md:pb-0">
             {children}
           </main>
           <Footer />
+          <BottomNav />
           <FloatingWhatsApp number={supportNumber} />
           <Toaster position="bottom-right" />
         </Providers>
