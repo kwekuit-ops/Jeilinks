@@ -44,7 +44,56 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
             </div>
       </div>
 
-      <div className="glass rounded-3xl overflow-hidden border border-border/50 shadow-xl">
+      <div className="md:hidden space-y-4">
+        {filteredOrders.map((order) => {
+          const StatusIcon = statusIcons[order.status]?.icon || Clock;
+          return (
+            <div key={order.id} className="glass rounded-2xl p-5 border border-border/50 shadow-sm space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col">
+                  <span className="font-bold text-lg">{order.bundle.size}</span>
+                  <span className="text-[10px] uppercase font-black tracking-widest text-primary">{order.bundle.network}</span>
+                </div>
+                <span className={cn(
+                  "inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
+                  statusIcons[order.status]?.color || "bg-gray-100 text-gray-500"
+                )}>
+                  <StatusIcon className="h-3 w-3" />
+                  <span>{order.status}</span>
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dashed">
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Number</p>
+                  <p className="font-mono text-sm font-bold">{order.phone}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Price</p>
+                  <p className="text-lg font-bold text-primary">{formatCurrency(order.amount.toString())}</p>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-[10px] text-muted-foreground">
+                    {new Date(order.createdAt).toLocaleString()}
+                </span>
+                <button className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-lg">
+                    View Details
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {filteredOrders.length === 0 && (
+          <div className="text-center py-20 opacity-30">
+            <ClipboardList className="h-12 w-12 mx-auto mb-4" />
+            <p className="font-bold">No history found</p>
+          </div>
+        )}
+      </div>
+
+      <div className="hidden md:block glass rounded-3xl overflow-hidden border border-border/50 shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/80 border-b backdrop-blur-md">
