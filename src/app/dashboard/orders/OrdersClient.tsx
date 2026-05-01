@@ -28,9 +28,18 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6 animate-in">
-      <div>
-        <h1 className="text-3xl font-black font-outfit tracking-tight">Order History</h1>
-        <p className="text-muted-foreground">Track all your data bundle purchases in one place.</p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black font-outfit tracking-tight">Order History</h1>
+          <p className="text-muted-foreground">Track all your data bundle purchases in one place.</p>
+        </div>
+        <div className="bg-primary/5 px-6 py-3 rounded-2xl border border-primary/10 flex items-center space-x-4 w-fit">
+            <ClipboardList className="h-6 w-6 text-primary" />
+            <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 leading-none mb-1">Total Orders</p>
+                <p className="text-xl font-black font-outfit leading-none">{initialOrders.length}</p>
+            </div>
+        </div>
       </div>
 
       <div className="glass rounded-2xl p-4 border flex flex-col md:flex-row gap-4 items-center">

@@ -25,7 +25,12 @@ export default async function AdminOrdersPage() {
     <div className="space-y-8 animate-in">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold font-outfit">Platform Orders</h1>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-3xl font-bold font-outfit">Platform Orders</h1>
+            <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-primary/20">
+                {orders.length} Total
+            </span>
+          </div>
           <p className="text-muted-foreground">Monitor and manage all transactions</p>
         </div>
         <div className="flex space-x-2">
