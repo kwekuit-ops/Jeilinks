@@ -8,6 +8,7 @@ import { Wallet, History, MessageCircle, ArrowRight, CheckCircle2, Clock, Rotate
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { TopUpButton } from "./TopUpButton";
+import { WithdrawButton } from "./WithdrawButton";
 import { getActiveSupplier } from "@/lib/suppliers";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { getSystemSettings } from "../admin/settings/actions";
@@ -129,6 +130,7 @@ export default async function DashboardPage() {
           </div>
           <p className="text-4xl font-black font-outfit tracking-tight">{formatCurrency(user.balance.toString())}</p>
           <TopUpButton email={user.email} />
+          {user.role === "AGENT" && <WithdrawButton />}
         </div>
 
         {user.role === "ADMIN" && (

@@ -20,7 +20,9 @@ export default async function AdminLayout({
     { name: "Users", href: "/admin/users", icon: Users },
     { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
     { name: "Sales & Profits", href: "/admin/sales", icon: TrendingUp },
+    { name: "Payouts", href: "/admin/withdrawals", icon: Wallet },
     { name: "Pricing", href: "/admin/pricing", icon: DollarSign },
+
 
     { name: "API Settings", href: "/admin/settings", icon: Settings },
   ];

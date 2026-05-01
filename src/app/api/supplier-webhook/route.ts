@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { processOrderCommission } from "@/lib/commissions";
 
 export async function POST(req: Request) {
   const secret = req.headers.get("x-webhook-secret");
@@ -30,6 +31,10 @@ export async function POST(req: Request) {
         supplierOrderId: supplier_order_id // Update supplier ID if it wasn't already set
       },
     });
+
+    if (newStatus === "COMPLETED") {
+        await processOrderCommission(order.id);
+    }
 
     console.log(`Order ${reference} updated to ${newStatus}`);
 

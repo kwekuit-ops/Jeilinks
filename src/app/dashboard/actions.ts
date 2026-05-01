@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { normalizeOrderStatus } from "@/lib/utils";
+import { processOrderCommission } from "@/lib/commissions";
 
 
 export async function changePassword(formData: any) {
@@ -77,6 +78,10 @@ export async function refreshOrderStatus(orderId: string) {
             supplierStatus: rawStatus
           }
         });
+
+        if (newStatus === "COMPLETED") {
+          await processOrderCommission(order.id);
+        }
 
         revalidatePath("/dashboard");
         revalidatePath("/dashboard/orders");

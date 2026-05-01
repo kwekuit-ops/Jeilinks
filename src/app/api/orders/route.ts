@@ -5,6 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { placeOrderOnSupplier } from "@/lib/supplierBridge";
 import { OrderResponse } from "@/lib/suppliers/types";
 import { normalizeOrderStatus } from "@/lib/utils";
+import { processOrderCommission } from "@/lib/commissions";
 
 
 export async function POST(req: Request) {
@@ -118,7 +119,9 @@ export async function POST(req: Request) {
           },
         });
 
-      }
+        if (normalizedStatus === "COMPLETED") {
+          await processOrderCommission(order.id);
+        }
 
     }
 
