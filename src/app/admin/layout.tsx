@@ -49,7 +49,21 @@ export default async function AdminLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-4 md:p-8">
+        {/* Mobile Admin Nav */}
+        <div className="md:hidden flex space-x-2 overflow-x-auto no-scrollbar pb-4 mb-4 border-b">
+          {sidebarItems.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className="flex items-center space-x-2 px-4 py-2 bg-card border rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap active:scale-95 transition-all shadow-sm"
+            >
+              <item.icon className="h-3 w-3" />
+              <span>{item.name}</span>
+            </Link>
+          ))}
+        </div>
+
         <div className="max-w-7xl mx-auto">
           {children}
         </div>

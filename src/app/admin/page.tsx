@@ -2,7 +2,8 @@ import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 import { formatCurrency } from "@/lib/utils";
-import { Users, ShoppingBag, DollarSign, Zap, Wallet } from "lucide-react";
+import { Users, ShoppingBag, DollarSign, Zap, Wallet, Settings } from "lucide-react";
+import Link from "next/link";
 import { getActiveSupplier } from "@/lib/suppliers";
 
 export default async function AdminDashboard() {
@@ -60,12 +61,22 @@ export default async function AdminDashboard() {
         <div className="glass rounded-2xl p-6 border border-border/50 shadow-sm">
           <h2 className="font-bold mb-4">Quick Links</h2>
           <div className="grid grid-cols-2 gap-4">
-            <button className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center">
-                <p className="text-xs font-bold uppercase">Manual Credit</p>
-            </button>
-            <button className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center">
-                <p className="text-xs font-bold uppercase">Force Sync</p>
-            </button>
+            <Link href="/admin/pricing" className="p-4 rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all text-center flex flex-col items-center justify-center space-y-2">
+                <DollarSign className="h-5 w-5" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Set Prices</p>
+            </Link>
+            <Link href="/admin/users" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
+                <Users className="h-5 w-5" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Manage Users</p>
+            </Link>
+            <Link href="/admin/withdrawals" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
+                <Wallet className="h-5 w-5" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Payouts</p>
+            </Link>
+            <Link href="/admin/settings" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
+                <Settings className="h-5 w-5" />
+                <p className="text-[10px] font-black uppercase tracking-widest">API Keys</p>
+            </Link>
           </div>
         </div>
       </div>
