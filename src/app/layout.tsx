@@ -38,7 +38,7 @@ export default async function RootLayout({
           <Footer />
           <BottomNav />
           <FloatingWhatsApp number={supportNumber} />
-          <Toaster position="bottom-right" />
+          <Toaster position="top-center" />
         </Providers>
       </body>
     </html>
