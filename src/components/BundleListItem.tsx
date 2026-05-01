@@ -136,9 +136,9 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
           <div className={`p-1.5 md:p-3 rounded-lg md:rounded-xl bg-muted/50 ${networkColors[bundle.network]} shrink-0`}>
             <Smartphone className="h-4 w-4 md:h-6 md:w-6" />
           </div>
-          <div className="min-w-0">
-            <h3 className="text-xs md:text-lg font-bold font-outfit leading-tight truncate">{bundle.size}</h3>
-            <p className="text-[7px] md:text-xs text-muted-foreground uppercase font-black tracking-widest truncate">{bundle.network}</p>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[13px] md:text-lg font-bold font-outfit leading-tight">{bundle.size}</h3>
+            <p className="text-[7px] md:text-xs text-muted-foreground uppercase font-black tracking-widest">{bundle.network}</p>
           </div>
         </div>
  
