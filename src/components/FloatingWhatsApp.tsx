@@ -4,8 +4,11 @@ import { MessageCircle } from "lucide-react";
 
 export function FloatingWhatsApp({ number }: { number: string }) {
   const message = "Hi Jeilinks, I need help with my data bundle.";
-  const cleanNumber = number.replace(/\D/g, ''); // Remove any non-digits
-  const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+  let cleanNumber = number.replace(/\D/g, ''); // Remove any non-digits
+  if (cleanNumber.startsWith('0')) {
+    cleanNumber = '233' + cleanNumber.substring(1);
+  }
+  const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(message)}`;
 
   return (
     <div className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 flex items-center justify-center">
