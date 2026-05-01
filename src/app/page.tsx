@@ -194,38 +194,6 @@ export default async function Home() {
 
       </section>
 
-      {/* Trust & Features Section */}
-      <section className="py-20 border-y bg-background overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12">
-              <div className="flex items-start space-x-4">
-                  <div className="p-3 bg-primary/10 rounded-2xl text-primary">
-                      <Zap className="h-6 w-6" />
-                  </div>
-                  <div>
-                      <h4 className="font-bold text-lg mb-2 font-outfit">Fast Delivery</h4>
-                      <p className="text-sm text-muted-foreground">Most orders are processed within 1 to 30 minutes of payment.</p>
-                  </div>
-              </div>
-              <div className="flex items-start space-x-4">
-                  <div className="p-3 bg-green-100 rounded-2xl text-green-600">
-                      <ShieldCheck className="h-6 w-6" />
-                  </div>
-                  <div>
-                      <h4 className="font-bold text-lg mb-2 font-outfit">Secure Payment</h4>
-                      <p className="text-sm text-muted-foreground">Encrypted transactions powered by Paystack. Your data is always safe.</p>
-                  </div>
-              </div>
-              <div className="flex items-start space-x-4">
-                  <div className="p-3 bg-blue-100 rounded-2xl text-blue-600">
-                      <Clock className="h-6 w-6" />
-                  </div>
-                  <div>
-                      <h4 className="font-bold text-lg mb-2 font-outfit">24/7 Support</h4>
-                      <p className="text-sm text-muted-foreground">Our automated tracking and WhatsApp support are always available.</p>
-                  </div>
-              </div>
-          </div>
-      </section>
 
       {/* Bundles Section */}
       <section id="bundles" className="py-20 px-4 bg-muted/30 scroll-mt-16">
