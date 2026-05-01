@@ -183,8 +183,8 @@ export default async function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-              <Link href="/register" className="bg-primary text-primary-foreground px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-all w-full sm:w-auto text-center">
-                  Get Started
+              <Link href="#bundles" className="bg-primary text-primary-foreground px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-all w-full sm:w-auto text-center">
+                  Buy Data
               </Link>
               <Link href="/become-agent" className="bg-secondary text-foreground px-10 py-4 rounded-2xl font-bold text-lg hover:bg-secondary/80 transition-all border border-border w-full sm:w-auto text-center">
                   Become an Agent
