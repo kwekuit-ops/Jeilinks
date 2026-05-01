@@ -42,8 +42,8 @@ export function BottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-10 left-0 right-0 z-[100] px-4 pointer-events-none">
-      <div className="max-w-md mx-auto w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.2)] rounded-[28px] p-2 flex items-center justify-around pointer-events-auto overflow-hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] pointer-events-auto">
+      <div className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-border shadow-[0_-8px_30px_rgba(0,0,0,0.08)] px-2 pt-3 pb-safe flex items-center justify-around overflow-hidden">
         {navItems.map((item) => {
           if (item.auth && !session) return null;
           
