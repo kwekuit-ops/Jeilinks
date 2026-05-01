@@ -92,13 +92,13 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
   return (
     <div className="space-y-6">
       {/* Network Tabs */}
-      <div className="flex space-x-2 border-b">
+      <div className="flex space-x-2 border-b overflow-x-auto no-scrollbar scroll-smooth">
         {NETWORKS.map(network => (
           <button
             key={network}
             onClick={() => setActiveTab(network)}
             className={cn(
-              "px-6 py-3 font-bold border-b-2 transition-all",
+              "px-6 py-3 font-bold border-b-2 transition-all whitespace-nowrap",
               activeTab === network 
                 ? "border-primary text-primary" 
                 : "border-transparent text-muted-foreground hover:border-muted-foreground"
@@ -109,13 +109,13 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
         ))}
       </div>
 
-      <div className="bg-card rounded-2xl border p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">{activeTab} Packages Editor</h2>
+      <div className="bg-card rounded-2xl border p-4 md:p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <h2 className="text-xl font-bold font-outfit">{activeTab} Packages Editor</h2>
           <button 
             onClick={handleSaveNetwork}
             disabled={isSaving}
-            className="flex items-center space-x-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50 hover:brightness-110 active:scale-95 transition-all"
+            className="flex items-center justify-center space-x-2 bg-primary text-primary-foreground px-6 py-3 md:py-2 rounded-xl text-sm font-bold disabled:opacity-50 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20"
           >
             <Save className="h-4 w-4" />
             <span>{isSaving ? "Saving..." : `Save ${activeTab} Changes`}</span>
@@ -123,12 +123,12 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
         </div>
 
         <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 mb-6 flex items-start space-x-3">
-            <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
+            <AlertCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <p className="text-sm text-primary/80">You MUST enter the Supplier ID for a package to be saved and active.</p>
         </div>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-12 gap-3 px-4 pb-2 text-[10px] font-black uppercase text-muted-foreground border-b">
+        <div className="space-y-6 md:space-y-4">
+          <div className="hidden md:grid grid-cols-12 gap-3 px-4 pb-2 text-[10px] font-black uppercase text-muted-foreground border-b">
             <div className="col-span-2">Bundle & Base Cost</div>
             <div className="col-span-3">Retail (GHS)</div>
             <div className="col-span-3">Agent (GHS)</div>
@@ -144,56 +144,65 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
 
           {Object.keys(formData[activeTab])
             .sort((a, b) => {
-                const parse = (s: string) => parseFloat(s) * (s.includes('GB') ? 1024 : 1);
+                const parse = (s: string) => {
+                    const num = parseFloat(s);
+                    if (s.includes('GB')) return num * 1024;
+                    if (s.includes('MB')) return num;
+                    return num;
+                };
                 return parse(a) - parse(b);
             })
             .map((size) => {
              const row = formData[activeTab][size];
              
              return (
-              <div key={size} className="grid grid-cols-12 gap-3 items-center bg-muted/20 p-2 rounded-xl border border-transparent hover:border-border transition-all">
-                <div className="col-span-2 px-2 flex flex-col justify-center">
-                   <div className="font-bold font-outfit text-lg leading-tight">{size}</div>
+              <div key={size} className="flex flex-col md:grid md:grid-cols-12 gap-4 md:gap-3 md:items-center bg-muted/20 md:bg-transparent p-4 md:p-2 rounded-2xl md:rounded-xl border border-border md:border-transparent hover:border-primary/20 transition-all">
+                <div className="md:col-span-2 md:px-2 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-start border-b md:border-none pb-2 md:pb-0">
+                   <div className="font-bold font-outfit text-xl md:text-lg leading-tight">{size}</div>
                    {row.supplierPrice !== "0" && (
-                     <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                        Cost: {row.supplierPrice} GHS
+                     <div className="text-[10px] text-muted-foreground font-black uppercase tracking-widest bg-muted px-2 py-1 rounded">
+                        Cost: {row.supplierPrice}
                      </div>
                    )}
                 </div>
                 
-                <div className="col-span-3">
+                <div className="md:col-span-3 space-y-1">
+                  <label className="md:hidden text-[9px] font-black uppercase tracking-widest text-muted-foreground">Retail Price (GHS)</label>
                   <input 
                     type="number" 
                     step="0.01"
-                    placeholder="e.g. 15.50"
+                    placeholder="Retail Price"
                     value={row.userPrice}
                     onChange={(e) => handleInputChange(activeTab, size, 'userPrice', e.target.value)}
-                    className="w-full bg-background border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none transition-all"
+                    className="w-full bg-background border rounded-xl px-4 py-3 md:py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   />
                 </div>
                 
-                <div className="col-span-3">
+                <div className="md:col-span-3 space-y-1">
+                  <label className="md:hidden text-[9px] font-black uppercase tracking-widest text-green-600">Agent Price (GHS)</label>
                   <input 
                     type="number" 
                     step="0.01"
-                    placeholder="e.g. 12.00"
+                    placeholder="Agent Price"
                     value={row.agentPrice}
                     onChange={(e) => handleInputChange(activeTab, size, 'agentPrice', e.target.value)}
-                    className="w-full bg-background border border-green-500/30 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-green-500 outline-none transition-all text-green-700 dark:text-green-400 font-medium"
+                    className="w-full bg-background border border-green-500/30 rounded-xl px-4 py-3 md:py-2 text-sm focus:ring-2 focus:ring-green-500/20 outline-none transition-all text-green-700 dark:text-green-400 font-bold"
                   />
                 </div>
 
-                <div className="col-span-3">
+                <div className="md:col-span-3 space-y-1">
+                  <label className="md:hidden text-[9px] font-black uppercase tracking-widest text-purple-600">Supplier Product ID</label>
                   <input 
                     type="number" 
                     placeholder="Supplier ID"
                     value={row.supplierProductId}
                     onChange={(e) => handleInputChange(activeTab, size, 'supplierProductId', e.target.value)}
-                    className="w-full bg-background border border-purple-500/30 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                    className="w-full bg-background border border-purple-500/30 rounded-xl px-4 py-3 md:py-2 text-sm focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
                   />
                 </div>
 
-                <div className="col-span-1 flex justify-center">
+                <div className="md:col-span-1 flex items-center justify-between md:justify-center p-2 bg-background/50 md:bg-transparent rounded-xl">
+                  <label className="md:hidden text-[9px] font-black uppercase tracking-widest text-muted-foreground">Active Status</label>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input 
                       type="checkbox" 
@@ -201,7 +210,7 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
                       checked={row.isActive}
                       onChange={(e) => handleInputChange(activeTab, size, 'isActive', e.target.checked)}
                     />
-                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
                   </label>
                 </div>
               </div>
