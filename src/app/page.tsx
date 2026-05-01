@@ -187,7 +187,7 @@ export default async function Home() {
                   Get Started
               </Link>
               <Link href="/become-agent" className="bg-secondary text-foreground px-10 py-4 rounded-2xl font-bold text-lg hover:bg-secondary/80 transition-all border border-border w-full sm:w-auto text-center">
-                  Earn as an Agent
+                  Become an Agent
               </Link>
           </div>
         </div>
