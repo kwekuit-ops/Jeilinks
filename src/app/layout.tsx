@@ -37,7 +37,10 @@ export default async function RootLayout({
           </main>
           <Footer />
           <BottomNav />
-          <FloatingWhatsApp number={supportNumber} />
+          <FloatingWhatsApp 
+            number={supportNumber} 
+            channelUrl={settings["WHATSAPP_CHANNEL_URL"] || ""} 
+          />
           <Toaster position="top-center" />
         </Providers>
       </body>
