@@ -29,7 +29,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="light">
-      <body className={`${inter.variable} ${outfit.variable} font-sans antialiased min-h-screen flex flex-col`}>
+      <body className={`${inter.variable} ${outfit.variable} font-sans antialiased min-h-screen flex flex-col overflow-x-hidden`}>
         <Providers>
           <Navbar />
           <main className="flex-grow pb-24 md:pb-0">

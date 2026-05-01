@@ -90,7 +90,7 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-hidden">
       {/* Network Tabs */}
       <div className="flex space-x-2 border-b overflow-x-auto no-scrollbar scroll-smooth">
         {NETWORKS.map(network => (

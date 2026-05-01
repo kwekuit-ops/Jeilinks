@@ -28,7 +28,7 @@ export default async function AdminLayout({
   ];
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)] bg-muted/20">
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-64px)] bg-muted/20 overflow-x-hidden">
       {/* Sidebar */}
       <aside className="w-64 bg-card border-r hidden md:block">
         <div className="p-6">
