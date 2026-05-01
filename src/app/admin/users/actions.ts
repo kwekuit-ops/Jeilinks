@@ -16,9 +16,26 @@ export async function updateUserRole(userId: string, newRole: string) {
   try {
     await ensureAdmin();
     
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error("User not found");
+
+    const data: any = { role: newRole };
+
+    // If becoming an agent and has no slug, generate one
+    if (newRole === "AGENT" && !user.storeSlug) {
+      data.storeSlug = user.name.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
+      
+      // Also set a default expiry if not set
+      if (!user.agentExpiry) {
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + 30);
+        data.agentExpiry = expiry;
+      }
+    }
+
     await prisma.user.update({
       where: { id: userId },
-      data: { role: newRole }
+      data
     });
 
     revalidatePath("/admin/users");
@@ -65,5 +82,46 @@ export async function updateUserBalance(userId: string, amount: number) {
     return { success: true };
   } catch (error: any) {
     return { success: false, error: "Failed to update balance" };
+  }
+}
+
+import bcrypt from "bcryptjs";
+
+export async function createStore(data: { name: string, email: string, phone: string, password?: string }) {
+  try {
+    await ensureAdmin();
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email: data.email.toLowerCase() }
+    });
+
+    if (existingUser) {
+      return { success: false, error: "Email already exists" };
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password || "12345678", 10);
+    const storeSlug = data.name.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
+
+    // Default expiry: 30 days for admin-created stores
+    const expiry = new Date();
+    expiry.setDate(expiry.getDate() + 30);
+
+    await prisma.user.create({
+      data: {
+        name: data.name,
+        email: data.email.toLowerCase(),
+        phone: data.phone,
+        password: hashedPassword,
+        role: "AGENT",
+        storeSlug: storeSlug,
+        agentExpiry: expiry,
+      }
+    });
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Create store error:", error);
+    return { success: false, error: error.message || "Failed to create store" };
   }
 }

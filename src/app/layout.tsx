@@ -32,7 +32,7 @@ export default async function RootLayout({
       <body className={`${inter.variable} ${outfit.variable} font-sans antialiased min-h-screen flex flex-col`}>
         <Providers>
           <Navbar />
-          <main className="flex-grow pb-24 md:pb-0 overflow-x-hidden">
+          <main className="flex-grow pb-32 md:pb-12 overflow-x-hidden">
             {children}
           </main>
           <Footer />

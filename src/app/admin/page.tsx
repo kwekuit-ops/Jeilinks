@@ -5,17 +5,47 @@ import { formatCurrency } from "@/lib/utils";
 import { Users, ShoppingBag, DollarSign, Zap, Wallet, Settings } from "lucide-react";
 import Link from "next/link";
 import { getActiveSupplier } from "@/lib/suppliers";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import AdminStoreCard from "./AdminStoreCard";
+import DateFilter from "./DateFilter";
 
-export default async function AdminDashboard() {
-  const [userCount, orderCount, totalRevenue, pendingPayouts, pendingOrders] = await Promise.all([
+export default async function AdminDashboard({ searchParams }: { searchParams: { date?: string } }) {
+  const session = await getServerSession(authOptions);
+  
+  // Handle Date Filtering
+  const dateStr = searchParams.date || new Date().toISOString().split('T')[0];
+  const selectedDate = new Date(dateStr);
+  
+  const startOfDay = new Date(selectedDate);
+  startOfDay.setHours(0, 0, 0, 0);
+  
+  const endOfDay = new Date(selectedDate);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const [userCount, orderCount, totalRevenue, pendingPayouts, pendingOrders, adminUser] = await Promise.all([
     prisma.user.count(),
-    prisma.order.count(),
+    prisma.order.count({
+      where: {
+        createdAt: {
+          gte: startOfDay,
+          lte: endOfDay
+        }
+      }
+    }),
     prisma.order.aggregate({
       _sum: { amount: true },
-      where: { status: "COMPLETED" }
+      where: { 
+        status: "COMPLETED",
+        createdAt: {
+          gte: startOfDay,
+          lte: endOfDay
+        }
+      }
     }),
     prisma.withdrawal.count({ where: { status: "PENDING" } }),
-    prisma.order.count({ where: { status: "PENDING" } })
+    prisma.order.count({ where: { status: "PENDING" } }),
+    prisma.user.findUnique({ where: { id: (session?.user as any)?.id } })
   ]);
 
   const supplier = await getActiveSupplier();
@@ -23,20 +53,24 @@ export default async function AdminDashboard() {
 
   const stats = [
     { name: "Total Users", value: userCount, icon: Users, color: "text-blue-500 bg-blue-100", href: "/admin/users" },
+    { name: "Supplier Wallet", value: formatCurrency(supplierBalance.toString()), icon: Zap, color: "text-purple-500 bg-purple-100", href: "/admin/settings" },
     { name: "Pending Payouts", value: pendingPayouts, icon: Wallet, color: "text-red-500 bg-red-100", href: "/admin/withdrawals" },
-    { name: "Pending Orders", value: pendingOrders, icon: ShoppingBag, color: "text-orange-500 bg-orange-100", href: "/admin/orders" },
-    { name: "Total Revenue", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-500 bg-green-100", href: "/admin/sales" },
+    { name: "Orders (Selected Day)", value: orderCount, icon: ShoppingBag, color: "text-orange-500 bg-orange-100", href: "/admin/orders" },
+    { name: "Revenue (Selected Day)", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-500 bg-green-100", href: "/admin/sales" },
   ];
 
 
   return (
     <div className="space-y-8 animate-in">
-      <div>
-        <h1 className="text-3xl font-bold font-outfit">Dashboard Overview</h1>
-        <p className="text-muted-foreground">Quick summary of platform performance</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold font-outfit">Dashboard Overview</h1>
+          <p className="text-muted-foreground">Stats for {selectedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        </div>
+        <DateFilter />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {stats.map((stat) => (
           <Link 
             key={stat.name} 
@@ -55,12 +89,7 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="glass rounded-2xl p-6 border border-border/50 shadow-sm">
-          <h2 className="font-bold mb-4">Recent System Activity</h2>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground italic">Activity feed coming soon...</p>
-          </div>
-        </div>
+        <AdminStoreCard initialSlug={adminUser?.storeSlug || null} adminName={adminUser?.name || "Admin"} />
         
         <div className="glass rounded-2xl p-6 border border-border/50 shadow-sm">
           <h2 className="font-bold mb-4">Quick Links</h2>

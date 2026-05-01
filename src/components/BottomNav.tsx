@@ -15,35 +15,35 @@ export function BottomNav() {
     {
       name: "Home",
       href: "/",
-      icon: Home,
+      emoji: "🏠",
     },
     {
       name: "Shop",
       href: "/shop",
-      icon: ShoppingBag,
+      emoji: "🛍️",
     },
     {
       name: "Orders",
       href: session ? "/dashboard/orders" : "/track",
-      icon: ClipboardList,
+      emoji: "📦",
     },
     {
       name: "Wallet",
       href: "/dashboard",
-      icon: Wallet,
+      emoji: "💳",
       auth: true,
     },
     {
       name: isAdmin ? "Admin" : "Profile",
       href: isAdmin ? "/admin" : "/dashboard",
-      icon: Settings,
+      emoji: "⚙️",
       auth: true,
     },
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
-      <div className="w-full bg-background/95 backdrop-blur-xl border-t border-border shadow-[0_-8px_30px_rgba(0,0,0,0.08)] px-2 pt-2 pb-safe flex items-center justify-around pointer-events-auto">
+    <div className="fixed bottom-10 left-0 right-0 z-[100] px-4 pointer-events-none">
+      <div className="max-w-md mx-auto w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.2)] rounded-[28px] p-2 flex items-center justify-around pointer-events-auto overflow-hidden">
         {navItems.map((item) => {
           if (item.auth && !session) return null;
           
@@ -52,35 +52,30 @@ export function BottomNav() {
             : item.href === "/dashboard" 
               ? pathname === "/dashboard" 
               : pathname.startsWith(item.href);
-          const Icon = item.icon;
 
           return (
             <Link
               key={item.name}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center flex-1 py-2 transition-all duration-300 relative",
+                "flex flex-col items-center justify-center flex-1 py-3 px-1 rounded-[20px] transition-all duration-300 relative group",
                 isActive 
-                  ? "text-primary" 
-                  : "text-muted-foreground"
+                  ? "bg-primary/10 text-primary" 
+                  : "text-slate-600 dark:text-slate-400"
               )}
             >
-              <div className={cn(
-                "p-1.5 rounded-xl transition-all duration-300",
-                isActive ? "bg-primary/10 scale-110 shadow-sm" : "bg-transparent scale-100 opacity-80"
-              )}>
-                <Icon className={cn("h-5 w-5", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
-              </div>
               <span className={cn(
-                "text-[9px] font-black uppercase tracking-widest mt-1 transition-all duration-300",
-                isActive ? "opacity-100 translate-y-0" : "opacity-70 translate-y-0.5"
+                "text-2xl mb-1 transition-all duration-300",
+                isActive ? "scale-110 drop-shadow-md" : "grayscale-[0.3] opacity-70 group-hover:scale-110 group-hover:grayscale-0"
+              )}>
+                {item.emoji}
+              </span>
+              <span className={cn(
+                "text-[10px] font-bold font-outfit transition-all duration-300",
+                isActive ? "opacity-100" : "opacity-60"
               )}>
                 {item.name}
               </span>
-              
-              {isActive && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-b-full animate-in fade-in slide-in-from-top-1" />
-              )}
             </Link>
           );
         })}

@@ -15,7 +15,7 @@ export default async function AgentStorePage({ params }: { params: { slug: strin
     }
   });
 
-  if (!agent || agent.role !== "AGENT") {
+  if (!agent || (agent.role !== "AGENT" && agent.role !== "ADMIN")) {
     notFound();
   }
 

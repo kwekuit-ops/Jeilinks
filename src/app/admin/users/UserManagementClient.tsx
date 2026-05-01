@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
-import { UserCog, Trash2, ArrowUpCircle, X, Shield, User, Star } from "lucide-react";
+import { UserCog, Trash2, ArrowUpCircle, X, Shield, User, Star, Store, Plus } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { deleteUser, updateUserRole, updateUserBalance } from "./actions";
+import CreateStoreModal from "./CreateStoreModal";
 
 interface UserType {
   id: string;
@@ -18,6 +19,7 @@ interface UserType {
 export default function UserManagementClient({ users: initialUsers }: { users: UserType[] }) {
   const [users, setUsers] = useState(initialUsers);
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleDelete = async (userId: string, name: string) => {
     if (!confirm(`Are you sure you want to delete user ${name}? This action cannot be undone.`)) return;
@@ -69,8 +71,22 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
   };
 
   return (
-    <div className="glass rounded-2xl overflow-hidden border border-border/50 shadow-sm">
-      <div className="overflow-x-auto">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center px-2">
+        <h2 className="text-xl font-bold font-outfit">Platform Users</h2>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center space-x-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20 active:scale-95"
+        >
+          <Store className="h-4 w-4" />
+          <span>Create Store</span>
+        </button>
+      </div>
+
+      <CreateStoreModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
+      <div className="glass rounded-2xl overflow-hidden border border-border/50 shadow-sm">
+        <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="bg-muted/50 border-b">
             <tr>
