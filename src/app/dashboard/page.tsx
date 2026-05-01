@@ -21,7 +21,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [user, totalOrdersCount, completedCount, pendingWithdrawals] = await Promise.all([
+  const [user, completedCount, pendingWithdrawals] = await Promise.all([
     prisma.user.findUnique({
       where: { id: (session.user as any).id },
       include: {
@@ -69,7 +69,7 @@ export default async function DashboardPage() {
     return { name: "Bronze", color: "bg-orange-600", icon: "🥉" };
   };
 
-  const rank = getRank(totalOrdersCount);
+  const rank = getRank(completedCount);
 
   // If Admin, also fetch Supplier Balance
   let supplierBalance = 0;
@@ -189,7 +189,7 @@ export default async function DashboardPage() {
                         {rank.icon}
                     </div>
                     <h2 className="font-bold text-lg">{rank.name} Agent</h2>
-                    <p className="text-xs text-muted-foreground">{totalOrdersCount} Completed Sales</p>
+                    <p className="text-xs text-muted-foreground">{completedCount} Completed Sales</p>
                 </>
             ) : (
                 <>
