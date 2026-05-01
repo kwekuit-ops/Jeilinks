@@ -6,14 +6,15 @@ import { Users, ShoppingBag, DollarSign, Zap, Wallet } from "lucide-react";
 import { getActiveSupplier } from "@/lib/suppliers";
 
 export default async function AdminDashboard() {
-  const [userCount, orderCount, totalRevenue, bundlesCount] = await Promise.all([
+  const [userCount, orderCount, totalRevenue, pendingPayouts, pendingOrders] = await Promise.all([
     prisma.user.count(),
     prisma.order.count(),
     prisma.order.aggregate({
       _sum: { amount: true },
       where: { status: "COMPLETED" }
     }),
-    prisma.bundle.count()
+    prisma.withdrawal.count({ where: { status: "PENDING" } }),
+    prisma.order.count({ where: { status: "PENDING" } })
   ]);
 
   const supplier = await getActiveSupplier();
@@ -21,10 +22,11 @@ export default async function AdminDashboard() {
 
   const stats = [
     { name: "Total Users", value: userCount, icon: Users, color: "text-blue-500 bg-blue-100" },
-    { name: "Total Orders", value: orderCount, icon: ShoppingBag, color: "text-purple-500 bg-purple-100" },
+    { name: "Pending Payouts", value: pendingPayouts, icon: Wallet, color: "text-red-500 bg-red-100" },
+    { name: "Pending Orders", value: pendingOrders, icon: ShoppingBag, color: "text-orange-500 bg-orange-100" },
     { name: "Total Revenue", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-500 bg-green-100" },
-    { name: "Supplier Balance", value: formatCurrency(supplierBalance.toString()), icon: Wallet, color: "text-orange-500 bg-orange-100" },
   ];
+
 
   return (
     <div className="space-y-8 animate-in">

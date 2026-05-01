@@ -21,7 +21,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [user, totalOrdersCount] = await Promise.all([
+  const [user, totalOrdersCount, completedCount, pendingWithdrawals] = await Promise.all([
     prisma.user.findUnique({
       where: { id: (session.user as any).id },
       include: {
@@ -41,8 +41,14 @@ export default async function DashboardPage() {
         ],
         status: "COMPLETED"
       }
+    }),
+    prisma.withdrawal.aggregate({
+      where: { userId: (session.user as any).id, status: "PENDING" },
+      _sum: { amount: true }
     })
   ]);
+
+  const pendingWithdrawalSum = Number(pendingWithdrawals._sum.amount || 0);
 
   if (!user) return null;
 
@@ -129,6 +135,14 @@ export default async function DashboardPage() {
             <h2 className="font-bold font-outfit">Wallet Balance</h2>
           </div>
           <p className="text-4xl font-black font-outfit tracking-tight">{formatCurrency(user.balance.toString())}</p>
+          
+          {pendingWithdrawalSum > 0 && (
+            <div className="mt-2 flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-orange-600 bg-orange-50 px-2 py-1 rounded-lg w-fit">
+               <Clock className="h-3 w-3" />
+               <span>Pending Payout: {formatCurrency(pendingWithdrawalSum.toString())}</span>
+            </div>
+          )}
+
           <TopUpButton email={user.email} />
           {user.role === "AGENT" && <WithdrawButton />}
         </div>
