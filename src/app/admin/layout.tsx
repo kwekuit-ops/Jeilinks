@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Users, LayoutDashboard, DollarSign, Settings, ShoppingBag, TrendingUp } from "lucide-react";
+import { Users, LayoutDashboard, DollarSign, Settings, ShoppingBag, TrendingUp, Wallet } from "lucide-react";
 
 export default async function AdminLayout({
   children,

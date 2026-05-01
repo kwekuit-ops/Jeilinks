@@ -7,7 +7,6 @@ import { OrderResponse } from "@/lib/suppliers/types";
 import { normalizeOrderStatus } from "@/lib/utils";
 import { processOrderCommission } from "@/lib/commissions";
 
-
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 
@@ -18,16 +17,13 @@ export async function POST(req: Request) {
   try {
     const { bundleId, phone, paystackRef, amount, agentId, paymentMethod = "PAYSTACK" } = await req.json();
     
-    // Sanitize and Validate Phone
     const sanitizedPhone = phone.replace(/\D/g, "");
     const ghPhoneRegex = /^(02|05)\d{8}$/;
     if (!ghPhoneRegex.test(sanitizedPhone)) {
         return NextResponse.json({ message: "Invalid Ghanaian phone number" }, { status: 400 });
     }
     
-    // 1. PAYMENT VERIFICATION
     if (paymentMethod === "PAYSTACK") {
-        // Fetch Paystack Secret from DB or ENV
         const setting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
         const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
 
@@ -35,7 +31,6 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Payment setup incomplete" }, { status: 500 });
         }
 
-        // Verify Paystack Payment
         const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
           headers: {
             Authorization: `Bearer ${paystackSecret}`,
@@ -48,7 +43,6 @@ export async function POST(req: Request) {
         }
     }
 
-    // 2. Fetch Bundle info
     const bundle = await prisma.bundle.findUnique({
       where: { id: bundleId },
     });
@@ -57,9 +51,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Bundle not found" }, { status: 404 });
     }
 
-    // 3. DATABASE UPDATES (Transaction)
     const order = await prisma.$transaction(async (tx) => {
-        // If wallet payment, check and deduct balance
         if (paymentMethod === "WALLET") {
             const user = await tx.user.findUnique({
                 where: { id: (session.user as any).id },
@@ -70,14 +62,12 @@ export async function POST(req: Request) {
                 throw new Error("Insufficient wallet balance");
             }
 
-            // Deduct balance
             await tx.user.update({
                 where: { id: (session.user as any).id },
                 data: { balance: { decrement: Number(amount) } }
             });
         }
 
-        // Create Order
         return await tx.order.create({
             data: {
                 userId: (session.user as any).id,
@@ -95,7 +85,6 @@ export async function POST(req: Request) {
         });
     });
 
-    // 4. Trigger Supplier Bridge
     const supplierRes = await placeOrderOnSupplier({
       supplierProductId: bundle.supplierProductId!,
       phone: sanitizedPhone,
@@ -122,7 +111,7 @@ export async function POST(req: Request) {
         if (normalizedStatus === "COMPLETED") {
           await processOrderCommission(order.id);
         }
-
+      }
     }
 
     return NextResponse.json(order, { status: 201 });
