@@ -58,18 +58,18 @@ export function BottomNav() {
                 "flex flex-col items-center justify-center flex-1 py-2 transition-all duration-300 relative",
                 isActive 
                   ? "text-primary" 
-                  : "text-muted-foreground/60"
+                  : "text-muted-foreground"
               )}
             >
               <div className={cn(
                 "p-1.5 rounded-xl transition-all duration-300",
-                isActive ? "bg-primary/10 scale-110 shadow-sm" : "bg-transparent scale-100"
+                isActive ? "bg-primary/10 scale-110 shadow-sm" : "bg-transparent scale-100 opacity-80"
               )}>
                 <Icon className={cn("h-5 w-5", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
               </div>
               <span className={cn(
                 "text-[9px] font-black uppercase tracking-widest mt-1 transition-all duration-300",
-                isActive ? "opacity-100 translate-y-0" : "opacity-50 translate-y-0.5"
+                isActive ? "opacity-100 translate-y-0" : "opacity-70 translate-y-0.5"
               )}>
                 {item.name}
               </span>
