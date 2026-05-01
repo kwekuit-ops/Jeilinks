@@ -47,7 +47,11 @@ export function BottomNav() {
         {navItems.map((item) => {
           if (item.auth && !session) return null;
           
-          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+          const isActive = item.href === "/" 
+            ? pathname === "/" 
+            : item.href === "/dashboard" 
+              ? pathname === "/dashboard" 
+              : pathname.startsWith(item.href);
           const Icon = item.icon;
 
           return (
