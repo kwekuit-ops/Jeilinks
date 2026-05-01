@@ -152,5 +152,6 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
         </table>
       </div>
     </div>
+  </div>
   );
 }
