@@ -16,8 +16,10 @@ model User {
   role      String   @default("USER")
   balance   Decimal  @default(0)
   storeSlug String?  @unique
-  createdAt DateTime @default(now())
-  orders    Order[]
+  createdAt   DateTime @default(now())
+  agentExpiry DateTime?
+  orders      Order[]
+
 }
 
 model Bundle {
@@ -42,6 +44,7 @@ model Order {
   paystackRef     String?  @unique
   paymentMethod   String   @default("PAYSTACK")
   supplierOrderId String?
+  supplierStatus  String?
   agentId         String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

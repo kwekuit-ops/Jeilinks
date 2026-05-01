@@ -37,7 +37,8 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
   }, []);
 
   const role = (session?.user as any)?.role || "USER";
-  const price = role === "AGENT" ? bundle.agentPrice : bundle.userPrice;
+  const price = (role === "AGENT" || role === "ADMIN") ? bundle.agentPrice : bundle.userPrice;
+
 
   const networkColors: Record<string, string> = {
     MTN: "bg-mtn text-black",
@@ -167,11 +168,12 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
           </button>
         )}
         
-        {role === "AGENT" && (
+        {(role === "AGENT" || role === "ADMIN") && (
           <div className="mt-4 pt-4 border-t border-dashed text-center">
-            <p className="text-[10px] text-green-500 font-bold uppercase tracking-tighter">Agent Wholesale Pricing Applied</p>
+            <p className="text-[10px] text-green-500 font-bold uppercase tracking-tighter">{role === "ADMIN" ? "Admin" : "Agent"} Wholesale Pricing Applied</p>
           </div>
         )}
+
       </div>
     </div>
   );

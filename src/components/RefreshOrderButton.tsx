@@ -30,7 +30,7 @@ export function RefreshOrderButton({ orderId }: { orderId: string }) {
       onClick={handleRefresh}
       disabled={isRefreshing}
       title="Refresh Status"
-      className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground transition-all active:scale-95 disabled:opacity-50"
+      className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-all active:scale-95 disabled:opacity-50"
     >
       <RotateCcw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
     </button>

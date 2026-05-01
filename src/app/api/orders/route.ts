@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { placeOrderOnSupplier } from "@/lib/supplierBridge";
 import { OrderResponse } from "@/lib/suppliers/types";
+import { normalizeOrderStatus } from "@/lib/utils";
+
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -104,14 +106,20 @@ export async function POST(req: Request) {
       const supplierOrderId = res.supplierOrderId || res.supplier_order_id;
       
       if (supplierOrderId) {
+        const rawStatus = res.status || "PROCESSING";
+        const normalizedStatus = normalizeOrderStatus(rawStatus);
+        
         await prisma.order.update({
           where: { id: order.id },
           data: { 
-            status: "PROCESSING",
+            status: normalizedStatus,
+            supplierStatus: rawStatus,
             supplierOrderId: supplierOrderId
           },
         });
+
       }
+
     }
 
     return NextResponse.json(order, { status: 201 });

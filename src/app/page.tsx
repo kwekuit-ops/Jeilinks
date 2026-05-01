@@ -8,8 +8,11 @@ import { BundleTabs } from "@/components/BundleTabs";
 import { Zap, ShieldCheck, Clock, Wallet, ArrowRight, History, CheckCircle2, RotateCcw, AlertCircle } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { formatCurrency, cn } from "@/lib/utils";
 import { TopUpButton } from "./dashboard/TopUpButton";
+import { RefreshOrderButton } from "@/components/RefreshOrderButton";
+
 
 export const metadata: Metadata = {
   title: "JEILINKS - Ghana's Fastest Data Top-up Platform",
@@ -97,13 +100,25 @@ export default async function Home() {
                                                 <span className="font-bold">{order.bundle.size}</span>
                                                 <span className="text-[10px] uppercase text-muted-foreground font-medium">{order.bundle.network}</span>
                                             </div>
-                                            <span className={cn(
-                                                "px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center space-x-1",
-                                                statusIcons[order.status]?.color || "bg-gray-100 text-gray-500"
-                                            )}>
-                                                <StatusIcon className="h-3 w-3" />
-                                                <span>{order.status}</span>
-                                            </span>
+                                            <div className="flex items-center space-x-2">
+                                                {(order.status === "PROCESSING" || order.status === "PENDING") && (
+                                                    <RefreshOrderButton orderId={order.id} />
+                                                )}
+                                                <span className={cn(
+                                                    "px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center space-x-1",
+                                                    statusIcons[order.status]?.color || "bg-gray-100 text-gray-500"
+                                                )}>
+                                                    <StatusIcon className="h-3 w-3" />
+                                                    <span>{order.status}</span>
+                                                </span>
+                                                {order.supplierStatus && order.supplierStatus !== order.status && (
+                                                    <p className="text-[8px] text-muted-foreground mt-0.5 font-medium italic text-right">
+                                                        {order.supplierStatus}
+                                                    </p>
+                                                )}
+                                            </div>
+
+
                                         </div>
                                     );
                                 })}
@@ -156,31 +171,27 @@ export default async function Home() {
         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl -z-10" />
         <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-mtn/10 rounded-full blur-3xl -z-10" />
         
-        <div className="max-w-7xl mx-auto text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
-              <Zap className="h-4 w-4" />
-              <span>Reliable delivery in 1 to 30 minutes</span>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="relative w-full aspect-[16/9] md:aspect-[21/9] rounded-3xl overflow-hidden shadow-2xl border border-border/50 animate-in fade-in zoom-in duration-1000">
+            <Image 
+              src="/banner.png" 
+              alt="The Smartest Way to Buy Data in Ghana" 
+              fill
+              priority
+              className="object-cover"
+            />
           </div>
-          
-          <h1 className="text-5xl md:text-7xl font-black font-outfit tracking-tight leading-tight">
-            The Smartest Way to <br />
-            <span className="text-primary italic">Buy Data in Ghana.</span>
-          </h1>
-          
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-              Save up to 30% on MTN, Telecel, and AirtelTigo bundles. 
-              Delivered within 1 to 30 minutes, guaranteed.
-          </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Link href="/register" className="bg-primary text-primary-foreground px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+              <Link href="/register" className="bg-primary text-primary-foreground px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-all w-full sm:w-auto text-center">
                   Get Started
               </Link>
-              <Link href="/become-agent" className="bg-secondary text-foreground px-10 py-4 rounded-2xl font-bold text-lg hover:bg-secondary/80 transition-all border border-border">
+              <Link href="/become-agent" className="bg-secondary text-foreground px-10 py-4 rounded-2xl font-bold text-lg hover:bg-secondary/80 transition-all border border-border w-full sm:w-auto text-center">
                   Earn as an Agent
               </Link>
           </div>
         </div>
+
       </section>
 
       {/* Trust & Features Section */}

@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { normalizeOrderStatus } from "@/lib/utils";
+
 
 export async function changePassword(formData: any) {
   try {
@@ -39,6 +41,8 @@ export async function changePassword(formData: any) {
 }
 
 export async function refreshOrderStatus(orderId: string) {
+
+
   try {
     const order = await prisma.order.findUnique({
       where: { id: orderId }
@@ -62,15 +66,22 @@ export async function refreshOrderStatus(orderId: string) {
     const result = await supplier.trackOrder(order.supplierOrderId);
 
     if (result.success && result.status) {
-      const newStatus = result.status.toUpperCase();
+      const rawStatus = result.status || "";
+      const newStatus = normalizeOrderStatus(rawStatus);
       
-      if (newStatus !== order.status) {
+      if (newStatus !== order.status || rawStatus !== (order as any).supplierStatus) {
         await prisma.order.update({
           where: { id: order.id },
-          data: { status: newStatus }
+          data: { 
+            status: newStatus,
+            supplierStatus: rawStatus
+          }
         });
+
         revalidatePath("/dashboard");
+        revalidatePath("/dashboard/orders");
         revalidatePath("/admin/orders");
+        revalidatePath("/");
         return { success: true, status: newStatus };
       }
       

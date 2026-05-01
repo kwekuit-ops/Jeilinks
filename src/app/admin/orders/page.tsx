@@ -79,7 +79,13 @@ export default async function AdminOrdersPage() {
                           <StatusIcon className="h-3 w-3" />
                           <span>{order.status}</span>
                         </span>
+                        {order.supplierStatus && order.supplierStatus !== order.status && (
+                          <p className="text-[9px] text-muted-foreground mt-1 font-medium italic">
+                            Supplier: {order.supplierStatus}
+                          </p>
+                        )}
                     </td>
+
                     <td className="px-6 py-4 text-right space-x-2 flex items-center justify-end">
                       {(order.status === "PROCESSING" || order.status === "PENDING") && (
                         <RefreshOrderButton orderId={order.id} />

@@ -49,7 +49,8 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   }, [session]);
 
   const role = (session?.user as any)?.role || "USER";
-  const price = role === "AGENT" ? bundle.agentPrice : bundle.userPrice;
+  const price = (role === "AGENT" || role === "ADMIN") ? bundle.agentPrice : bundle.userPrice;
+
 
   const handleWalletPay = async () => {
     if (!phoneNumber || !/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, ""))) {
@@ -216,11 +217,12 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                 )}
             </div>
             
-            {role === "AGENT" && (
+            {(role === "AGENT" || role === "ADMIN") && (
               <p className="text-center text-[10px] text-green-600 font-bold uppercase mt-4">
-                ★ Wholesale Agent Pricing Applied
+                ★ {role === "ADMIN" ? "Admin" : "Agent"} Wholesale Pricing Applied
               </p>
             )}
+
           </div>
         </div>
       )}

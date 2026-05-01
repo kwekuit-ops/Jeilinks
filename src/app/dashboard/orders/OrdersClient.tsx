@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
 import { CheckCircle2, Clock, RotateCcw, AlertCircle, Search, ClipboardList } from "lucide-react";
+import { RefreshOrderButton } from "@/components/RefreshOrderButton";
+
 
 export default function UserOrdersClient({ initialOrders }: { initialOrders: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,7 +63,13 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
                   <StatusIcon className="h-3 w-3" />
                   <span>{order.status}</span>
                 </span>
+                {order.supplierStatus && order.supplierStatus !== order.status && (
+                  <p className="text-[8px] text-muted-foreground mt-1 font-medium italic text-right">
+                    {order.supplierStatus}
+                  </p>
+                )}
               </div>
+
               
               <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dashed">
                 <div>
@@ -78,9 +86,18 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
                 <span className="text-[10px] text-muted-foreground">
                     {new Date(order.createdAt).toLocaleString()}
                 </span>
-                <button className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-lg">
-                    View Details
-                </button>
+                <div className="flex items-center space-x-2">
+                    {(order.status === "PROCESSING" || order.status === "PENDING") && (
+                        <div className="flex items-center space-x-1 text-primary text-[10px] font-bold">
+                            <RefreshOrderButton orderId={order.id} />
+                            <span>Refresh</span>
+                        </div>
+                    )}
+                    <button className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-lg">
+                        View Details
+                    </button>
+                </div>
+
               </div>
             </div>
           );
@@ -131,7 +148,13 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
                         <StatusIcon className="h-3.5 w-3.5" />
                         <span>{order.status}</span>
                       </span>
+                      {order.supplierStatus && order.supplierStatus !== order.status && (
+                        <p className="text-[10px] text-muted-foreground mt-1 font-medium italic">
+                          Supplier: {order.supplierStatus}
+                        </p>
+                      )}
                     </td>
+
                     <td className="px-6 py-5 text-muted-foreground">
                         <div className="flex flex-col">
                             <span>{new Date(order.createdAt).toLocaleDateString()}</span>
@@ -139,9 +162,15 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
                         </div>
                     </td>
                     <td className="px-6 py-5 text-right">
-                        <button className="text-[10px] font-bold text-primary hover:underline uppercase tracking-widest">
-                            View
-                        </button>
+                        <div className="flex items-center justify-end space-x-2">
+                            {(order.status === "PROCESSING" || order.status === "PENDING") && (
+                                <RefreshOrderButton orderId={order.id} />
+                            )}
+                            <button className="text-[10px] font-bold text-primary hover:underline uppercase tracking-widest">
+                                View
+                            </button>
+                        </div>
+
                     </td>
                   </tr>
                 )

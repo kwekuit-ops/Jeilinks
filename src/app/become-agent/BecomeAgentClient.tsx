@@ -91,15 +91,16 @@ export default function BecomeAgentPage() {
           <div className="space-y-2 mb-8">
               <span className="text-xs font-black uppercase tracking-widest text-primary">Limited Time Offer</span>
               <div className="flex items-center justify-center space-x-2">
-                  <span className="text-4xl font-black">GHS 50</span>
-                  <span className="text-muted-foreground line-through">GHS 100</span>
+                  <span className="text-4xl font-black">GHS 10</span>
+                  <span className="text-muted-foreground line-through text-lg">GHS 50</span>
               </div>
-              <p className="text-sm text-muted-foreground">One-time registration fee</p>
+              <p className="text-sm text-muted-foreground">Every 2 weeks (Subscription)</p>
           </div>
 
           <PaystackButton
             email={session?.user?.email || ""}
-            amount={50}
+            amount={10}
+
             publicKey={paystackKey}
             onSuccess={handleSuccess}
             onClose={() => toast.error("Payment cancelled")}

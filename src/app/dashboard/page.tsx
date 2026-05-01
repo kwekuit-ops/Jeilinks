@@ -31,6 +31,7 @@ export default async function DashboardPage() {
         }
       }
     }),
+
     prisma.order.count({
       where: {
         OR: [
@@ -43,6 +44,16 @@ export default async function DashboardPage() {
   ]);
 
   if (!user) return null;
+
+  // AUTO-CLEANUP: Check if Agent subscription has expired
+  if (user.role === "AGENT" && user.agentExpiry && new Date() > new Date(user.agentExpiry)) {
+      await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "USER" }
+      });
+      // Update local object so UI reflects it immediately
+      user.role = "USER";
+  }
 
   const getRank = (count: number) => {
     if (count > 200) return { name: "Platinum", color: "bg-indigo-500", icon: "💎" };
@@ -77,24 +88,36 @@ export default async function DashboardPage() {
           <h1 className="text-3xl font-bold font-outfit">Hi, {user.name} 👋</h1>
           <div className="flex items-center space-x-2 mt-1">
              <p className="text-muted-foreground capitalize text-sm">{user.role}</p>
-             {user.role === 'AGENT' && (
-               <span className={cn("px-2 py-0.5 rounded text-[10px] font-black uppercase text-white flex items-center space-x-1", rank.color)}>
-                 <span>{rank.icon}</span>
-                 <span>{rank.name} Rank</span>
-               </span>
-             )}
+              {user.role === 'AGENT' && (
+                <div className="flex items-center space-x-2">
+                   <span className={cn("px-2 py-0.5 rounded text-[10px] font-black uppercase text-white flex items-center space-x-1", rank.color)}>
+                     <span>{rank.icon}</span>
+                     <span>{rank.name} Rank</span>
+                   </span>
+                   {(user as any).agentExpiry && (
+                     <span className="text-[10px] bg-secondary px-2 py-0.5 rounded font-bold">
+                       Expiry: {new Date((user as any).agentExpiry).toLocaleDateString()}
+                     </span>
+                   )}
+                </div>
+              )}
+
           </div>
         </div>
         
-        {user.role === "USER" && (
+        {(user.role === "USER" || user.role === "AGENT") && (
           <Link
             href="/become-agent"
-            className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-bold hover:bg-primary/20 transition-all border border-primary/20"
+            className={cn(
+                "inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-bold transition-all border",
+                user.role === "AGENT" ? "bg-secondary text-foreground hover:bg-secondary/80 border-border" : "bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
+            )}
           >
-            <span>Upgrade to AGENT</span>
+            <span>{user.role === "AGENT" ? "Renew Subscription" : "Upgrade to AGENT"}</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
         )}
+
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -202,7 +225,13 @@ export default async function DashboardPage() {
                           <StatusIcon className="h-3 w-3" />
                           <span>{order.status}</span>
                         </span>
+                        {order.supplierStatus && order.supplierStatus !== order.status && (
+                          <p className="text-[9px] text-muted-foreground mt-0.5 font-medium italic">
+                            Supplier: {order.supplierStatus}
+                          </p>
+                        )}
                       </td>
+
                       <td className="px-6 py-4 text-muted-foreground">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>

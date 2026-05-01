@@ -22,27 +22,32 @@ export async function upgradeToAgent(paystackRef: string) {
 
     const verifyData = await verifyRes.json();
 
-    if (!verifyRes.ok || verifyData.data.status !== "success" || verifyData.data.amount < 5000) {
+    if (!verifyRes.ok || verifyData.data.status !== "success" || verifyData.data.amount < 1000) {
       return { success: false, error: "Payment verification failed" };
     }
 
     // 2. Upgrade the user
-    // Generate a store slug based on their name if they don't have one
     const user = await prisma.user.findUnique({
       where: { id: (session.user as any).id },
     });
 
-    if (!user) return { success: false, error: "User not found" };
-
-    const storeSlug = user.name.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
+    // Set expiry to 14 days from now (or stack on existing if not expired)
+    let newExpiry = new Date();
+    if (user.agentExpiry && new Date(user.agentExpiry) > new Date()) {
+        newExpiry = new Date(user.agentExpiry);
+    }
+    newExpiry.setDate(newExpiry.getDate() + 14);
 
     await prisma.user.update({
       where: { id: user.id },
       data: {
         role: "AGENT",
         storeSlug: user.storeSlug || storeSlug,
+        agentExpiry: newExpiry
       },
     });
+
+
 
     revalidatePath("/dashboard");
     return { success: true };
