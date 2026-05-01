@@ -12,7 +12,7 @@ export function FloatingWhatsApp({ number }: { number: string }) {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-8 right-8 z-50 flex items-center justify-center h-14 w-14 bg-whatsapp text-white rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all shadow-whatsapp/30 group"
+      className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 flex items-center justify-center h-14 w-14 bg-whatsapp text-white rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all shadow-whatsapp/30 group"
       title="Chat with Support"
     >
       <MessageCircle className="h-7 w-7" />
