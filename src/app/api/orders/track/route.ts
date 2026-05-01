@@ -13,15 +13,20 @@ export async function GET(req: Request) {
     const order = await prisma.order.findFirst({
       where: {
         OR: [
+          { phone: ref },
           { paystackRef: ref },
           { id: ref },
           { supplierOrderId: ref }
         ]
       },
+      orderBy: {
+        createdAt: 'desc'
+      },
       include: {
         bundle: true
       }
     });
+
 
     if (!order) {
       return NextResponse.json({ message: "Order not found" }, { status: 404 });

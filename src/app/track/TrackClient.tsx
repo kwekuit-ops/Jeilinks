@@ -45,7 +45,7 @@ export default function PublicTrackingPage() {
     <div className="max-w-xl mx-auto px-4 py-20 animate-in">
       <div className="text-center mb-10">
         <h1 className="text-3xl font-black font-outfit mb-2">Track Your Order</h1>
-        <p className="text-muted-foreground">Enter your Paystack reference or Order ID to see delivery status.</p>
+        <p className="text-muted-foreground">Enter the receiver's phone number to see the latest delivery status.</p>
       </div>
 
       <form onSubmit={handleTrack} className="flex space-x-2 mb-12">
@@ -53,12 +53,13 @@ export default function PublicTrackingPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="e.g. 1627384950"
+            placeholder="e.g. 054XXXXXXXX"
             value={reference}
             onChange={(e) => setReference(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-card border rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
+
         <button
           type="submit"
           disabled={isLoading}
