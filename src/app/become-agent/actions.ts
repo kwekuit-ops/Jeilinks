@@ -31,12 +31,16 @@ export async function upgradeToAgent(paystackRef: string) {
       where: { id: (session.user as any).id },
     });
 
+    if (!user) return { success: false, error: "User not found" };
+
     // Set expiry to 14 days from now (or stack on existing if not expired)
     let newExpiry = new Date();
     if (user.agentExpiry && new Date(user.agentExpiry) > new Date()) {
         newExpiry = new Date(user.agentExpiry);
     }
     newExpiry.setDate(newExpiry.getDate() + 14);
+
+    const storeSlug = user.name.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
 
     await prisma.user.update({
       where: { id: user.id },
@@ -47,9 +51,11 @@ export async function upgradeToAgent(paystackRef: string) {
       },
     });
 
-
-
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/orders");
+    revalidatePath("/admin/users");
+    revalidatePath("/");
+    
     return { success: true };
 
   } catch (error) {
