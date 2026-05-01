@@ -22,10 +22,10 @@ export default async function AdminDashboard() {
   const supplierBalance = await supplier.fetchBalance();
 
   const stats = [
-    { name: "Total Users", value: userCount, icon: Users, color: "text-blue-500 bg-blue-100" },
-    { name: "Pending Payouts", value: pendingPayouts, icon: Wallet, color: "text-red-500 bg-red-100" },
-    { name: "Pending Orders", value: pendingOrders, icon: ShoppingBag, color: "text-orange-500 bg-orange-100" },
-    { name: "Total Revenue", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-500 bg-green-100" },
+    { name: "Total Users", value: userCount, icon: Users, color: "text-blue-500 bg-blue-100", href: "/admin/users" },
+    { name: "Pending Payouts", value: pendingPayouts, icon: Wallet, color: "text-red-500 bg-red-100", href: "/admin/withdrawals" },
+    { name: "Pending Orders", value: pendingOrders, icon: ShoppingBag, color: "text-orange-500 bg-orange-100", href: "/admin/orders" },
+    { name: "Total Revenue", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-500 bg-green-100", href: "/admin/sales" },
   ];
 
 
@@ -38,15 +38,19 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
-          <div key={stat.name} className="glass rounded-2xl p-6 border border-border/50 shadow-sm">
+          <Link 
+            key={stat.name} 
+            href={stat.href}
+            className="glass rounded-2xl p-6 border border-border/50 shadow-sm hover:scale-105 hover:border-primary/30 transition-all cursor-pointer group"
+          >
             <div className="flex items-center justify-between mb-4">
-              <div className={`p-2 rounded-lg ${stat.color}`}>
+              <div className={`p-2 rounded-lg ${stat.color} group-hover:scale-110 transition-transform`}>
                 <stat.icon className="h-6 w-6" />
               </div>
             </div>
             <p className="text-sm font-medium text-muted-foreground">{stat.name}</p>
             <h3 className="text-2xl font-black font-outfit mt-1">{stat.value}</h3>
-          </div>
+          </Link>
         ))}
       </div>
 
