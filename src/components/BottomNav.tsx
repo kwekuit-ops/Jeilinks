@@ -35,7 +35,7 @@ export function BottomNav() {
     },
     {
       name: isAdmin ? "Admin" : "Profile",
-      href: isAdmin ? "/admin/settings" : "/dashboard",
+      href: isAdmin ? "/admin" : "/dashboard",
       icon: Settings,
       auth: true,
     },
