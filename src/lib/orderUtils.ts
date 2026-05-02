@@ -18,8 +18,8 @@ export async function processOrderRefund(orderId: string, reason: string) {
     }
   });
 
-  // Only refund if it was paid via WALLET
-  if (order.paymentMethod === "WALLET") {
+  // Only refund if it was paid via WALLET and we have a user ID
+  if (order.paymentMethod === "WALLET" && order.userId) {
     await prisma.user.update({
       where: { id: order.userId },
       data: { balance: { increment: order.amount } }
