@@ -67,7 +67,7 @@ model Bundle {
 
 model Order {
   id              String   @id @default(cuid())
-  userId          String
+  userId          String?
   bundleId        String
   phone           String
   amount          Decimal
@@ -83,7 +83,7 @@ model Order {
 
   updatedAt       DateTime @updatedAt
   bundle          Bundle   @relation(fields: [bundleId], references: [id])
-  user            User     @relation(fields: [userId], references: [id])
+  user            User?    @relation(fields: [userId], references: [id])
 }
 
 model SystemSetting {

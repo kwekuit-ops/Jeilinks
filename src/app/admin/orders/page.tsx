@@ -68,8 +68,8 @@ export default async function AdminOrdersPage() {
                         <p className="text-[10px] text-muted-foreground">{order.paystackRef}</p>
                     </td>
                     <td className="px-6 py-4">
-                        <p className="font-medium">{order.user.name || "Unknown User"}</p>
-                        <p className="text-[10px] text-muted-foreground">{order.user.email || "No Email"}</p>
+                        <p className="font-medium">{order.user?.name || "Guest"}</p>
+                        <p className="text-[10px] text-muted-foreground">{order.user?.email || "No Account"}</p>
                     </td>
                     <td className="px-6 py-4">
                         <span className="font-bold text-primary">{order.bundle.network}</span> {order.bundle.size}

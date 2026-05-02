@@ -109,7 +109,11 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
 
       if (res.ok) {
         toast.success("Order placed successfully!");
-        router.push("/dashboard");
+        if (session) {
+          router.push("/dashboard");
+        } else {
+          router.push(`/track`);
+        }
       } else {
         toast.error("Failed to create order.");
       }
@@ -121,11 +125,6 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   };
 
   const handleBuyClick = () => {
-    if (!session) {
-      toast.error("Please login to purchase");
-      router.push("/login?callbackUrl=/");
-      return;
-    }
     setIsExpanding(!isExpanding);
   };
 
@@ -197,21 +196,38 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <div className="bg-red-50 border border-red-100 p-4 rounded-2xl text-center space-y-2">
-                            <p className="text-xs text-red-600 font-black uppercase tracking-widest">Insufficient Wallet Balance</p>
-                            <p className="text-xl font-black font-outfit">{formatCurrency(userBalance || 0)}</p>
-                            <p className="text-[10px] text-red-500 font-bold">You need {formatCurrency(price)} to buy this bundle.</p>
+                        <div className="bg-primary/5 border border-primary/20 p-4 rounded-2xl text-center space-y-2">
+                             <p className="text-xs text-primary font-black uppercase tracking-widest">
+                               {session ? "Insufficient Wallet Balance" : "Guest Checkout"}
+                             </p>
+                             {session && <p className="text-xl font-black font-outfit">{formatCurrency(userBalance || 0)}</p>}
+                             <p className="text-[10px] text-muted-foreground font-bold">
+                               {session ? `You need ${formatCurrency(price)} to buy this bundle.` : "Pay securely with Paystack"}
+                             </p>
                         </div>
                         
-                        <Link 
-                            href="/dashboard"
-                            className="block w-full bg-primary text-primary-foreground text-center py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
-                        >
-                            Top Up Wallet First
-                        </Link>
+                        <PaystackButton
+                            email={session?.user?.email || "guest@jeilinks.com"}
+                            amount={price}
+                            publicKey={paystackKey}
+                            onSuccess={handleSuccess}
+                            onClose={() => setIsLoading(false)}
+                            label={`Pay ${formatCurrency(price)} with Paystack`}
+                            disabled={!/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, "")) || isLoading}
+                            className="w-full bg-[#00c3f7] text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-blue-200 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                        />
+                        
+                        {session && (
+                          <Link 
+                              href="/dashboard"
+                              className="block w-full bg-secondary text-foreground text-center py-3 rounded-2xl font-bold text-sm border border-border hover:bg-secondary/80 transition-all"
+                          >
+                              Top Up Wallet
+                          </Link>
+                        )}
                         
                         <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
-                            Add funds to your wallet to complete this purchase
+                            Secure payment processed by Paystack
                         </p>
                     </div>
                 )}

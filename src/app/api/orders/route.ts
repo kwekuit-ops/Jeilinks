@@ -11,9 +11,7 @@ import { processOrderRefund } from "@/lib/orderUtils";
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  // Session is only strictly required for WALLET payments
 
   try {
     const { bundleId, phone, paystackRef, amount, agentId, paymentMethod = "PAYSTACK" } = await req.json();
@@ -54,6 +52,9 @@ export async function POST(req: Request) {
 
     const order = await prisma.$transaction(async (tx) => {
         if (paymentMethod === "WALLET") {
+            if (!session) {
+                throw new Error("Unauthorized");
+            }
             const user = await tx.user.findUnique({
                 where: { id: (session.user as any).id },
                 select: { balance: true }
@@ -71,7 +72,7 @@ export async function POST(req: Request) {
 
         return await tx.order.create({
             data: {
-                userId: (session.user as any).id,
+                userId: session ? (session.user as any).id : null,
                 bundleId: bundle.id,
                 phone: sanitizedPhone,
                 amount: Number(amount),
