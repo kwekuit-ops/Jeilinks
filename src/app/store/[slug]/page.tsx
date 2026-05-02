@@ -30,16 +30,16 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
   return (
     <div className="flex flex-col min-h-screen animate-in">
       {/* Agent Header */}
-      <section className="py-16 px-4 bg-primary text-primary-foreground">
+      <section className="py-8 md:py-16 px-4 bg-primary text-primary-foreground">
         <div className="max-w-7xl mx-auto text-center">
-            <div className="inline-flex p-4 bg-white/10 rounded-full mb-6">
-                <Store className="h-10 w-10" />
+            <div className="inline-flex p-3 md:p-4 bg-white/10 rounded-full mb-3 md:mb-6">
+                <Store className="h-6 w-6 md:h-10 md:w-10" />
             </div>
-          <h1 className="text-4xl font-black font-outfit tracking-tight mb-2">
+          <h1 className="text-2xl md:text-4xl font-black font-outfit tracking-tight mb-2">
             {agent.name || "Agent"}'s Data Store
           </h1>
-          <p className="opacity-80 text-lg flex items-center justify-center space-x-2 mb-6">
-            <ShieldCheck className="h-5 w-5" />
+          <p className="opacity-80 text-sm md:text-lg flex items-center justify-center space-x-2 mb-4 md:mb-6">
+            <ShieldCheck className="h-4 w-4 md:h-5 md:w-5" />
             <span>Verified JEILINKS Partner</span>
           </p>
 
@@ -48,9 +48,9 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
               href={`https://wa.me/${agent.phone.replace(/[^0-9]/g, '')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 bg-white text-primary px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-all"
+              className="inline-flex items-center space-x-2 bg-white text-primary px-4 md:px-6 py-2 md:py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-all text-xs md:text-base"
             >
-              <MessageCircle className="h-5 w-5" />
+              <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
               <span>Contact {(agent.name || "Agent").split(' ')[0]} on WhatsApp</span>
             </a>
           )}
@@ -58,11 +58,11 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
       </section>
 
       {/* Bundles Section */}
-      <section className="py-20 px-4 bg-background">
+      <section className="py-8 md:py-20 px-4 bg-background">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold font-outfit">Available Packages</h2>
-            <p className="text-muted-foreground">Select a bundle to purchase directly from this agent</p>
+          <div className="text-center mb-6 md:mb-12">
+            <h2 className="text-xl md:text-2xl font-bold font-outfit">Available Packages</h2>
+            <p className="text-xs md:text-base text-muted-foreground">Select a bundle to purchase directly</p>
           </div>
 
           {bundles.length === 0 ? (

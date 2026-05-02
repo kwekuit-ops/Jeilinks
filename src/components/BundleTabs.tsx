@@ -21,7 +21,7 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="flex justify-center space-x-2 md:space-x-4 overflow-x-auto pb-4 mb-4 md:mb-8 scrollbar-hide">
+      <div className="flex justify-center space-x-2 md:space-x-4 overflow-x-auto pb-2 md:pb-4 mb-2 md:mb-8 scrollbar-hide">
         {networks.map((network) => (
           <button
             key={network}
@@ -40,7 +40,7 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
         ))}
       </div>
 
-      <div className="flex flex-col space-y-3 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col space-y-2 md:space-y-3 px-2 md:px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {filteredBundles.map((bundle) => (
           <BundleListItem key={bundle.id} bundle={bundle} agentId={agentId} />
         ))}
