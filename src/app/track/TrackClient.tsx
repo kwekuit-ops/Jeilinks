@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, Loader2, CheckCircle2, Clock, RotateCcw, AlertCircle } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
+import { refreshOrderStatus } from "@/app/dashboard/actions";
+import { toast } from "react-hot-toast";
 
 export default function PublicTrackingPage() {
   const [reference, setReference] = useState("");
@@ -32,6 +34,29 @@ export default function PublicTrackingPage() {
       }
     } catch (err) {
       setError("An error occurred while fetching the order status.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleRefresh = async () => {
+    if (!order) return;
+    setIsLoading(true);
+    try {
+      const result = await refreshOrderStatus(order.id);
+      if (result.success) {
+        // Re-track to get latest data
+        const res = await fetch(`/api/orders/track?ref=${reference}`);
+        const data = await res.json();
+        if (res.ok) {
+            setOrder(data);
+            toast.success("Status updated!");
+        }
+      } else {
+        toast.error(result.error || "Failed to refresh");
+      }
+    } catch (err) {
+      toast.error("An error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -148,6 +173,17 @@ export default function PublicTrackingPage() {
                   </div>
                   <span className="text-xs font-bold text-primary">{order.status === 'COMPLETED' ? 'Fulfilled' : order.status === 'FAILED' ? 'Action Required' : 'In Progress'}</span>
               </div>
+              
+              {(order.status === 'PENDING' || order.status === 'PROCESSING') && (
+                  <button 
+                    onClick={handleRefresh}
+                    disabled={isLoading}
+                    className="w-full mt-4 flex items-center justify-center space-x-2 py-3 bg-secondary hover:bg-secondary/80 text-foreground rounded-2xl text-xs font-bold transition-all disabled:opacity-50"
+                  >
+                    {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RotateCcw className="h-3 w-3" />}
+                    <span>Refresh Delivery Status</span>
+                  </button>
+              )}
           </div>
         </div>
       )}
