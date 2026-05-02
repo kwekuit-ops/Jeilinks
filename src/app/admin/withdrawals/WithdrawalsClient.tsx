@@ -68,7 +68,7 @@ export default function WithdrawalsClient() {
                       <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center text-primary">
                         <User className="h-4 w-4" />
                       </div>
-                      <span className="font-bold">{w.user.name}</span>
+                      <span className="font-bold">{w.user.name || "Unknown"}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 font-medium flex items-center space-x-2">

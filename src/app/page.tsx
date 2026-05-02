@@ -52,7 +52,7 @@ export default async function Home() {
             <div className="max-w-4xl mx-auto space-y-8">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black font-outfit">Hi, {user.name.split(' ')[0]} 👋</h1>
+                        <h1 className="text-3xl font-black font-outfit">Hi, {(user.name || "User").split(' ')[0]} 👋</h1>
                         <p className="text-muted-foreground">What would you like to do today?</p>
                     </div>
                     <div className="hidden sm:block">
@@ -79,7 +79,7 @@ export default async function Home() {
                                 Buy Data
                             </Link>
                             <div className="flex-1">
-                                <TopUpButton email={user.email} />
+                                <TopUpButton email={user.email || ""} />
                             </div>
                         </div>
                     </div>

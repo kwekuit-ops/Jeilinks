@@ -148,7 +148,7 @@ export default function SalesClient({ initialData }: { initialData: any }) {
                               <p className="text-[10px] text-muted-foreground">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                            </td>
                            <td className="px-6 py-4">
-                              <p className="font-medium">{order.user.name}</p>
+                              <p className="font-medium">{order.user.name || "User"}</p>
                               <p className="text-[10px] text-muted-foreground">{order.phone}</p>
                            </td>
                            <td className="px-6 py-4">

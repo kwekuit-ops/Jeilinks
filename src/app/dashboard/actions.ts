@@ -23,6 +23,10 @@ export async function changePassword(formData: any) {
     });
 
     if (!user) return { success: false, error: "User not found" };
+    
+    if (!user.password) {
+      return { success: false, error: "This account uses social login. Password change is not available." };
+    }
 
     const passwordMatch = await bcrypt.compare(currentPassword, user.password);
     if (!passwordMatch) {

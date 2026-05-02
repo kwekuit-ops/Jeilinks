@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 export async function saveSystemSettings(settings: Record<string, string>) {
   try {
@@ -21,18 +21,14 @@ export async function saveSystemSettings(settings: Record<string, string>) {
   }
 }
 
-export const getSystemSettings = unstable_cache(
-  async () => {
-    try {
-      const settings = await prisma.systemSetting.findMany();
-      const map: Record<string, string> = {};
-      settings.forEach(s => map[s.key] = s.value);
-      return map;
-    } catch (error) {
-      console.error("Database connection error in getSystemSettings:", error);
-      return {};
-    }
-  },
-  ["system-settings"],
-  { revalidate: 3600, tags: ["system-settings"] }
-);
+export async function getSystemSettings() {
+  try {
+    const settings = await prisma.systemSetting.findMany();
+    const map: Record<string, string> = {};
+    settings.forEach(s => map[s.key] = s.value);
+    return map;
+  } catch (error) {
+    console.error("Database connection error in getSystemSettings:", error);
+    return {};
+  }
+}

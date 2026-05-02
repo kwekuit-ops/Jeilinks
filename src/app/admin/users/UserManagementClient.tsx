@@ -102,8 +102,8 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
               <tr key={user.id} className={cn("hover:bg-muted/30 transition-colors", isProcessing === user.id && "opacity-50 pointer-events-none")}>
                 <td className="px-6 py-4">
                     <div className="flex flex-col">
-                        <span className="font-bold text-base">{user.name}</span>
-                        <span className="text-xs text-muted-foreground">{user.email}</span>
+                        <span className="font-bold text-base">{user.name || "No Name"}</span>
+                        <span className="text-xs text-muted-foreground">{user.email || "No Email"}</span>
                     </div>
                 </td>
                 <td className="px-6 py-4 text-center">
@@ -139,7 +139,7 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
                       <UserCog className="h-5 w-5" />
                   </button>
                   <button 
-                    onClick={() => handleDelete(user.id, user.name)}
+                    onClick={() => handleDelete(user.id, user.name || "User")}
                     title="Delete User" 
                     className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-all active:scale-90"
                   >

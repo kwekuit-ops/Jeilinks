@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import bcrypt from "bcryptjs";
 
 async function ensureAdmin() {
   const session = await getServerSession(authOptions);
@@ -23,7 +24,8 @@ export async function updateUserRole(userId: string, newRole: string) {
 
     // If becoming an agent and has no slug, generate one
     if (newRole === "AGENT" && !user.storeSlug) {
-      data.storeSlug = user.name.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
+      const baseName = user.name || "agent";
+      data.storeSlug = baseName.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
       
       // Also set a default expiry if not set
       if (!user.agentExpiry) {
@@ -85,7 +87,6 @@ export async function updateUserBalance(userId: string, amount: number) {
   }
 }
 
-import bcrypt from "bcryptjs";
 
 export async function createStore(data: { name: string, email: string, phone: string, password?: string }) {
   try {

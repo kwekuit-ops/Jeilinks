@@ -40,7 +40,8 @@ export async function upgradeToAgent(paystackRef: string) {
     }
     newExpiry.setDate(newExpiry.getDate() + 14);
 
-    const storeSlug = user.name.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
+    const baseName = user.name || "agent";
+    const storeSlug = baseName.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
 
     await prisma.user.update({
       where: { id: user.id },

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Suspense } from "react";
 export const dynamic = "force-dynamic";
 
 import { formatCurrency } from "@/lib/utils";
@@ -10,11 +11,12 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import AdminStoreCard from "./AdminStoreCard";
 import DateFilter from "./DateFilter";
 
-export default async function AdminDashboard({ searchParams }: { searchParams: { date?: string } }) {
+export default async function AdminDashboard({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
+  const { date: dateParam } = await searchParams;
   const session = await getServerSession(authOptions);
   
   // Handle Date Filtering
-  const dateStr = searchParams.date || new Date().toISOString().split('T')[0];
+  const dateStr = dateParam || new Date().toISOString().split('T')[0];
   const selectedDate = new Date(dateStr);
   
   const startOfDay = new Date(selectedDate);
@@ -67,7 +69,9 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
           <h1 className="text-3xl font-bold font-outfit">Dashboard Overview</h1>
           <p className="text-muted-foreground">Stats for {selectedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
         </div>
-        <DateFilter />
+        <Suspense fallback={<div className="h-10 w-32 bg-muted animate-pulse rounded-2xl" />}>
+          <DateFilter />
+        </Suspense>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">

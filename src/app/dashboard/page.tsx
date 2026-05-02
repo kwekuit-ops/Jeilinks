@@ -92,7 +92,7 @@ export default async function DashboardPage() {
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 animate-in">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-outfit">Hi, {user.name} 👋</h1>
+          <h1 className="text-3xl font-bold font-outfit">Hi, {user.name || "User"} 👋</h1>
           <div className="flex items-center space-x-2 mt-1">
              <p className="text-muted-foreground capitalize text-sm">{user.role}</p>
               {user.role === 'AGENT' && (
@@ -143,7 +143,7 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          <TopUpButton email={user.email} />
+          <TopUpButton email={user.email || ""} />
           {user.role === "AGENT" && <WithdrawButton />}
         </div>
 
