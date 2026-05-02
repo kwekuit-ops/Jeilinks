@@ -43,32 +43,44 @@ export class FuzeServeProvider implements SupplierProvider {
       formattedPhone = "0" + formattedPhone;
     }
 
-    const response = await fetch(`${this.baseUrl}/v1/orders`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": this.apiKey,
-      },
-      body: JSON.stringify({
-        productId: Number(productId),
-        phone: formattedPhone,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return { 
-        success: false, 
-        error: data.message || data.error || "FuzeServe order error" 
-      };
-    }
-
-    return {
-      success: true,
-      supplierOrderId: data.reference || data.id,
-      status: data.status
+    const url = `${this.baseUrl}/v1/orders`;
+    const body = {
+      productId: Number(productId),
+      phone: formattedPhone,
+      externalReference: reference, // Some suppliers use this
     };
+
+    console.log(`FuzeServe Request: POST ${url}`, JSON.stringify(body));
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": this.apiKey,
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json().catch(() => ({ error: "Invalid JSON response" }));
+      console.log(`FuzeServe Response (${response.status}):`, JSON.stringify(data));
+
+      if (!response.ok) {
+        return { 
+          success: false, 
+          error: data.message || data.error || `HTTP ${response.status}: ${JSON.stringify(data)}`
+        };
+      }
+
+      return {
+        success: true,
+        supplierOrderId: data.reference || data.id || data.orderId,
+        status: data.status || "PROCESSING"
+      };
+    } catch (err: any) {
+      console.error("FuzeServe fetch error:", err);
+      return { success: false, error: `Connection error: ${err.message}` };
+    }
   }
 
   async trackOrder(supplierOrderId: string): Promise<OrderResponse> {

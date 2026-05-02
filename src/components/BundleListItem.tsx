@@ -276,8 +276,9 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
             )}
 
           </div>
-        </div>
-      )}
+        )}
+      </div>
+    )}
     </div>
   );
 }

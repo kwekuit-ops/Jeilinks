@@ -87,11 +87,20 @@ export async function POST(req: Request) {
         });
     });
 
+    if (!bundle.supplierProductId) {
+        console.error("Order error: Bundle missing supplierProductId", bundle.id);
+        return NextResponse.json({ message: "This bundle is not correctly configured for automated delivery." }, { status: 400 });
+    }
+
+    console.log(`Placing order on supplier for bundle ${bundle.id}, phone ${sanitizedPhone}, productID ${bundle.supplierProductId}`);
+    
     const supplierRes = await placeOrderOnSupplier({
-      supplierProductId: bundle.supplierProductId!,
+      supplierProductId: bundle.supplierProductId,
       phone: sanitizedPhone,
       reference: order.id, 
     });
+
+    console.log("Supplier Response:", JSON.stringify(supplierRes));
 
     if (supplierRes.success) {
       const res = supplierRes as OrderResponse;
