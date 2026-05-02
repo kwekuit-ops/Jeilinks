@@ -5,11 +5,15 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Home, ShoppingBag, ClipboardList, Wallet, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const isKeyboardVisible = useKeyboardVisible();
   const { data: session } = useSession();
   const isAdmin = (session?.user as any)?.role === "ADMIN";
+
+  if (isKeyboardVisible) return null;
 
   const navItems = [
     {
@@ -42,15 +46,15 @@ export function BottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] pointer-events-auto">
-      <div className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-border shadow-[0_-8px_30px_rgba(0,0,0,0.08)] px-2 pt-3 pb-safe flex items-center justify-around overflow-hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-[999] bg-white dark:bg-slate-950 border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <div className="w-full px-2 pt-3 pb-safe flex items-center justify-around overflow-hidden">
         {navItems.map((item) => {
           if (item.auth && !session) return null;
-          
-          const isActive = item.href === "/" 
-            ? pathname === "/" 
-            : item.href === "/dashboard" 
-              ? pathname === "/dashboard" 
+
+          const isActive = item.href === "/"
+            ? pathname === "/"
+            : item.href === "/dashboard"
+              ? pathname === "/dashboard"
               : pathname.startsWith(item.href);
 
           return (
@@ -59,8 +63,8 @@ export function BottomNav() {
               href={item.href}
               className={cn(
                 "flex flex-col items-center justify-center flex-1 py-3 px-1 rounded-[20px] transition-all duration-300 relative group",
-                isActive 
-                  ? "bg-primary/10 text-primary" 
+                isActive
+                  ? "bg-primary/10 text-primary"
                   : "text-slate-600 dark:text-slate-400"
               )}
             >

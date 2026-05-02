@@ -35,6 +35,14 @@ export class FuzeServeProvider implements SupplierProvider {
   }
 
   async placeOrder(productId: number | string, phone: string, reference: string): Promise<OrderResponse> {
+    // Ensure phone starts with 0 for this specific supplier
+    let formattedPhone = phone.replace(/\D/g, "");
+    if (formattedPhone.startsWith("233")) {
+      formattedPhone = "0" + formattedPhone.substring(3);
+    } else if (!formattedPhone.startsWith("0")) {
+      formattedPhone = "0" + formattedPhone;
+    }
+
     const response = await fetch(`${this.baseUrl}/v1/orders`, {
       method: "POST",
       headers: {
@@ -43,19 +51,22 @@ export class FuzeServeProvider implements SupplierProvider {
       },
       body: JSON.stringify({
         productId: Number(productId),
-        phone: phone,
+        phone: formattedPhone,
       }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      return { success: false, error: data.message || "FuzeServe order error" };
+      return { 
+        success: false, 
+        error: data.message || data.error || "FuzeServe order error" 
+      };
     }
 
     return {
       success: true,
-      supplierOrderId: data.reference,
+      supplierOrderId: data.reference || data.id,
       status: data.status
     };
   }
@@ -69,12 +80,16 @@ export class FuzeServeProvider implements SupplierProvider {
       }
     });
 
-    if (!response.ok) return { success: false, error: "Tracking failed" };
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.message || "Tracking failed" };
+    }
     
     const data = await response.json();
     return {
       success: true,
-      status: data.status?.toUpperCase()
+      status: data.status?.toUpperCase(),
+      error: data.status?.toUpperCase() === "FAILED" ? (data.message || data.reason) : undefined
     };
   }
 

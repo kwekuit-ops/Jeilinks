@@ -82,11 +82,11 @@ export default async function AdminOrdersPage() {
                           statusIcons[order.status]?.color || "bg-gray-100 text-gray-500"
                         )}>
                           <StatusIcon className="h-3 w-3" />
-                          <span>{order.status}</span>
+                          <span>{order.supplierStatus || order.status}</span>
                         </span>
-                        {order.supplierStatus && order.supplierStatus !== order.status && (
-                          <p className="text-[9px] text-muted-foreground mt-1 font-medium italic">
-                            Supplier: {order.supplierStatus}
+                        {order.failureReason && (
+                          <p className="text-[10px] text-red-500 mt-1 font-bold">
+                            Error: {order.failureReason}
                           </p>
                         )}
                     </td>

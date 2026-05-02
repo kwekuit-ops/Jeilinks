@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getActiveSupplier } from "@/lib/suppliers";
+import { processOrderRefund } from "@/lib/orderUtils";
 
 // This endpoint can be triggered manually, by Vercel Cron, or any other cron service
 export async function GET(req: Request) {
@@ -49,14 +50,8 @@ export async function GET(req: Request) {
         });
         updatedCount++;
       } else if (status === "failed") {
-        await prisma.order.update({
-          where: { id: order.id },
-          data: { status: "FAILED" },
-        });
+        await processOrderRefund(order.id, result.error || "Supplier failed the order");
         failedCount++;
-        
-        // TODO: In a production environment, if an order fails, 
-        // you might want to automate wallet refunds to your user here.
       }
       // If it's still 'pending' or 'processing', we do nothing and it gets caught next time.
     }

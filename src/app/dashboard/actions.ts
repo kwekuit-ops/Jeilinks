@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { normalizeOrderStatus } from "@/lib/utils";
 import { processOrderCommission } from "@/lib/commissions";
+import { processOrderRefund } from "@/lib/orderUtils";
 
 
 export async function changePassword(formData: any) {
@@ -71,16 +72,21 @@ export async function refreshOrderStatus(orderId: string) {
       const newStatus = normalizeOrderStatus(rawStatus);
       
       if (newStatus !== order.status || rawStatus !== (order as any).supplierStatus) {
-        await prisma.order.update({
-          where: { id: order.id },
-          data: { 
-            status: newStatus,
-            supplierStatus: rawStatus
-          }
-        });
+        if (newStatus === "FAILED") {
+          await processOrderRefund(order.id, result.error || "Supplier failed the order");
+        } else {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { 
+              status: newStatus,
+              supplierStatus: rawStatus,
+              failureReason: result.error || null
+            }
+          });
 
-        if (newStatus === "COMPLETED") {
-          await processOrderCommission(order.id);
+          if (newStatus === "COMPLETED") {
+            await processOrderCommission(order.id);
+          }
         }
 
         revalidatePath("/dashboard");

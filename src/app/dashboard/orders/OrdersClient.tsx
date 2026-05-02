@@ -69,14 +69,9 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
                   "inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
                   statusIcons[order.status]?.color || "bg-gray-100 text-gray-500"
                 )}>
-                  <StatusIcon className="h-3 w-3" />
-                  <span>{order.status}</span>
+                  <StatusIcon className="h-3.5 w-3.5" />
+                  <span>{order.supplierStatus || order.status}</span>
                 </span>
-                {order.supplierStatus && order.supplierStatus !== order.status && (
-                  <p className="text-[8px] text-muted-foreground mt-1 font-medium italic text-right">
-                    {order.supplierStatus}
-                  </p>
-                )}
               </div>
 
               
@@ -155,13 +150,8 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
                         statusIcons[order.status]?.color || "bg-gray-100 text-gray-500"
                       )}>
                         <StatusIcon className="h-3.5 w-3.5" />
-                        <span>{order.status}</span>
+                        <span>{order.supplierStatus || order.status}</span>
                       </span>
-                      {order.supplierStatus && order.supplierStatus !== order.status && (
-                        <p className="text-[10px] text-muted-foreground mt-1 font-medium italic">
-                          Supplier: {order.supplierStatus}
-                        </p>
-                      )}
                     </td>
 
                     <td className="px-6 py-5 text-muted-foreground">

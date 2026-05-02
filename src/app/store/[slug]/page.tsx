@@ -5,8 +5,8 @@ import { BundleTabs } from "@/components/BundleTabs";
 import { notFound } from "next/navigation";
 import { User, Store, ShieldCheck, MessageCircle } from "lucide-react";
 
-export default async function AgentStorePage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function AgentStorePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
 
   const agent = await prisma.user.findUnique({
     where: { storeSlug: slug },
@@ -36,7 +36,7 @@ export default async function AgentStorePage({ params }: { params: { slug: strin
                 <Store className="h-10 w-10" />
             </div>
           <h1 className="text-4xl font-black font-outfit tracking-tight mb-2">
-            {agent.name}'s Data Store
+            {agent.name || "Agent"}'s Data Store
           </h1>
           <p className="opacity-80 text-lg flex items-center justify-center space-x-2 mb-6">
             <ShieldCheck className="h-5 w-5" />
@@ -51,7 +51,7 @@ export default async function AgentStorePage({ params }: { params: { slug: strin
               className="inline-flex items-center space-x-2 bg-white text-primary px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-all"
             >
               <MessageCircle className="h-5 w-5" />
-              <span>Contact {agent.name.split(' ')[0]} on WhatsApp</span>
+              <span>Contact {(agent.name || "Agent").split(' ')[0]} on WhatsApp</span>
             </a>
           )}
         </div>

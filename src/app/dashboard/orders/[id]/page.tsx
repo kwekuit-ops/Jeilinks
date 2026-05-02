@@ -8,12 +8,13 @@ import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export default async function OrderDetailPage({ params }: { params: { id: string } }) {
+export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) return null;
 
   const order = await prisma.order.findUnique({
-    where: { id: params.id },
+    where: { id: id },
     include: {
       bundle: true,
       user: true,

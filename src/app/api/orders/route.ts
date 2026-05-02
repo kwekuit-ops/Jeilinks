@@ -6,6 +6,7 @@ import { placeOrderOnSupplier } from "@/lib/supplierBridge";
 import { OrderResponse } from "@/lib/suppliers/types";
 import { normalizeOrderStatus } from "@/lib/utils";
 import { processOrderCommission } from "@/lib/commissions";
+import { processOrderRefund } from "@/lib/orderUtils";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -112,6 +113,12 @@ export async function POST(req: Request) {
           await processOrderCommission(order.id);
         }
       }
+    } else {
+      // Use the refund utility to mark as failed and refund if necessary
+      await processOrderRefund(
+        order.id, 
+        (supplierRes as any).error || "Supplier rejection"
+      );
     }
 
     return NextResponse.json(order, { status: 201 });

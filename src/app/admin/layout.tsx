@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Users, LayoutDashboard, DollarSign, Settings, ShoppingBag, TrendingUp, Wallet } from "lucide-react";
+import { Users, LayoutDashboard, DollarSign, Settings, ShoppingBag, TrendingUp, Wallet, Store } from "lucide-react";
 
 export default async function AdminLayout({
   children,
@@ -22,8 +22,7 @@ export default async function AdminLayout({
     { name: "Sales & Profits", href: "/admin/sales", icon: TrendingUp },
     { name: "Payouts", href: "/admin/withdrawals", icon: Wallet },
     { name: "Pricing", href: "/admin/pricing", icon: DollarSign },
-
-
+    { name: "My Store", href: "/admin/store", icon: Store },
     { name: "API Settings", href: "/admin/settings", icon: Settings },
   ];
 
