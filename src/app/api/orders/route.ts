@@ -27,9 +27,11 @@ export async function POST(req: Request) {
         const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
 
         if (!paystackSecret) {
+            console.error("Order Error: PAYSTACK_SECRET_KEY is missing from environment/settings.");
             return NextResponse.json({ message: "Payment setup incomplete" }, { status: 500 });
         }
 
+        console.log(`Verifying Paystack Ref: ${paystackRef}`);
         const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
           headers: {
             Authorization: `Bearer ${paystackSecret}`,
@@ -37,8 +39,13 @@ export async function POST(req: Request) {
         });
 
         const verifyData = await verifyRes.json();
+        console.log("Paystack Verify Status:", verifyRes.status);
+        console.log("Paystack Verify Response:", JSON.stringify(verifyData));
+
         if (!verifyRes.ok || verifyData.data.status !== "success") {
-            return NextResponse.json({ message: "Payment verification failed" }, { status: 400 });
+            const errorMsg = verifyData.message || "Payment verification failed";
+            console.error(`Paystack Error: ${errorMsg}`);
+            return NextResponse.json({ message: errorMsg }, { status: 400 });
         }
     }
 
