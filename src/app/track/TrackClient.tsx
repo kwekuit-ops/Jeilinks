@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, Loader2, CheckCircle2, Clock, RotateCcw, AlertCircle } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
 
@@ -9,6 +10,8 @@ export default function PublicTrackingPage() {
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const hasSearched = useRef(false);
 
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +36,33 @@ export default function PublicTrackingPage() {
       setIsLoading(false);
     }
   };
+  
+  useEffect(() => {
+    const urlRef = searchParams.get("ref");
+    if (urlRef && !hasSearched.current) {
+        setReference(urlRef);
+        // Trigger search
+        hasSearched.current = true;
+        const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+        // We can't call handleTrack directly because it depends on the 'reference' state which might not be updated yet
+        // So we define a helper or use the urlRef directly
+        const autoSearch = async () => {
+            setIsLoading(true);
+            setError("");
+            try {
+                const res = await fetch(`/api/orders/track?ref=${urlRef}`);
+                const data = await res.json();
+                if (res.ok) setOrder(data);
+                else setError(data.message || "Order not found.");
+            } catch (err) {
+                setError("An error occurred.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        autoSearch();
+    }
+  }, [searchParams]);
 
   const statusIcons: Record<string, any> = {
     PENDING: { color: "text-yellow-600 bg-yellow-100", icon: Clock },

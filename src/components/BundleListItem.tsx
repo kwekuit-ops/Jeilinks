@@ -29,6 +29,8 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   const [isExpanding, setIsExpanding] = useState(false);
   const [userBalance, setUserBalance] = useState<number | null>(null);
   const [paystackKey, setPaystackKey] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [orderRef, setOrderRef] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -74,8 +76,9 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
 
       const data = await res.json();
       if (res.ok) {
+        setIsSuccess(true);
+        setOrderRef(phoneNumber);
         toast.success("Order placed successfully via Wallet!");
-        router.push("/dashboard");
       } else {
         toast.error(data.message || "Wallet payment failed");
       }
@@ -108,14 +111,12 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
       });
 
       if (res.ok) {
+        setIsSuccess(true);
+        setOrderRef(phoneNumber);
         toast.success("Order placed successfully!");
-        if (session) {
-          router.push("/dashboard");
-        } else {
-          router.push(`/track`);
-        }
       } else {
-        toast.error("Failed to create order.");
+        const data = await res.json();
+        toast.error(data.message || "Failed to create order.");
       }
     } catch (error) {
       toast.error("An error occurred");
@@ -163,7 +164,42 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
 
       {isExpanding && (
         <div className="p-6 bg-muted/20 border-t border-dashed animate-in slide-in-from-top-4 duration-300">
-          <div className="max-w-md mx-auto space-y-4">
+          {isSuccess ? (
+             <div className="max-w-md mx-auto text-center space-y-6 py-4 animate-in zoom-in duration-500">
+                <div className="h-20 w-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                    <Zap className="h-10 w-10 fill-current" />
+                </div>
+                <div>
+                    <h3 className="text-2xl font-black font-outfit text-green-600">Order Successful!</h3>
+                    <p className="text-muted-foreground mt-2">Your data is being processed. It usually takes 1 to 30 minutes.</p>
+                </div>
+                
+                <div className="bg-white p-4 rounded-2xl border border-dashed border-green-200">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Recipient</p>
+                    <p className="text-lg font-black font-mono">{orderRef}</p>
+                </div>
+
+                <div className="flex flex-col space-y-3">
+                    <Link 
+                      href={`/track?ref=${orderRef}`}
+                      className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+                    >
+                      Track Delivery Status
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        setIsExpanding(false);
+                        setIsSuccess(false);
+                        setPhoneNumber("");
+                      }}
+                      className="text-sm font-bold text-muted-foreground hover:text-foreground"
+                    >
+                      Buy another bundle
+                    </button>
+                </div>
+             </div>
+          ) : (
+            <div className="max-w-md mx-auto space-y-4">
             <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-medium">Recipient Number:</span>
                 <span className="text-sm font-bold text-primary">{bundle.network} Network</span>
