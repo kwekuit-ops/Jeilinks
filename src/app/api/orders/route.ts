@@ -32,18 +32,34 @@ export async function POST(req: Request) {
         }
 
         console.log(`Verifying Paystack Ref: ${paystackRef}`);
-        const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
-          headers: {
-            Authorization: `Bearer ${paystackSecret}`,
-          },
-        });
+        
+        let verifyData: any = null;
+        let attempts = 0;
+        const maxAttempts = 3;
 
-        const verifyData = await verifyRes.json();
-        console.log("Paystack Verify Status:", verifyRes.status);
-        console.log("Paystack Verify Response:", JSON.stringify(verifyData));
+        while (attempts < maxAttempts) {
+            attempts++;
+            const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
+              headers: {
+                Authorization: `Bearer ${paystackSecret}`,
+              },
+            });
 
-        if (!verifyRes.ok || verifyData.data.status !== "success") {
-            const errorMsg = verifyData.message || "Payment verification failed";
+            verifyData = await verifyRes.json();
+            console.log(`Attempt ${attempts}: Paystack Verify Status:`, verifyRes.status);
+            
+            if (verifyRes.ok && verifyData.data?.status === "success") {
+                break; 
+            }
+            
+            if (attempts < maxAttempts) {
+                console.log("Retrying Paystack verification in 2s...");
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        }
+
+        if (!verifyData || verifyData.data?.status !== "success") {
+            const errorMsg = verifyData?.message || "Payment verification failed after retries";
             console.error(`Paystack Error: ${errorMsg}`);
             return NextResponse.json({ message: errorMsg }, { status: 400 });
         }
