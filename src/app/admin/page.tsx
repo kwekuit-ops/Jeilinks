@@ -11,6 +11,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import AdminStoreCard from "./AdminStoreCard";
 import DateFilter from "./DateFilter";
 
+export default async function AdminDashboard({ searchParams }: { searchParams: Promise<{ date?: string, endDate?: string }> }) {
   const { date: startDateParam, endDate: endDateParam } = await searchParams;
   const session = await getServerSession(authOptions);
   
