@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { changePassword } from "./actions";
 import { toast } from "react-hot-toast";
-import { Lock, ShieldCheck, Key } from "lucide-react";
+import { Lock, ShieldCheck, Key, Eye, EyeOff } from "lucide-react";
 
 export function SecuritySettings() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showPasswords, setShowPasswords] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,13 +51,20 @@ export function SecuritySettings() {
                 <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <input 
-                        type="password"
+                        type={showPasswords ? "text" : "password"}
                         required
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="w-full bg-background border rounded-2xl pl-11 pr-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none transition-all"
+                        className="w-full bg-background border rounded-2xl pl-11 pr-12 py-3 text-sm focus:ring-1 focus:ring-primary outline-none transition-all"
                         placeholder="••••••••"
                     />
+                    <button 
+                        type="button"
+                        onClick={() => setShowPasswords(!showPasswords)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                    >
+                        {showPasswords ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                 </div>
             </div>
 
@@ -66,7 +74,7 @@ export function SecuritySettings() {
                     <div className="relative">
                         <Key className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input 
-                            type="password"
+                            type={showPasswords ? "text" : "password"}
                             required
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
@@ -80,7 +88,7 @@ export function SecuritySettings() {
                     <div className="relative">
                         <Key className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input 
-                            type="password"
+                            type={showPasswords ? "text" : "password"}
                             required
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}

@@ -51,15 +51,22 @@ export default function BecomeAgentPage() {
       )
   }
 
+  const isAlreadyAgent = session?.user && (session.user as any).role === "AGENT";
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 md:py-20 animate-in">
       <div className="text-center mb-12">
         <div className="inline-flex p-3 bg-primary/10 rounded-full mb-4">
             <ShieldCheck className="h-10 w-10 text-primary" />
         </div>
-        <h1 className="text-4xl font-black font-outfit tracking-tight mb-4">Become a JEILINKS Agent</h1>
+        <h1 className="text-4xl font-black font-outfit tracking-tight mb-4">
+            {isAlreadyAgent ? "Renew Your Agent Status" : "Become a JEILINKS Agent"}
+        </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Start your own data reselling business today. Get wholesale prices and your own personal branded store.
+          {isAlreadyAgent 
+            ? "Your agent account gives you access to exclusive wholesale prices and a branded store. Keep your subscription active to continue selling."
+            : "Start your own data reselling business today. Get wholesale prices and your own personal branded store."
+          }
         </p>
       </div>
 
@@ -105,7 +112,7 @@ export default function BecomeAgentPage() {
             onSuccess={handleSuccess}
             onClose={() => toast.error("Payment cancelled")}
             disabled={isProcessing}
-            label={isProcessing ? "Upgrading..." : "Pay & Upgrade Now"}
+            label={isProcessing ? "Processing..." : isAlreadyAgent ? "Pay & Renew Now" : "Pay & Upgrade Now"}
             className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
           />
           

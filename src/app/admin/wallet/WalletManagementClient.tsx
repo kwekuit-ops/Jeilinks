@@ -18,30 +18,38 @@ export default function WalletManagementClient({ initialUsers }: { initialUsers:
   const [users, setUsers] = useState(initialUsers);
   const [search, setSearch] = useState("");
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ id: string, name: string, type: 'CREDIT' | 'DEBIT' } | null>(null);
+  const [amount, setAmount] = useState("");
 
   const filteredUsers = users.filter(user => 
     user.name?.toLowerCase().includes(search.toLowerCase()) || 
     user.email?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAction = async (userId: string, type: 'CREDIT' | 'DEBIT') => {
-    const amountStr = prompt(`Enter amount to ${type === 'CREDIT' ? 'ADD to' : 'DEDUCT from'} balance:`);
-    if (!amountStr) return;
-    
-    let amount = parseFloat(amountStr);
-    if (isNaN(amount) || amount <= 0) return toast.error("Invalid amount. Please enter a positive number.");
+  const openModal = (userId: string, name: string, type: 'CREDIT' | 'DEBIT') => {
+    setSelectedUser({ id: userId, name, type });
+    setAmount("");
+    setModalOpen(true);
+  };
 
-    // If debiting, make amount negative
-    if (type === 'DEBIT') {
-        amount = -amount;
+  const handleAction = async () => {
+    if (!selectedUser) return;
+    
+    let numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) return toast.error("Invalid amount. Please enter a positive number.");
+
+    if (selectedUser.type === 'DEBIT') {
+        numAmount = -numAmount;
     }
 
-    setIsProcessing(userId);
-    const res = await updateUserBalance(userId, amount);
+    setIsProcessing(selectedUser.id);
+    const res = await updateUserBalance(selectedUser.id, numAmount);
     
     if (res.success) {
-      toast.success(`${type === 'CREDIT' ? 'Credited' : 'Debited'} successfully`);
-      setUsers(users.map(u => u.id === userId ? { ...u, balance: (parseFloat(u.balance) + amount).toString() } : u));
+      toast.success(`${selectedUser.type === 'CREDIT' ? 'Credited' : 'Debited'} successfully`);
+      setUsers(users.map(u => u.id === selectedUser.id ? { ...u, balance: (parseFloat(u.balance) + numAmount).toString() } : u));
+      setModalOpen(false);
     } else {
       toast.error(res.error || "Failed to update balance");
     }
@@ -63,6 +71,54 @@ export default function WalletManagementClient({ initialUsers }: { initialUsers:
           />
         </div>
       </div>
+
+      {/* Balance Update Modal */}
+      {modalOpen && selectedUser && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in zoom-in duration-200">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
+            <div className="bg-background w-full max-w-md rounded-3xl p-8 border shadow-2xl relative z-10 space-y-6">
+                <div className="space-y-2">
+                    <h3 className="text-2xl font-black font-outfit">
+                        {selectedUser.type === 'CREDIT' ? 'Credit Wallet' : 'Debit Wallet'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">Updating balance for <span className="font-bold text-foreground">{selectedUser.name}</span></p>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-primary">GHS</span>
+                        <input 
+                            type="number"
+                            placeholder="0.00"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            className="w-full pl-14 pr-4 py-4 bg-muted/30 border-2 border-transparent focus:border-primary/20 rounded-2xl outline-none text-2xl font-black transition-all"
+                            autoFocus
+                        />
+                    </div>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                    <button 
+                        onClick={() => setModalOpen(false)}
+                        className="flex-1 py-4 bg-muted hover:bg-muted/80 rounded-2xl font-bold transition-all"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={handleAction}
+                        disabled={!!isProcessing || !amount}
+                        className={cn(
+                            "flex-1 py-4 rounded-2xl font-bold text-white transition-all shadow-lg active:scale-95 disabled:opacity-50",
+                            selectedUser.type === 'CREDIT' ? "bg-emerald-500 shadow-emerald-200" : "bg-rose-500 shadow-rose-200"
+                        )}
+                    >
+                        {isProcessing ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : `Confirm ${selectedUser.type === 'CREDIT' ? 'Credit' : 'Debit'}`}
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
 
       <div className="glass rounded-3xl overflow-hidden border border-border/50 shadow-sm">
         <div className="overflow-x-auto">
@@ -104,17 +160,17 @@ export default function WalletManagementClient({ initialUsers }: { initialUsers:
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end space-x-2">
                         <button
-                            onClick={() => handleAction(user.id, 'CREDIT')}
+                            onClick={() => openModal(user.id, user.name || user.email, 'CREDIT')}
                             className="flex items-center space-x-1 px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-sm shadow-emerald-200"
                         >
-                            {isProcessing === user.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+                            <Plus className="h-3 w-3" />
                             <span>Credit</span>
                         </button>
                         <button
-                            onClick={() => handleAction(user.id, 'DEBIT')}
+                            onClick={() => openModal(user.id, user.name || user.email, 'DEBIT')}
                             className="flex items-center space-x-1 px-4 py-2 bg-rose-500 text-white rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-sm shadow-rose-200"
                         >
-                            {isProcessing === user.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Minus className="h-3 w-3" />}
+                            <Minus className="h-3 w-3" />
                             <span>Debit</span>
                         </button>
                     </div>
@@ -134,3 +190,4 @@ export default function WalletManagementClient({ initialUsers }: { initialUsers:
     </div>
   );
 }
+

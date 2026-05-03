@@ -230,7 +230,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
                                 {index + 1}
                             </div>
                             <div>
-                                <p className="text-sm font-bold truncate max-w-[120px]">{rank.user?.name || "Unknown Agent"}</p>
+                                <p className="text-sm font-bold truncate max-w-[120px]">{rank.user?.name || rank.user?.email || "Unknown Agent"}</p>
                                 <p className="text-[10px] text-muted-foreground uppercase tracking-tight">Top Performer</p>
                             </div>
                         </div>

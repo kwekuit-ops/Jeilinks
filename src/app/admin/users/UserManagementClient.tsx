@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
-import { UserCog, Trash2, ArrowUpCircle, X, Shield, User, Star, Store, Plus } from "lucide-react";
+import { UserCog, Trash2, X, Shield, User, Star, Store, Plus } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { deleteUser, updateUserRole, updateUserBalance } from "./actions";
+import { deleteUser, updateUserRole } from "./actions";
 import CreateStoreModal from "./CreateStoreModal";
 
 interface UserType {
@@ -48,24 +48,6 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
       setUsers(users.map(u => u.id === userId ? { ...u, role: nextRole } : u));
     } else {
       toast.error(res.error || "Failed to update role");
-    }
-    setIsProcessing(null);
-  };
-
-  const handleBalanceUpdate = async (userId: string) => {
-    const amountStr = prompt("Enter amount to add to balance (use negative to subtract):");
-    if (!amountStr) return;
-    
-    const amount = parseFloat(amountStr);
-    if (isNaN(amount)) return toast.error("Invalid amount");
-
-    setIsProcessing(userId);
-    const res = await updateUserBalance(userId, amount);
-    if (res.success) {
-      toast.success("Balance updated");
-      setUsers(users.map(u => u.id === userId ? { ...u, balance: (parseFloat(u.balance) + amount).toString() } : u));
-    } else {
-      toast.error(res.error || "Failed to update balance");
     }
     setIsProcessing(null);
   };
@@ -124,13 +106,6 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
                   {new Date(user.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 text-right space-x-1">
-                  <button 
-                    onClick={() => handleBalanceUpdate(user.id)}
-                    title="Add Balance" 
-                    className="p-2 hover:bg-green-50 text-green-600 rounded-xl transition-all active:scale-90"
-                  >
-                      <ArrowUpCircle className="h-5 w-5" />
-                  </button>
                   <button 
                     onClick={() => handleRoleChange(user.id, user.role)}
                     title="Cycle Role" 
