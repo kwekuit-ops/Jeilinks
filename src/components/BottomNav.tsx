@@ -33,7 +33,7 @@ export function BottomNav() {
     },
     {
       name: "Wallet",
-      href: "/dashboard",
+      href: isAdmin ? "/admin/wallet" : "/dashboard",
       emoji: "💳",
       auth: true,
     },
