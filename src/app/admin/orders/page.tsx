@@ -6,25 +6,35 @@ import { ShoppingBag, Search, Filter, CheckCircle, XCircle, Clock, Calendar } fr
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { OrdersClient } from "./OrdersClient";
 import DateFilter from "../DateFilter";
+import StatusFilter from "./StatusFilter";
 import { Suspense } from "react";
 
-export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
-  const { date } = await searchParams;
-  const filterDate = date || new Date().toISOString().split('T')[0];
+export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ date?: string, endDate?: string, status?: string }> }) {
+  const { date: startDateParam, endDate: endDateParam, status } = await searchParams;
+  
+  const today = new Date().toISOString().split('T')[0];
+  const filterDate = startDateParam || today;
+  const filterEndDate = endDateParam || filterDate;
 
   const startDate = new Date(filterDate);
   startDate.setHours(0, 0, 0, 0);
   
-  const endDate = new Date(filterDate);
+  const endDate = new Date(filterEndDate);
   endDate.setHours(23, 59, 59, 999);
 
+  const where: any = {
+    createdAt: {
+        gte: startDate,
+        lte: endDate
+    }
+  };
+
+  if (status && status !== "ALL") {
+    where.status = status;
+  }
+
   const orders = await prisma.order.findMany({
-    where: {
-        createdAt: {
-            gte: startDate,
-            lte: endDate
-        }
-    },
+    where,
     include: {
       user: true,
       bundle: true,
@@ -39,14 +49,19 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
           <div className="flex items-center space-x-3">
             <h1 className="text-3xl font-bold font-outfit">Platform Orders</h1>
             <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-primary/20">
-                {orders.length} for {filterDate}
+                {orders.length} {status && status !== "ALL" ? status.toLowerCase() : ""} Orders
             </span>
           </div>
-          <p className="text-muted-foreground">Monitor and manage all transactions</p>
+          <p className="text-muted-foreground">
+            {filterDate === filterEndDate ? `Tracking for ${filterDate}` : `Range: ${filterDate} to ${filterEndDate}`}
+          </p>
         </div>
-        <Suspense fallback={<div>Loading calendar...</div>}>
-            <DateFilter />
-        </Suspense>
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
+            <Suspense fallback={<div>Loading filters...</div>}>
+                <StatusFilter />
+                <DateFilter />
+            </Suspense>
+        </div>
       </div>
 
       <OrdersClient initialOrders={JSON.parse(JSON.stringify(orders))} />
