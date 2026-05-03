@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
-import { CheckCircle, XCircle, Clock, Search, RefreshCcw, User, Package, Phone, Hash } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Search, RefreshCcw, User, Package, Phone, Hash, ShoppingBag } from "lucide-react";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import Link from "next/link";
 
