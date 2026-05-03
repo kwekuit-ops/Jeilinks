@@ -24,6 +24,7 @@ model User {
   sessions      Session[]
   orders        Order[]
   withdrawals   Withdrawal[]
+  oneSignalPlayerId String?
 }
 
 model Account {

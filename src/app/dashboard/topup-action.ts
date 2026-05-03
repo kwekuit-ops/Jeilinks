@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { revalidatePath } from "next/cache";
+import { sendPushNotification } from "@/lib/notifications";
 
 export async function topUpWallet(paystackRef: string) {
   const session = await getServerSession(authOptions);
@@ -34,6 +35,13 @@ export async function topUpWallet(paystackRef: string) {
           increment: amountGHS,
         },
       },
+    });
+
+    await sendPushNotification({
+      userId: (session.user as any).id,
+      title: "Top-up Successful! 💰",
+      message: `Your wallet has been credited with GHS ${amountGHS.toFixed(2)}.`,
+      url: "/dashboard"
     });
 
     revalidatePath("/dashboard");

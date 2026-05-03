@@ -7,6 +7,8 @@ import { OrderResponse } from "@/lib/suppliers/types";
 import { normalizeOrderStatus } from "@/lib/utils";
 import { processOrderCommission } from "@/lib/commissions";
 import { processOrderRefund } from "@/lib/orderUtils";
+import { sendPushNotification } from "@/lib/notifications";
+
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -113,6 +115,16 @@ export async function POST(req: Request) {
             }
         });
     });
+
+    if (order.userId) {
+      await sendPushNotification({
+        userId: order.userId,
+        title: "Order Placed 🚀",
+        message: `Your order for ${bundle.size} ${bundle.network} data to ${sanitizedPhone} has been received.`,
+        url: "/dashboard/orders"
+      });
+    }
+
 
     if (!bundle.supplierProductId) {
         console.error("Order error: Bundle missing supplierProductId", bundle.id);

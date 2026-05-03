@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { saveSystemSettings } from "./actions";
 import { toast } from "react-hot-toast";
-import { Save, Globe, ShieldCheck, Zap, MessageCircle } from "lucide-react";
+import { Save, Globe, ShieldCheck, Zap, MessageCircle, Settings2, AlertTriangle, Bell } from "lucide-react";
+
+
 
 export function SettingsEditor({ initialSettings }: { initialSettings: Record<string, string> }) {
   const [settings, setSettings] = useState(initialSettings);
@@ -22,6 +24,33 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
 
   return (
     <div className="space-y-8 max-w-2xl">
+      <div className="glass p-8 rounded-3xl border border-border/50 shadow-sm space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3 text-orange-500">
+              <Settings2 className="h-5 w-5" />
+              <h2 className="text-xl font-bold font-outfit">General Settings</h2>
+          </div>
+          <div className="flex items-center space-x-3 bg-orange-50 px-4 py-2 rounded-2xl border border-orange-100">
+            <span className="text-sm font-semibold text-orange-700">Maintenance Mode</span>
+            <button 
+              onClick={() => setSettings({...settings, MAINTENANCE_MODE: settings["MAINTENANCE_MODE"] === "true" ? "false" : "true"})}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${settings["MAINTENANCE_MODE"] === "true" ? "bg-orange-500" : "bg-gray-200"}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings["MAINTENANCE_MODE"] === "true" ? "translate-x-6" : "translate-x-1"}`} />
+            </button>
+          </div>
+        </div>
+        
+        {settings["MAINTENANCE_MODE"] === "true" && (
+          <div className="flex items-start space-x-3 p-4 bg-orange-50 border border-orange-100 rounded-2xl">
+            <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
+            <p className="text-xs text-orange-700 leading-relaxed">
+              <strong>Active:</strong> The site is currently in maintenance mode. Only administrators can access the full site. Regular users will see the maintenance page.
+            </p>
+          </div>
+        )}
+      </div>
+
       <div className="glass p-8 rounded-3xl border border-border/50 shadow-sm space-y-6">
         <div className="flex items-center space-x-3 text-primary mb-2">
             <Globe className="h-5 w-5" />
@@ -130,13 +159,45 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
         </div>
       </div>
 
+      <div className="glass p-8 rounded-3xl border border-border/50 shadow-sm space-y-6">
+        <div className="flex items-center space-x-3 text-blue-500 mb-2">
+            <Bell className="h-5 w-5" />
+            <h2 className="text-xl font-bold font-outfit">Push Notifications (OneSignal)</h2>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">OneSignal App ID</label>
+            <input 
+              type="text"
+              value={settings["NEXT_PUBLIC_ONESIGNAL_APP_ID"] || ""}
+              onChange={(e) => setSettings({...settings, NEXT_PUBLIC_ONESIGNAL_APP_ID: e.target.value})}
+              className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
+              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">OneSignal REST API Key</label>
+            <input 
+              type="password"
+              value={settings["ONESIGNAL_REST_API_KEY"] || ""}
+              onChange={(e) => setSettings({...settings, ONESIGNAL_REST_API_KEY: e.target.value})}
+              className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
+              placeholder="os_v2_app_..."
+            />
+          </div>
+        </div>
+      </div>
+
       <button
+
         onClick={handleSave}
         disabled={isSaving}
         className="flex items-center space-x-2 bg-primary text-primary-foreground px-8 py-4 rounded-2xl font-bold hover:brightness-110 active:scale-95 transition-all shadow-xl shadow-primary/20 disabled:opacity-50"
       >
         <Save className="h-5 w-5" />
-        <span>{isSaving ? "Saving Settings..." : "Save API Configuration"}</span>
+        <span>{isSaving ? "Saving Settings..." : "Save All Settings"}</span>
       </button>
 
       <div className="p-4 bg-yellow-50 border border-yellow-100 rounded-2xl flex items-start space-x-3">

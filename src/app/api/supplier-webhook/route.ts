@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { processOrderCommission } from "@/lib/commissions";
+import { sendPushNotification } from "@/lib/notifications";
+
 
 export async function POST(req: Request) {
   const secret = req.headers.get("x-webhook-secret");
@@ -34,7 +36,27 @@ export async function POST(req: Request) {
 
     if (newStatus === "COMPLETED") {
         await processOrderCommission(order.id);
+        
+        if (order.userId) {
+          const bundle = await prisma.bundle.findUnique({ where: { id: order.bundleId } });
+          await sendPushNotification({
+            userId: order.userId,
+            title: "Order Completed! ✅",
+            message: `Your ${bundle?.size} ${bundle?.network} data to ${order.phone} has been delivered.`,
+            url: "/dashboard/orders"
+          });
+        }
+    } else if (newStatus === "FAILED") {
+        if (order.userId) {
+          await sendPushNotification({
+            userId: order.userId,
+            title: "Order Failed ❌",
+            message: `Your order for ${order.phone} could not be delivered. A refund has been processed if applicable.`,
+            url: "/dashboard/orders"
+          });
+        }
     }
+
 
     console.log(`Order ${reference} updated to ${newStatus}`);
 
