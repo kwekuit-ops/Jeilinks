@@ -41,6 +41,7 @@ export async function updateUserRole(userId: string, newRole: string) {
     });
 
     revalidatePath("/admin/users");
+    revalidatePath("/admin/wallet");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to update role" };
@@ -64,6 +65,7 @@ export async function deleteUser(userId: string) {
     });
 
     revalidatePath("/admin/users");
+    revalidatePath("/admin/wallet");
     return { success: true };
   } catch (error: any) {
     console.error("Delete user error:", error);
@@ -81,6 +83,7 @@ export async function updateUserBalance(userId: string, amount: number) {
     });
 
     revalidatePath("/admin/users");
+    revalidatePath("/admin/wallet");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: "Failed to update balance" };

@@ -18,6 +18,7 @@ export function Navbar() {
     { name: "Shop", href: "/shop" },
     { name: "Dashboard", href: "/dashboard", auth: true },
     { name: "Admin", href: "/admin", admin: true },
+    { name: "Wallet", href: "/admin/wallet", admin: true },
   ];
 
   return (

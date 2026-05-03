@@ -196,9 +196,9 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
                     <Users className="h-5 w-5" />
                     <p className="text-[10px] font-black uppercase tracking-widest">Manage Users</p>
                 </Link>
-                <Link href="/admin/withdrawals" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
+                <Link href="/admin/wallet" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
                     <Wallet className="h-5 w-5" />
-                    <p className="text-[10px] font-black uppercase tracking-widest">Payouts</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest">Manage Wallet</p>
                 </Link>
                 <Link href="/admin/settings" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
                     <Settings className="h-5 w-5" />
