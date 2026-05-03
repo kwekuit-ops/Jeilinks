@@ -3,7 +3,7 @@ import { Suspense } from "react";
 export const dynamic = "force-dynamic";
 
 import { formatCurrency } from "@/lib/utils";
-import { Users, ShoppingBag, DollarSign, Zap, Wallet, Settings } from "lucide-react";
+import { Users, ShoppingBag, DollarSign, Zap, Wallet, Settings, Trophy, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { getActiveSupplier } from "@/lib/suppliers";
 import { getServerSession } from "next-auth";
@@ -109,6 +109,36 @@ import DateFilter from "./DateFilter";
     { name: "Revenue (Range)", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-400 bg-green-50", href: "/admin/sales" },
   ];
 
+  // Fetch Weekly Ranking (Top 5 users by completed order volume in last 7 days)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const rankingData = await prisma.order.groupBy({
+    by: ['userId'],
+    _sum: { amount: true },
+    where: {
+      status: "COMPLETED",
+      createdAt: { gte: sevenDaysAgo }
+    },
+    orderBy: {
+      _sum: { amount: 'desc' }
+    },
+    take: 5
+  });
+
+  const weeklyRanking = await Promise.all(
+    rankingData.map(async (item) => {
+      const user = await prisma.user.findUnique({
+        where: { id: item.userId || "" },
+        select: { name: true, image: true, email: true }
+      });
+      return {
+        ...item,
+        user
+      };
+    })
+  );
+
 
   return (
     <div className="space-y-8 animate-in">
@@ -145,29 +175,80 @@ import DateFilter from "./DateFilter";
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <AdminStoreCard initialSlug={adminUser?.storeSlug || null} adminName={adminUser?.name || "Admin"} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1">
+            <AdminStoreCard initialSlug={adminUser?.storeSlug || null} adminName={adminUser?.name || "Admin"} />
+        </div>
         
-        <div className="glass rounded-2xl p-6 border border-border/50 shadow-sm">
-          <h2 className="font-bold mb-4">Quick Links</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Link href="/admin/pricing" className="p-4 rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all text-center flex flex-col items-center justify-center space-y-2">
-                <DollarSign className="h-5 w-5" />
-                <p className="text-[10px] font-black uppercase tracking-widest">Set Prices</p>
-            </Link>
-            <Link href="/admin/users" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
-                <Users className="h-5 w-5" />
-                <p className="text-[10px] font-black uppercase tracking-widest">Manage Users</p>
-            </Link>
-            <Link href="/admin/withdrawals" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
-                <Wallet className="h-5 w-5" />
-                <p className="text-[10px] font-black uppercase tracking-widest">Payouts</p>
-            </Link>
-            <Link href="/admin/settings" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
-                <Settings className="h-5 w-5" />
-                <p className="text-[10px] font-black uppercase tracking-widest">API Keys</p>
-            </Link>
+        <div className="lg:col-span-1 glass rounded-2xl p-6 border border-border/50 shadow-sm flex flex-col justify-between">
+          <div>
+            <h2 className="font-bold mb-4 flex items-center space-x-2">
+                <Settings className="h-4 w-4 text-muted-foreground" />
+                <span>Quick Links</span>
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+                <Link href="/admin/pricing" className="p-4 rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all text-center flex flex-col items-center justify-center space-y-2">
+                    <DollarSign className="h-5 w-5" />
+                    <p className="text-[10px] font-black uppercase tracking-widest">Set Prices</p>
+                </Link>
+                <Link href="/admin/users" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
+                    <Users className="h-5 w-5" />
+                    <p className="text-[10px] font-black uppercase tracking-widest">Manage Users</p>
+                </Link>
+                <Link href="/admin/withdrawals" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
+                    <Wallet className="h-5 w-5" />
+                    <p className="text-[10px] font-black uppercase tracking-widest">Payouts</p>
+                </Link>
+                <Link href="/admin/settings" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
+                    <Settings className="h-5 w-5" />
+                    <p className="text-[10px] font-black uppercase tracking-widest">API Keys</p>
+                </Link>
+            </div>
           </div>
+        </div>
+
+        <div className="lg:col-span-1 glass rounded-2xl p-6 border border-border/50 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="font-bold flex items-center space-x-2">
+                    <Trophy className="h-5 w-5 text-yellow-500" />
+                    <span>Weekly Ranking</span>
+                </h2>
+                <TrendingUp className="h-4 w-4 text-green-500" />
+            </div>
+
+            <div className="space-y-4">
+                {weeklyRanking.length > 0 ? weeklyRanking.map((rank, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/10">
+                        <div className="flex items-center space-x-3">
+                            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-black ${
+                                index === 0 ? "bg-yellow-100 text-yellow-700" : 
+                                index === 1 ? "bg-slate-100 text-slate-700" :
+                                index === 2 ? "bg-orange-100 text-orange-700" :
+                                "bg-muted text-muted-foreground"
+                            }`}>
+                                {index + 1}
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold truncate max-w-[120px]">{rank.user?.name || "Unknown Agent"}</p>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-tight">Top Performer</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-sm font-black text-primary">{formatCurrency((rank._sum.amount || 0).toString())}</p>
+                            <div className="w-16 h-1 bg-muted rounded-full mt-1 overflow-hidden">
+                                <div 
+                                    className="h-full bg-primary" 
+                                    style={{ width: `${(Number(rank._sum.amount) / Number(weeklyRanking[0]._sum.amount)) * 100}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                        <p className="text-sm italic">No sales in the last 7 days</p>
+                    </div>
+                )}
+            </div>
         </div>
       </div>
     </div>
