@@ -26,8 +26,9 @@ export default function OneSignalInit({ appId }: { appId: string }) {
         });
 
         // Set external ID if user is logged in
-        if (session?.user?.id) {
-          window.OneSignal.setExternalUserId(session.user.id);
+        const userId = (session?.user as any)?.id;
+        if (userId) {
+          window.OneSignal.setExternalUserId(userId);
           
           // Get player ID and register it
           window.OneSignal.getUserId().then((playerId: string) => {
