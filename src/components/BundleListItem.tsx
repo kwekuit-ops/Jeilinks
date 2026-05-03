@@ -243,7 +243,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                         </div>
                         
                         <PaystackButton
-                            email={session?.user?.email || "guest@jeilinks.com"}
+                            email={session?.user?.email || `${phoneNumber}@jeilinks.com`}
                             amount={price}
                             publicKey={paystackKey}
                             onSuccess={handleSuccess}

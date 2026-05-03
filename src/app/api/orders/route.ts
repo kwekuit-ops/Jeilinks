@@ -14,7 +14,11 @@ export async function POST(req: Request) {
   // Session is only strictly required for WALLET payments
 
   try {
-    const { bundleId, phone, paystackRef, amount, agentId, paymentMethod = "PAYSTACK" } = await req.json();
+    const body = await req.json();
+    console.log("Order Request Body:", JSON.stringify(body));
+    console.log("Session detected:", !!session, session?.user?.email);
+
+    const { bundleId, phone, paystackRef, amount, agentId, paymentMethod = "PAYSTACK" } = body;
     
     const sanitizedPhone = phone.replace(/\D/g, "");
     const ghPhoneRegex = /^(02|05)\d{8}$/;
