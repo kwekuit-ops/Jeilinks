@@ -1,16 +1,19 @@
 "use client";
 
 import { Calendar } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 export default function DateFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const currentDate = searchParams.get("date") || new Date().toISOString().split('T')[0];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = e.target.value;
-    router.push(`/admin?date=${date}`);
+    const params = new URLSearchParams(searchParams);
+    params.set("date", date);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
