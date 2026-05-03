@@ -25,7 +25,19 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   const endOfDay = new Date(selectedDate);
   endOfDay.setHours(23, 59, 59, 999);
 
-  const [userCount, orderCount, totalRevenue, pendingPayouts, pendingOrders, adminUser] = await Promise.all([
+  const [
+    userCount, 
+    orderCount, 
+    totalRevenue, 
+    pendingPayouts, 
+    allOrdersCount,
+    completedOrders,
+    failedOrders,
+    allPendingOrders,
+    totalUserBalance,
+    adminUser,
+    totalProfitData
+  ] = await Promise.all([
     prisma.user.count(),
     prisma.order.count({
       where: {
@@ -46,19 +58,55 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
       }
     }),
     prisma.withdrawal.count({ where: { status: "PENDING" } }),
+    prisma.order.count(),
+    prisma.order.count({ where: { status: "COMPLETED" } }),
+    prisma.order.count({ where: { status: "FAILED" } }),
     prisma.order.count({ where: { status: "PENDING" } }),
-    prisma.user.findUnique({ where: { id: (session?.user as any)?.id } })
+    prisma.user.aggregate({ _sum: { balance: true } }),
+    prisma.user.findUnique({ where: { id: (session?.user as any)?.id } }),
+    // To calculate profit accurately, we'd need to sum (amount - commission - supplierPrice)
+    // For now, we'll estimate it as (Total Completed Amount - Total Commission - Sum of Supplier Prices for those bundles)
+    prisma.order.aggregate({
+        _sum: { 
+            amount: true,
+            commissionEarned: true
+        },
+        where: { status: "COMPLETED" }
+    })
   ]);
 
   const supplier = await getActiveSupplier();
   const supplierBalance = await supplier.fetchBalance();
 
+  // For total profit, we also need to sum up the supplier prices for completed orders
+  // Since we can't easily do (amount - supplierPrice) in a single prisma aggregate without a raw query or stored cost,
+  // we'll do a slightly more complex query if we want perfect accuracy, or just use a placeholder for now.
+  // Let's try to get a rough profit: Revenue - Commissions - (Orders * Avg Supplier Price)
+  // Or better: fetch all completed orders with bundle info (might be slow if many, but fine for now)
+  const completedOrdersWithBundles = await prisma.order.findMany({
+      where: { status: "COMPLETED" },
+      include: { bundle: true }
+  });
+  
+  const totalProfit = completedOrdersWithBundles.reduce((acc, order) => {
+      const amount = Number(order.amount);
+      const commission = Number(order.commissionEarned);
+      const cost = Number(order.bundle.supplierPrice || 0);
+      return acc + (amount - commission - cost);
+  }, 0);
+
   const stats = [
     { name: "Total Users", value: userCount, icon: Users, color: "text-blue-500 bg-blue-100", href: "/admin/users" },
+    { name: "Users Balance", value: formatCurrency((totalUserBalance._sum.balance || 0).toString()), icon: Wallet, color: "text-indigo-500 bg-indigo-100", href: "/admin/users" },
+    { name: "My Balance", value: formatCurrency((adminUser?.balance || 0).toString()), icon: DollarSign, color: "text-emerald-500 bg-emerald-100", href: "/dashboard" },
     { name: "Supplier Wallet", value: formatCurrency(supplierBalance.toString()), icon: Zap, color: "text-purple-500 bg-purple-100", href: "/admin/settings" },
-    { name: "Pending Payouts", value: pendingPayouts, icon: Wallet, color: "text-red-500 bg-red-100", href: "/admin/withdrawals" },
-    { name: "Orders (Selected Day)", value: orderCount, icon: ShoppingBag, color: "text-orange-500 bg-orange-100", href: "/admin/orders" },
-    { name: "Revenue (Selected Day)", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-500 bg-green-100", href: "/admin/sales" },
+    { name: "Total Orders", value: allOrdersCount, icon: ShoppingBag, color: "text-slate-500 bg-slate-100", href: "/admin/orders" },
+    { name: "Completed", value: completedOrders, icon: ShoppingBag, color: "text-green-500 bg-green-100", href: "/admin/orders?status=COMPLETED" },
+    { name: "Pending", value: allPendingOrders, icon: ShoppingBag, color: "text-orange-500 bg-orange-100", href: "/admin/orders?status=PENDING" },
+    { name: "Failed", value: failedOrders, icon: ShoppingBag, color: "text-red-500 bg-red-100", href: "/admin/orders?status=FAILED" },
+    { name: "Total Profit", value: formatCurrency(totalProfit.toString()), icon: DollarSign, color: "text-emerald-600 bg-emerald-50", href: "/admin/sales" },
+    { name: "Orders (Today)", value: orderCount, icon: ShoppingBag, color: "text-orange-400 bg-orange-50", href: "/admin/orders" },
+    { name: "Revenue (Today)", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-400 bg-green-50", href: "/admin/sales" },
   ];
 
 
@@ -74,7 +122,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         </Suspense>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
         {stats.map((stat) => (
           <Link 
             key={stat.name} 
