@@ -11,19 +11,19 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import AdminStoreCard from "./AdminStoreCard";
 import DateFilter from "./DateFilter";
 
-export default async function AdminDashboard({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
-  const { date: dateParam } = await searchParams;
+  const { date: startDateParam, endDate: endDateParam } = await searchParams;
   const session = await getServerSession(authOptions);
   
-  // Handle Date Filtering
-  const dateStr = dateParam || new Date().toISOString().split('T')[0];
-  const selectedDate = new Date(dateStr);
+  // Handle Date Range Filtering
+  const today = new Date().toISOString().split('T')[0];
+  const startDateStr = startDateParam || today;
+  const endDateStr = endDateParam || startDateStr; // Default to single day if endDate is missing
   
-  const startOfDay = new Date(selectedDate);
-  startOfDay.setHours(0, 0, 0, 0);
+  const startDate = new Date(startDateStr);
+  startDate.setHours(0, 0, 0, 0);
   
-  const endOfDay = new Date(selectedDate);
-  endOfDay.setHours(23, 59, 59, 999);
+  const endDate = new Date(endDateStr);
+  endDate.setHours(23, 59, 59, 999);
 
   const [
     userCount, 
@@ -42,8 +42,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     prisma.order.count({
       where: {
         createdAt: {
-          gte: startOfDay,
-          lte: endOfDay
+          gte: startDate,
+          lte: endDate
         }
       }
     }),
@@ -52,8 +52,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
       where: { 
         status: "COMPLETED",
         createdAt: {
-          gte: startOfDay,
-          lte: endOfDay
+          gte: startDate,
+          lte: endDate
         }
       }
     }),
@@ -105,8 +105,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     { name: "Pending", value: allPendingOrders, icon: ShoppingBag, color: "text-orange-500 bg-orange-100", href: "/admin/orders?status=PENDING" },
     { name: "Failed", value: failedOrders, icon: ShoppingBag, color: "text-red-500 bg-red-100", href: "/admin/orders?status=FAILED" },
     { name: "Total Profit", value: formatCurrency(totalProfit.toString()), icon: DollarSign, color: "text-emerald-600 bg-emerald-50", href: "/admin/sales" },
-    { name: "Orders (Today)", value: orderCount, icon: ShoppingBag, color: "text-orange-400 bg-orange-50", href: "/admin/orders" },
-    { name: "Revenue (Today)", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-400 bg-green-50", href: "/admin/sales" },
+    { name: "Orders (Range)", value: orderCount, icon: ShoppingBag, color: "text-orange-400 bg-orange-50", href: "/admin/orders" },
+    { name: "Revenue (Range)", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-400 bg-green-50", href: "/admin/sales" },
   ];
 
 
@@ -115,7 +115,12 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-outfit">Dashboard Overview</h1>
-          <p className="text-muted-foreground">Stats for {selectedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+          <p className="text-muted-foreground">
+            {startDateStr === endDateStr 
+              ? `Stats for ${startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`
+              : `Range: ${startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+            }
+          </p>
         </div>
         <Suspense fallback={<div className="h-10 w-32 bg-muted animate-pulse rounded-2xl" />}>
           <DateFilter />
