@@ -20,7 +20,7 @@ export default function OneSignalInit({ appId }: { appId: string }) {
           appId: appId,
           safari_web_id: undefined, // Optional: only if you have Safari Web ID
           notifyButton: {
-            enable: true,
+            enable: false,
           },
           allowLocalhostAsSecureOrigin: true,
         });

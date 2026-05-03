@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Menu, X, User, LogOut, LayoutDashboard, Database } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import NotificationBell from "./NotificationBell";
 
 export function Navbar() {
   const { data: session } = useSession();
@@ -79,14 +80,21 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-foreground hover:bg-secondary transition-colors"
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+          <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="hidden md:block">
+              <NotificationBell />
+            </div>
+            
+            {/* Mobile menu button */}
+            <div className="flex md:hidden items-center space-x-2">
+                <NotificationBell />
+                <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-foreground hover:bg-secondary transition-colors"
+                >
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                </button>
+            </div>
           </div>
         </div>
       </div>
