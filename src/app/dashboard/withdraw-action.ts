@@ -29,7 +29,7 @@ export async function requestWithdrawal(amount: number, phone: string) {
       });
 
       // Create withdrawal request
-      return await tx.withdrawal.create({
+      const wdl = await tx.withdrawal.create({
         data: {
           userId,
           amount,
@@ -37,6 +37,19 @@ export async function requestWithdrawal(amount: number, phone: string) {
           status: "PENDING"
         }
       });
+
+      // Record transaction
+      await tx.walletTransaction.create({
+          data: {
+              userId,
+              amount,
+              type: "DEBIT",
+              reference: `WDL-REQ-${wdl.id}`,
+              description: `Withdrawal request initiated to ${phone}`
+          }
+      });
+
+      return wdl;
     });
 
     revalidatePath("/dashboard");
