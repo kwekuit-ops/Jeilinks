@@ -28,7 +28,7 @@ export function BottomNav() {
     },
     {
       name: "Orders",
-      href: session ? "/dashboard/orders" : "/track",
+      href: isAdmin ? "/admin/orders" : (session ? "/dashboard/orders" : "/track"),
       emoji: "📦",
     },
     {
