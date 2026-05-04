@@ -210,22 +210,22 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Dynamic Stats Bar */}
-      <section className="py-8 px-4 -mt-10 relative z-10">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Public Stat: Total Orders */}
-              <div className="glass p-6 rounded-3xl border border-border shadow-xl flex items-center space-x-6 group hover:border-primary/30 transition-all">
-                  <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
-                      <Package className="h-6 w-6" />
-                  </div>
-                  <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Orders Processed</p>
-                      <h3 className="text-3xl font-black font-outfit tracking-tighter">{totalOrdersCount.toLocaleString()}+</h3>
-                  </div>
-              </div>
+      {/* Dynamic Stats Bar - ONLY FOR ADMIN */}
+      {isAdmin && (
+        <section className="py-8 px-4 -mt-10 relative z-10">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Total Orders */}
+                <div className="glass p-6 rounded-3xl border border-border shadow-xl flex items-center space-x-6 group hover:border-primary/30 transition-all">
+                    <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
+                        <Package className="h-6 w-6" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total Orders</p>
+                        <h3 className="text-3xl font-black font-outfit tracking-tighter">{totalOrdersCount.toLocaleString()}+</h3>
+                    </div>
+                </div>
 
-              {/* Conditional Admin Stat: Supplier Balance */}
-              {isAdmin ? (
+                {/* Supplier Balance */}
                 <Link href="/admin/wallet" className="glass p-6 rounded-3xl border border-orange-500/20 bg-orange-50/5 shadow-xl flex items-center space-x-6 group hover:border-orange-500/40 transition-all">
                     <div className="p-4 bg-orange-500/10 rounded-2xl text-orange-600 group-hover:scale-110 transition-transform">
                         <Zap className="h-6 w-6" />
@@ -235,42 +235,20 @@ export default async function Home() {
                         <h3 className="text-3xl font-black font-outfit tracking-tighter text-orange-600">{formatCurrency(supplierBalance.toString())}</h3>
                     </div>
                 </Link>
-              ) : (
-                <div className="glass p-6 rounded-3xl border border-border shadow-xl flex items-center space-x-6 group hover:border-primary/30 transition-all">
-                    <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
-                        <Users className="h-6 w-6" />
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Active Customers</p>
-                        <h3 className="text-3xl font-black font-outfit tracking-tighter">Verified ✅</h3>
-                    </div>
-                </div>
-              )}
 
-              {/* Conditional Admin Stat: Admin Balance */}
-              {isAdmin ? (
+                {/* Admin Wallet */}
                 <Link href="/admin/wallet" className="glass p-6 rounded-3xl border border-primary/20 bg-primary/5 shadow-xl flex items-center space-x-6 group hover:border-primary/40 transition-all">
                     <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
                         <Wallet className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-primary/70">Admin Wallet</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-primary/70">My Balance</p>
                         <h3 className="text-3xl font-black font-outfit tracking-tighter text-primary">{formatCurrency(adminBalance.toString())}</h3>
                     </div>
                 </Link>
-              ) : (
-                <div className="glass p-6 rounded-3xl border border-border shadow-xl flex items-center space-x-6 group hover:border-primary/30 transition-all">
-                    <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
-                        <ShieldCheck className="h-6 w-6" />
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">System Status</p>
-                        <h3 className="text-3xl font-black font-outfit tracking-tighter text-green-600">Online</h3>
-                    </div>
-                </div>
-              )}
-          </div>
-      </section>
+            </div>
+        </section>
+      )}
 
 
       {/* Bundles Section */}
