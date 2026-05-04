@@ -53,9 +53,11 @@ export function BottomNav() {
 
           const isActive = item.href === "/"
             ? pathname === "/"
-            : item.href === "/dashboard"
-              ? pathname === "/dashboard"
-              : pathname.startsWith(item.href);
+            : item.href === "/admin"
+              ? pathname === "/admin" || (pathname.startsWith("/admin") && !pathname.startsWith("/admin/wallet") && !pathname.startsWith("/admin/orders"))
+              : item.href === "/dashboard" && item.name === (isAdmin ? "Admin" : "Profile")
+                ? pathname === "/dashboard"
+                : pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/")) || (pathname.startsWith(item.href) && item.href !== "/admin" && item.href !== "/dashboard");
 
           return (
             <Link
