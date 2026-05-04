@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 import { formatCurrency, cn } from "@/lib/utils";
-import { Wallet, History, MessageCircle, ArrowRight, CheckCircle2, Clock, RotateCcw, AlertCircle, Zap } from "lucide-react";
+import { Wallet, History, MessageCircle, ArrowRight, CheckCircle2, Clock, RotateCcw, AlertCircle, Zap, Store } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { TopUpButton } from "./TopUpButton";
@@ -180,6 +180,25 @@ export default async function DashboardPage() {
             Join Channel
           </a>
         </div>
+
+        {/* Agent Store Card */}
+        {user.role === 'AGENT' && (
+          <div className="glass rounded-2xl p-6 shadow-sm border border-indigo-500/20 bg-indigo-50/5 text-center flex flex-col items-center justify-center space-y-3">
+              <div className="p-3 bg-indigo-100 text-indigo-600 rounded-full">
+                  <Store className="h-6 w-6" />
+              </div>
+              <div className="space-y-1">
+                  <h2 className="font-bold text-lg">Manage My Store</h2>
+                  <p className="text-xs text-muted-foreground">Customize prices & view your store</p>
+              </div>
+              <Link 
+                href="/dashboard/store"
+                className="w-full py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-indigo-200"
+              >
+                  Store Settings
+              </Link>
+          </div>
+        )}
 
         {/* Rank / Stats Card */}
         <div className="glass rounded-2xl p-6 shadow-sm border border-border/50 text-center flex flex-col items-center justify-center">

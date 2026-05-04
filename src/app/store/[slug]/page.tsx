@@ -19,12 +19,29 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
     notFound();
   }
 
-  const bundles = await prisma.bundle.findMany({
-    where: { isActive: true },
-    orderBy: [
-      { network: 'asc' },
-      { userPrice: 'asc' }
-    ]
+  const [bundles, customPrices] = await Promise.all([
+    prisma.bundle.findMany({
+      where: { isActive: true },
+      orderBy: [
+        { network: 'asc' },
+        { userPrice: 'asc' }
+      ]
+    }),
+    prisma.agentBundlePrice.findMany({
+      where: { agentId: agent.id }
+    })
+  ]);
+
+  // Apply custom prices
+  const customizedBundles = bundles.map(bundle => {
+      const custom = customPrices.find(cp => cp.bundleId === bundle.id);
+      if (custom) {
+          return {
+              ...bundle,
+              userPrice: custom.customPrice
+          };
+      }
+      return bundle;
   });
 
   return (
@@ -70,7 +87,7 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
               <p className="text-lg text-muted-foreground">No bundles available at the moment.</p>
             </div>
           ) : (
-            <BundleTabs bundles={JSON.parse(JSON.stringify(bundles))} agentId={agent.id} />
+            <BundleTabs bundles={JSON.parse(JSON.stringify(customizedBundles))} agentId={agent.id} />
           )}
         </div>
       </section>

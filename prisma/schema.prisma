@@ -25,6 +25,7 @@ model User {
   orders        Order[]
   withdrawals   Withdrawal[]
   walletTransactions WalletTransaction[]
+  customPrices  AgentBundlePrice[]
   oneSignalPlayerId String?
 }
 
@@ -65,6 +66,7 @@ model Bundle {
   supplierPrice     Decimal?
   isActive          Boolean  @default(true)
   orders            Order[]
+  customPrices      AgentBundlePrice[]
 }
 
 model Order {
@@ -113,4 +115,16 @@ model WalletTransaction {
   description   String?
   createdAt     DateTime @default(now())
   user          User     @relation(fields: [userId], references: [id])
+}
+
+model AgentBundlePrice {
+  id        String   @id @default(cuid())
+  agentId   String
+  bundleId  String
+  customPrice Decimal
+  
+  agent     User     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  bundle    Bundle   @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, bundleId])
 }
