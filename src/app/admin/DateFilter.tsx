@@ -40,7 +40,7 @@ export default function DateFilter() {
             <Calendar className="h-4 w-4 text-primary" />
         </div>
         <div className="flex flex-col">
-          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">From</span>
+          <span className="text-xs font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">From</span>
           <input
             type="date"
             value={startDate}
@@ -57,7 +57,7 @@ export default function DateFilter() {
             <Calendar className="h-4 w-4 text-primary" />
         </div>
         <div className="flex flex-col">
-          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">To</span>
+          <span className="text-xs font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">To</span>
           <input
             type="date"
             value={endDate}

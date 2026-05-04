@@ -72,11 +72,11 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
         <table className="w-full text-left text-sm">
           <thead className="bg-muted/50 border-b">
             <tr>
-              <th className="px-6 py-4 font-semibold text-[11px] uppercase tracking-wider">User Details</th>
-              <th className="px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-center">Role</th>
-              <th className="px-6 py-4 font-semibold text-[11px] uppercase tracking-wider">Balance</th>
-              <th className="px-6 py-4 font-semibold text-[11px] uppercase tracking-wider">Joined</th>
-              <th className="px-6 py-4 font-semibold text-[11px] uppercase tracking-wider text-right">Actions</th>
+              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">User Details</th>
+              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center">Role</th>
+              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Balance</th>
+              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Joined</th>
+              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -85,12 +85,12 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
                 <td className="px-6 py-4">
                     <div className="flex flex-col">
                         <span className="font-bold text-base">{user.name || "No Name"}</span>
-                        <span className="text-xs text-muted-foreground">{user.email || "No Email"}</span>
+                        <span className="text-sm text-muted-foreground">{user.email || "No Email"}</span>
                     </div>
                 </td>
                 <td className="px-6 py-4 text-center">
                   <span className={cn(
-                    "inline-flex items-center space-x-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                    "inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest",
                     user.role === "ADMIN" ? "bg-red-100 text-red-600" :
                     user.role === "AGENT" ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-600"
                   )}>
@@ -102,7 +102,7 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
                 <td className="px-6 py-4 font-mono font-bold text-primary">
                     {formatCurrency(user.balance.toString())}
                 </td>
-                <td className="px-6 py-4 text-muted-foreground text-xs">
+                <td className="px-6 py-4 text-muted-foreground text-sm">
                   {new Date(user.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 text-right space-x-1">

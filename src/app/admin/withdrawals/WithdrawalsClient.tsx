@@ -52,7 +52,7 @@ export default function WithdrawalsClient() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-muted/30 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <tr className="bg-muted/30 text-xs font-black uppercase tracking-widest text-muted-foreground">
                 <th className="px-6 py-4">Agent</th>
                 <th className="px-6 py-4">MoMo Number</th>
                 <th className="px-6 py-4">Amount</th>
@@ -80,7 +80,7 @@ export default function WithdrawalsClient() {
                   </td>
                   <td className="px-6 py-4">
                     <span className={cn(
-                      "px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center w-fit space-x-1",
+                      "px-2 py-1 rounded-full text-xs font-black uppercase tracking-widest flex items-center w-fit space-x-1",
                       w.status === "PENDING" ? "bg-yellow-100 text-yellow-700" :
                       w.status === "COMPLETED" ? "bg-green-100 text-green-700" :
                       "bg-red-100 text-red-700"

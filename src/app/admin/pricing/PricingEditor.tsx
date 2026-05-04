@@ -128,7 +128,7 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
         </div>
 
         <div className="space-y-6 md:space-y-4">
-          <div className="hidden md:grid grid-cols-12 gap-3 px-4 pb-2 text-[10px] font-black uppercase text-muted-foreground border-b">
+          <div className="hidden md:grid grid-cols-12 gap-3 px-4 pb-2 text-xs font-black uppercase text-muted-foreground border-b">
             <div className="col-span-2">Bundle & Base Cost</div>
             <div className="col-span-3">Retail (GHS)</div>
             <div className="col-span-3">Agent (GHS)</div>
@@ -160,14 +160,14 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
                 <div className="md:col-span-2 md:px-2 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-start border-b md:border-none pb-2 md:pb-0">
                    <div className="font-bold font-outfit text-xl md:text-lg leading-tight">{size}</div>
                    {row.supplierPrice !== "0" && (
-                     <div className="text-[10px] text-muted-foreground font-black uppercase tracking-widest bg-muted px-2 py-1 rounded">
+                     <div className="text-xs text-muted-foreground font-black uppercase tracking-widest bg-muted px-2 py-1 rounded">
                         Cost: {row.supplierPrice}
                      </div>
                    )}
                 </div>
                 
                 <div className="md:col-span-3 space-y-1">
-                  <label className="md:hidden text-[9px] font-black uppercase tracking-widest text-muted-foreground">Retail Price (GHS)</label>
+                  <label className="md:hidden text-xs font-black uppercase tracking-widest text-muted-foreground">Retail Price (GHS)</label>
                   <input 
                     type="number" 
                     step="0.01"
@@ -179,7 +179,7 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
                 </div>
                 
                 <div className="md:col-span-3 space-y-1">
-                  <label className="md:hidden text-[9px] font-black uppercase tracking-widest text-green-600">Agent Price (GHS)</label>
+                  <label className="md:hidden text-xs font-black uppercase tracking-widest text-green-600">Agent Price (GHS)</label>
                   <input 
                     type="number" 
                     step="0.01"
@@ -191,7 +191,7 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
                 </div>
 
                 <div className="md:col-span-3 space-y-1">
-                  <label className="md:hidden text-[9px] font-black uppercase tracking-widest text-purple-600">Supplier Product ID</label>
+                  <label className="md:hidden text-xs font-black uppercase tracking-widest text-purple-600">Supplier Product ID</label>
                   <input 
                     type="number" 
                     placeholder="Supplier ID"
@@ -202,7 +202,7 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
                 </div>
 
                 <div className="md:col-span-1 flex items-center justify-between md:justify-center p-2 bg-background/50 md:bg-transparent rounded-xl">
-                  <label className="md:hidden text-[9px] font-black uppercase tracking-widest text-muted-foreground">Active Status</label>
+                  <label className="md:hidden text-xs font-black uppercase tracking-widest text-muted-foreground">Active Status</label>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input 
                       type="checkbox" 

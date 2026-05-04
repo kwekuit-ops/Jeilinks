@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
     const verifyData = await verifyRes.json();
 
-    if (!verifyRes.ok || verifyData.data.status !== "success" || verifyData.data.amount < 5000) {
+    if (!verifyRes.ok || verifyData.data.status !== "success" || verifyData.data.amount < 1000) {
       return NextResponse.json({ message: "Payment verification failed" }, { status: 400 });
     }
 
