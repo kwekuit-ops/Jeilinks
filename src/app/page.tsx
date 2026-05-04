@@ -163,8 +163,8 @@ export default async function Home() {
         orderBy: [{ network: 'asc' }, { userPrice: 'asc' }]
       }),
       prisma.order.count(),
-      session && (session.user as any).role === "ADMIN" ? getActiveSupplier() : null,
-      session && (session.user as any).role === "ADMIN" ? prisma.user.findUnique({ where: { id: (session.user as any).id } }) : null
+      (session as any)?.user && (session as any).user.role === "ADMIN" ? getActiveSupplier() : null,
+      (session as any)?.user && (session as any).user.role === "ADMIN" ? prisma.user.findUnique({ where: { id: (session as any).user.id } }) : null
     ]);
 
     bundles = bundleData;
@@ -179,7 +179,7 @@ export default async function Home() {
     console.error("Home page data fetch error:", error);
   }
 
-  const isAdmin = session && (session.user as any).role === "ADMIN";
+  const isAdmin = (session as any)?.user?.role === "ADMIN";
 
   return (
     <div className="flex flex-col min-h-screen">
