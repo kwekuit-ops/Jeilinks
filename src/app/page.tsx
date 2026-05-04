@@ -57,7 +57,7 @@ export default async function Home() {
                         <p className="text-muted-foreground">What would you like to do today?</p>
                     </div>
                     <div className="hidden sm:block">
-                        <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest border border-primary/20">
+                        <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-black uppercase tracking-widest border border-primary/20">
                             {user.role} Account
                         </span>
                     </div>
@@ -99,21 +99,21 @@ export default async function Home() {
                                         <div key={order.id} className="flex items-center justify-between text-sm">
                                             <div className="flex flex-col">
                                                 <span className="font-bold">{order.bundle.size}</span>
-                                                <span className="text-[10px] uppercase text-muted-foreground font-medium">{order.bundle.network}</span>
+                                                <span className="text-xs uppercase text-muted-foreground font-medium">{order.bundle.network}</span>
                                             </div>
                                             <div className="flex items-center space-x-2">
                                                 {(order.status === "PROCESSING" || order.status === "PENDING") && (
                                                     <RefreshOrderButton orderId={order.id} />
                                                 )}
                                                 <span className={cn(
-                                                    "px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center space-x-1",
+                                                    "px-2 py-0.5 rounded-full text-xs font-bold flex items-center space-x-1",
                                                     statusIcons[order.status]?.color || "bg-gray-100 text-gray-500"
                                                 )}>
                                                     <StatusIcon className="h-3 w-3" />
                                                     <span>{order.status}</span>
                                                 </span>
                                                 {order.supplierStatus && order.supplierStatus !== order.status && (
-                                                    <p className="text-[8px] text-muted-foreground mt-0.5 font-medium italic text-right">
+                                                    <p className="text-[10px] text-muted-foreground mt-0.5 font-medium italic text-right">
                                                         {order.supplierStatus}
                                                     </p>
                                                 )}
@@ -220,7 +220,7 @@ export default async function Home() {
                         <Package className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total Orders</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Total Orders</p>
                         <h3 className="text-3xl font-black font-outfit tracking-tighter">{totalOrdersCount.toLocaleString()}+</h3>
                     </div>
                 </div>
@@ -231,7 +231,7 @@ export default async function Home() {
                         <Zap className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-orange-600/70">Supplier Balance</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-orange-600/70">Supplier Balance</p>
                         <h3 className="text-3xl font-black font-outfit tracking-tighter text-orange-600">{formatCurrency(supplierBalance.toString())}</h3>
                     </div>
                 </Link>
@@ -242,7 +242,7 @@ export default async function Home() {
                         <Wallet className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-primary/70">My Balance</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-primary/70">My Balance</p>
                         <h3 className="text-3xl font-black font-outfit tracking-tighter text-primary">{formatCurrency(adminBalance.toString())}</h3>
                     </div>
                 </Link>

@@ -64,7 +64,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
               className={cn(
-                "px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap",
+                "px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap",
                 activeTab === tab.value
                   ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                   : "text-muted-foreground hover:bg-muted"
@@ -82,7 +82,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
             placeholder="Search orders..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-muted/50 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-muted/50 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
       </div>
@@ -105,13 +105,13 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
                   <div className="col-span-3 space-y-1 w-full">
                     <div className="flex items-center space-x-2">
                         <Hash className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-[10px] font-black font-mono uppercase text-muted-foreground">#{order.id.substring(0, 8)}</span>
+                        <span className="text-xs font-black font-mono uppercase text-muted-foreground">#{order.id.substring(0, 8)}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <User className="h-4 w-4 text-primary" />
                         <p className="font-bold text-sm truncate">{order.user?.name || "Guest Checkout"}</p>
                     </div>
-                    <p className="text-[10px] text-muted-foreground pl-6 truncate">{order.user?.email || order.paystackRef || "No Email"}</p>
+                    <p className="text-xs text-muted-foreground pl-6 truncate">{order.user?.email || order.paystackRef || "No Email"}</p>
                   </div>
 
                   {/* Bundle Column */}
@@ -124,27 +124,27 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
                     </div>
                     <div className="flex items-center space-x-2 pl-6">
                         <Phone className="h-3 w-3 text-muted-foreground" />
-                        <p className="text-[10px] font-black font-mono">{order.phone}</p>
+                        <p className="text-xs font-black font-mono">{order.phone}</p>
                     </div>
                   </div>
 
                   {/* Amount Column */}
                   <div className="col-span-2 w-full">
-                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Price Paid</p>
+                    <p className="text-xs font-black uppercase text-muted-foreground tracking-widest mb-1">Price Paid</p>
                     <p className="text-xl font-black font-outfit text-primary">{formatCurrency(order.amount)}</p>
                   </div>
 
                   {/* Status Column */}
                   <div className="col-span-2 w-full">
                     <div className={cn(
-                        "inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
+                        "inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border",
                         statusColor
                     )}>
                         <StatusIcon className="h-3 w-3" />
                         <span>{order.supplierStatus || order.status}</span>
                     </div>
                     {order.failureReason && (
-                        <p className="text-[9px] text-red-500 mt-2 font-bold leading-tight">Reason: {order.failureReason}</p>
+                        <p className="text-xs text-red-500 mt-2 font-bold leading-tight">Reason: {order.failureReason}</p>
                     )}
                   </div>
 

@@ -125,10 +125,10 @@ export default function WalletManagementClient({ initialUsers }: { initialUsers:
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/50 border-b">
               <tr>
-                <th className="px-6 py-5 font-semibold text-[11px] uppercase tracking-wider">User Account</th>
-                <th className="px-6 py-5 font-semibold text-[11px] uppercase tracking-wider text-center">Type</th>
-                <th className="px-6 py-5 font-semibold text-[11px] uppercase tracking-wider">Current Balance</th>
-                <th className="px-6 py-5 font-semibold text-[11px] uppercase tracking-wider text-right">Fund Management</th>
+                <th className="px-6 py-5 font-semibold text-xs uppercase tracking-wider">User Account</th>
+                <th className="px-6 py-5 font-semibold text-xs uppercase tracking-wider text-center">Type</th>
+                <th className="px-6 py-5 font-semibold text-xs uppercase tracking-wider">Current Balance</th>
+                <th className="px-6 py-5 font-semibold text-xs uppercase tracking-wider text-right">Fund Management</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -141,13 +141,13 @@ export default function WalletManagementClient({ initialUsers }: { initialUsers:
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-base leading-tight">{user.name || "Unknown"}</span>
-                            <span className="text-xs text-muted-foreground">{user.email}</span>
+                            <span className="text-sm text-muted-foreground">{user.email}</span>
                         </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className={cn(
-                      "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                      "px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border",
                       user.role === "ADMIN" ? "bg-red-50 text-red-600 border-red-100" :
                       user.role === "AGENT" ? "bg-indigo-50 text-indigo-600 border-indigo-100" : "bg-slate-50 text-slate-600 border-slate-100"
                     )}>
@@ -161,16 +161,16 @@ export default function WalletManagementClient({ initialUsers }: { initialUsers:
                     <div className="flex items-center justify-end space-x-2">
                         <button
                             onClick={() => openModal(user.id, user.name || user.email, 'CREDIT')}
-                            className="flex items-center space-x-1 px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-sm shadow-emerald-200"
+                            className="flex items-center space-x-1 px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:brightness-110 active:scale-95 transition-all shadow-sm shadow-emerald-200"
                         >
-                            <Plus className="h-3 w-3" />
+                            <Plus className="h-4 w-4" />
                             <span>Credit</span>
                         </button>
                         <button
                             onClick={() => openModal(user.id, user.name || user.email, 'DEBIT')}
-                            className="flex items-center space-x-1 px-4 py-2 bg-rose-500 text-white rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-sm shadow-rose-200"
+                            className="flex items-center space-x-1 px-4 py-2 bg-rose-500 text-white rounded-xl text-sm font-bold hover:brightness-110 active:scale-95 transition-all shadow-sm shadow-rose-200"
                         >
-                            <Minus className="h-3 w-3" />
+                            <Minus className="h-4 w-4" />
                             <span>Debit</span>
                         </button>
                     </div>

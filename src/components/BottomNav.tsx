@@ -75,7 +75,7 @@ export function BottomNav() {
                 {item.emoji}
               </span>
               <span className={cn(
-                "text-[10px] font-bold font-outfit transition-all duration-300",
+                "text-xs font-bold font-outfit transition-all duration-300",
                 isActive ? "opacity-100" : "opacity-60"
               )}>
                 {item.name}

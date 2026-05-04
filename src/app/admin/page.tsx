@@ -190,19 +190,19 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
             <div className="grid grid-cols-2 gap-4">
                 <Link href="/admin/pricing" className="p-4 rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all text-center flex flex-col items-center justify-center space-y-2">
                     <DollarSign className="h-5 w-5" />
-                    <p className="text-[10px] font-black uppercase tracking-widest">Set Prices</p>
+                    <p className="text-xs font-black uppercase tracking-widest">Set Prices</p>
                 </Link>
                 <Link href="/admin/users" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
                     <Users className="h-5 w-5" />
-                    <p className="text-[10px] font-black uppercase tracking-widest">Manage Users</p>
+                    <p className="text-xs font-black uppercase tracking-widest">Manage Users</p>
                 </Link>
                 <Link href="/admin/wallet" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
                     <Wallet className="h-5 w-5" />
-                    <p className="text-[10px] font-black uppercase tracking-widest">Manage Wallet</p>
+                    <p className="text-xs font-black uppercase tracking-widest">Manage Wallet</p>
                 </Link>
                 <Link href="/admin/settings" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
                     <Settings className="h-5 w-5" />
-                    <p className="text-[10px] font-black uppercase tracking-widest">API Keys</p>
+                    <p className="text-xs font-black uppercase tracking-widest">API Keys</p>
                 </Link>
             </div>
           </div>
@@ -231,7 +231,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
                             </div>
                             <div>
                                 <p className="text-sm font-bold truncate max-w-[120px]">{rank.user?.name || rank.user?.email || "Unknown Agent"}</p>
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-tight">Top Performer</p>
+                                <p className="text-xs text-muted-foreground uppercase tracking-tight">Top Performer</p>
                             </div>
                         </div>
                         <div className="text-right">
