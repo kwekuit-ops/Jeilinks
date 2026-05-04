@@ -26,19 +26,45 @@ export async function updateWithdrawalStatus(id: string, status: "COMPLETED" | "
 
   if (!withdrawal) throw new Error("Withdrawal not found");
 
-  if (status === "REJECTED" && withdrawal.status === "PENDING") {
-    // Return funds to user balance if rejected
-    await prisma.user.update({
-      where: { id: withdrawal.userId },
-      data: { balance: { increment: withdrawal.amount } }
-    });
-  }
+  const ref = `WDL-${id}-${status}`;
 
-  await prisma.withdrawal.update({
-    where: { id },
-    data: { status }
+  await prisma.$transaction(async (tx) => {
+    if (status === "REJECTED" && withdrawal.status === "PENDING") {
+        // Return funds to user balance if rejected
+        await tx.user.update({
+          where: { id: withdrawal.userId },
+          data: { balance: { increment: withdrawal.amount } }
+        });
+
+        await tx.walletTransaction.create({
+            data: {
+                userId: withdrawal.userId,
+                amount: withdrawal.amount,
+                type: "CREDIT",
+                reference: ref,
+                description: `Withdrawal rejected - Refund`
+            }
+        });
+    } else if (status === "COMPLETED" && withdrawal.status === "PENDING") {
+        // Record the debit transaction for the payout
+        await tx.walletTransaction.create({
+            data: {
+                userId: withdrawal.userId,
+                amount: withdrawal.amount,
+                type: "DEBIT",
+                reference: ref,
+                description: `Withdrawal payout completed`
+            }
+        });
+    }
+
+    await tx.withdrawal.update({
+      where: { id },
+      data: { status }
+    });
   });
 
   revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/wallet");
   return { success: true };
 }

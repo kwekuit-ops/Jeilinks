@@ -27,17 +27,56 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Payment verification failed" }, { status: 400 });
     }
 
-    // 2. Update User Role
-    const userId = (session.user as any).id;
-    const userName = session.user?.name || "agent";
-    const storeSlug = userName.toLowerCase().replace(/\s+/g, '-') + "-" + Math.floor(Math.random() * 1000);
+    // 2. Check if reference already used
+    const existingTx = await prisma.walletTransaction.findUnique({
+      where: { reference: reference }
+    });
 
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        role: "AGENT",
-        storeSlug: storeSlug,
-      },
+    if (existingTx) {
+      return NextResponse.json({ message: "Payment already processed" }, { status: 400 });
+    }
+
+    // 3. Update User Role
+    const userId = (session.user as any).id;
+    const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+    
+    if (existingUser?.role === "AGENT" && existingUser.storeSlug) {
+        // Just extend expiry or record payment
+        await prisma.walletTransaction.create({
+            data: {
+                userId,
+                amount: verifyData.data.amount / 100,
+                type: "CREDIT",
+                reference: reference,
+                description: "Agent Subscription Renewal"
+            }
+        });
+        return NextResponse.json({ message: "Subscription renewed", user: existingUser }, { status: 200 });
+    }
+
+    const userName = session.user?.name || "agent";
+    const storeSlug = userName.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
+
+    const user = await prisma.$transaction(async (tx) => {
+        const u = await tx.user.update({
+            where: { id: userId },
+            data: {
+                role: "AGENT",
+                storeSlug: storeSlug,
+            },
+        });
+
+        await tx.walletTransaction.create({
+            data: {
+                userId,
+                amount: verifyData.data.amount / 100,
+                type: "CREDIT",
+                reference: reference,
+                description: "Agent Upgrade Fee"
+            }
+        });
+
+        return u;
     });
 
     return NextResponse.json({ message: "Success", user }, { status: 200 });

@@ -77,15 +77,31 @@ export async function updateUserBalance(userId: string, amount: number) {
   try {
     await ensureAdmin();
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: { balance: { increment: amount } }
-    });
+    const type = amount >= 0 ? "CREDIT" : "DEBIT";
+    const ref = `ADMIN-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: { balance: { increment: amount } }
+      }),
+      prisma.walletTransaction.create({
+        data: {
+          userId,
+          amount: Math.abs(amount),
+          type,
+          reference: ref,
+          description: `Admin manual ${type.toLowerCase()}`
+        }
+      })
+    ]);
 
     revalidatePath("/admin/users");
     revalidatePath("/admin/wallet");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (error: any) {
+    console.error("Update balance error:", error);
     return { success: false, error: "Failed to update balance" };
   }
 }

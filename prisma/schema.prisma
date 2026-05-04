@@ -24,6 +24,7 @@ model User {
   sessions      Session[]
   orders        Order[]
   withdrawals   Withdrawal[]
+  walletTransactions WalletTransaction[]
   oneSignalPlayerId String?
 }
 
@@ -103,4 +104,13 @@ model Withdrawal {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
 }
-
+model WalletTransaction {
+  id            String   @id @default(cuid())
+  userId        String
+  amount        Decimal
+  type          String   // "CREDIT", "DEBIT", "TOPUP"
+  reference     String   @unique // Paystack reference or internal ID
+  description   String?
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+}

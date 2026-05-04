@@ -26,16 +26,37 @@ export async function topUpWallet(paystackRef: string) {
       return { success: false, error: "Payment verification failed" };
     }
 
+    // Check if reference has already been used
+    const existingTx = await prisma.walletTransaction.findUnique({
+      where: { reference: paystackRef }
+    });
+
+    if (existingTx) {
+      return { success: false, error: "This payment has already been processed" };
+    }
+
     const amountGHS = verifyData.data.amount / 100;
 
-    await prisma.user.update({
-      where: { id: (session.user as any).id },
-      data: {
-        balance: {
-          increment: amountGHS,
+    // Use a transaction to ensure both user balance and transaction record are updated
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: (session.user as any).id },
+        data: {
+          balance: {
+            increment: amountGHS,
+          },
         },
-      },
-    });
+      }),
+      prisma.walletTransaction.create({
+        data: {
+          userId: (session.user as any).id,
+          amount: amountGHS,
+          type: "TOPUP",
+          reference: paystackRef,
+          description: `Wallet top-up via Paystack`
+        }
+      })
+    ]);
 
     await sendPushNotification({
       userId: (session.user as any).id,
