@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Bell, BellOff } from "lucide-react";
 import toast from "react-hot-toast";
+import { cn } from "@/lib/utils";
 
 export default function NotificationBell() {
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -42,25 +43,29 @@ export default function NotificationBell() {
     }
   };
 
-  if (!isSupported) return null;
+  // Always render the bell for a 'fixed' look, but handle unsupported state
+  const isAvailable = isSupported && typeof window !== "undefined" && window.OneSignal;
 
   return (
     <button
       onClick={handleToggle}
-      className={`relative p-2 rounded-full transition-all hover:scale-110 active:scale-95 ${
-        isSubscribed 
+      disabled={!isAvailable}
+      className={cn(
+        "relative p-2 rounded-full transition-all active:scale-95",
+        !isAvailable ? "opacity-40 grayscale cursor-not-allowed" : "hover:scale-110",
+        isAvailable && isSubscribed 
           ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" 
-          : "bg-primary/10 text-primary animate-pulse"
-      }`}
-      title={isSubscribed ? "Notifications Active" : "Enable Notifications"}
+          : isAvailable ? "bg-primary/10 text-primary animate-pulse" : "bg-muted text-muted-foreground"
+      )}
+      title={!isAvailable ? "Notifications not supported" : isSubscribed ? "Notifications Active" : "Enable Notifications"}
     >
-      {isSubscribed ? (
+      {isSubscribed && isAvailable ? (
         <Bell className="h-5 w-5" />
       ) : (
         <BellOff className="h-5 w-5" />
       )}
-      {!isSubscribed && (
-        <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900" />
+      {isAvailable && !isSubscribed && (
+        <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900" />
       )}
     </button>
   );
