@@ -15,6 +15,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Maintenance } from "@/components/Maintenance";
 import OneSignalInit from "@/components/OneSignalInit";
+import PWAInit from "@/components/PWAInit";
 
 // const inter = Inter({ subsets: ["latin"], variable: "--font-inter", preload: true });
 // const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", preload: true });
@@ -22,6 +23,12 @@ import OneSignalInit from "@/components/OneSignalInit";
 export const metadata: Metadata = {
   title: "JEILINKS - Mobile Data Reseller",
   description: "Fast, reliable mobile data for MTN, Telecel, and AirtelTigo. Delivered within 1 to 30 minutes.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "JEILINKS",
+  },
 };
 
 export default async function RootLayout({
@@ -67,6 +74,7 @@ export default async function RootLayout({
           )}
           <Toaster position="top-center" />
           <OneSignalInit appId={settings["NEXT_PUBLIC_ONESIGNAL_APP_ID"] || ""} />
+          <PWAInit />
         </Providers>
 
 
