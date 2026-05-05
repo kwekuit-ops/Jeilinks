@@ -54,8 +54,15 @@ export async function updateAgentStorePrice(bundleId: string, customPrice: numbe
       }
     });
 
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { storeSlug: true }
+    });
+
     revalidatePath("/dashboard/store");
-    revalidatePath(`/store/${(session.user as any).storeSlug}`);
+    if (user?.storeSlug) {
+        revalidatePath(`/store/${user.storeSlug}`);
+    }
     return { success: true };
   } catch (error: any) {
     console.error("Update custom price error:", error);
@@ -77,8 +84,15 @@ export async function resetAgentStorePrice(bundleId: string) {
       }
     });
 
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { storeSlug: true }
+    });
+
     revalidatePath("/dashboard/store");
-    revalidatePath(`/store/${(session.user as any).storeSlug}`);
+    if (user?.storeSlug) {
+        revalidatePath(`/store/${user.storeSlug}`);
+    }
     return { success: true };
   } catch (error: any) {
     return { success: false, error: "Failed to reset price" };

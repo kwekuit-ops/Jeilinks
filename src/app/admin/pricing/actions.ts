@@ -55,13 +55,15 @@ export async function syncSupplierProducts() {
     for (const prod of products) {
       const normalizedNetwork = prod.network.trim().toUpperCase();
       const normalizedSize = prod.size.trim().toUpperCase();
+      const prodSizeNormalized = prod.size.replace(/\s+/g, '').trim().toUpperCase();
 
-      const existing = await prisma.bundle.findFirst({
-        where: {
-            network: { equals: normalizedNetwork, mode: 'insensitive' },
-            size: { equals: normalizedSize, mode: 'insensitive' }
-        }
+      const allNetworkBundles = await prisma.bundle.findMany({
+          where: { network: { equals: normalizedNetwork, mode: 'insensitive' } }
       });
+
+      const existing = allNetworkBundles.find(b => 
+          b.size.replace(/\s+/g, '').trim().toUpperCase() === prodSizeNormalized
+      );
 
       if (existing) {
         // Update existing bundle
