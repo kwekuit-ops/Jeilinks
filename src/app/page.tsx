@@ -13,6 +13,8 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { TopUpButton } from "./dashboard/TopUpButton";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { getActiveSupplier } from "@/lib/suppliers";
+import { getCachedBundles, getCachedOrdersCount } from "@/lib/cached-data";
+import { AdminSupplierBalance } from "@/components/AdminStatsLoader";
 
 
 export const metadata: Metadata = {
@@ -153,25 +155,17 @@ export default async function Home() {
 
   let bundles: Bundle[] = [];
   let totalOrdersCount = 0;
-  let supplierBalance = 0;
   let adminBalance = 0;
 
   try {
-    const [bundleData, ordersCount, supplier, adminUser] = await Promise.all([
-      prisma.bundle.findMany({
-        where: { isActive: true },
-        orderBy: [{ network: 'asc' }, { userPrice: 'asc' }]
-      }),
-      prisma.order.count(),
-      (session as any)?.user && (session as any).user.role === "ADMIN" ? getActiveSupplier() : null,
+    const [bundleData, ordersCount, adminUser] = await Promise.all([
+      getCachedBundles(),
+      getCachedOrdersCount(),
       (session as any)?.user && (session as any).user.role === "ADMIN" ? prisma.user.findUnique({ where: { id: (session as any).user.id } }) : null
     ]);
 
     bundles = bundleData;
     totalOrdersCount = ordersCount;
-    if (supplier) {
-        supplierBalance = await supplier.fetchBalance().catch(() => 0);
-    }
     if (adminUser) {
         adminBalance = Number(adminUser.balance);
     }
@@ -232,7 +226,9 @@ export default async function Home() {
                     </div>
                     <div>
                         <p className="text-xs font-black uppercase tracking-widest text-orange-600/70">Supplier Balance</p>
-                        <h3 className="text-3xl font-black font-outfit tracking-tighter text-orange-600">{formatCurrency(supplierBalance.toString())}</h3>
+                        <h3 className="text-3xl font-black font-outfit tracking-tighter text-orange-600">
+                            <AdminSupplierBalance />
+                        </h3>
                     </div>
                 </Link>
 

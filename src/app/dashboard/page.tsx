@@ -13,6 +13,7 @@ import { getActiveSupplier } from "@/lib/suppliers";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { getSystemSettings } from "../admin/settings/actions";
 import { SecuritySettings } from "./SecuritySettings";
+import { AdminSupplierBalance } from "@/components/AdminStatsLoader";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -70,13 +71,6 @@ export default async function DashboardPage() {
   };
 
   const rank = getRank(completedCount);
-
-  // If Admin, also fetch Supplier Balance
-  let supplierBalance = 0;
-  if (user.role === "ADMIN") {
-      const supplier = await getActiveSupplier();
-      supplierBalance = await supplier.fetchBalance();
-  }
 
   const settings = await getSystemSettings();
   const channelUrl = settings["WHATSAPP_CHANNEL_URL"] || "#";
@@ -153,7 +147,9 @@ export default async function DashboardPage() {
                     <Zap className="h-6 w-6" />
                     <h2 className="font-bold font-outfit">Supplier Account</h2>
                 </div>
-                <p className="text-4xl font-black font-outfit tracking-tight text-orange-600">{formatCurrency(supplierBalance.toString())}</p>
+                <p className="text-4xl font-black font-outfit tracking-tight text-orange-600">
+                    <AdminSupplierBalance />
+                </p>
                 <div className="mt-6 flex items-center justify-between">
                     <span className="text-[10px] font-bold uppercase text-orange-600/60">Live FuzeServe Balance</span>
                     <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
