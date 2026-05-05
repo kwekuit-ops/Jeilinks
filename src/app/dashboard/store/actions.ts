@@ -84,3 +84,44 @@ export async function resetAgentStorePrice(bundleId: string) {
     return { success: false, error: "Failed to reset price" };
   }
 }
+
+export async function updateStoreSlug(slug: string) {
+    try {
+        const session = await ensureAgent();
+        const userId = (session.user as any).id;
+
+        // Basic validation
+        if (!slug || slug.length < 3) {
+            throw new Error("Store name must be at least 3 characters long");
+        }
+
+        // Format slug: lowercase, no spaces
+        const formattedSlug = slug.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+        if (!formattedSlug) {
+            throw new Error("Invalid store name. Use letters and numbers only.");
+        }
+
+        // Check if slug is taken
+        const existing = await prisma.user.findFirst({
+            where: { 
+                storeSlug: formattedSlug,
+                id: { not: userId }
+            }
+        });
+
+        if (existing) {
+            throw new Error("This store name is already taken. Please try another.");
+        }
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { storeSlug: formattedSlug }
+        });
+
+        revalidatePath("/dashboard/store");
+        return { success: true, slug: formattedSlug };
+    } catch (error: any) {
+        return { success: false, error: error.message || "Failed to update store name" };
+    }
+}

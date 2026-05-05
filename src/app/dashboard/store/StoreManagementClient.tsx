@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
-import { Save, RotateCcw, Store, Info, ExternalLink, ShieldCheck } from "lucide-react";
+import { Save, RotateCcw, Store, Info, ExternalLink, ShieldCheck, Copy, Check, Globe } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { updateAgentStorePrice, resetAgentStorePrice } from "./actions";
+import { updateAgentStorePrice, resetAgentStorePrice, updateStoreSlug } from "./actions";
 import Link from "next/link";
 
 interface Bundle {
@@ -23,12 +23,17 @@ interface CustomPrice {
 export default function StoreManagementClient({ 
   bundles, 
   initialCustomPrices,
-  storeSlug
+  storeSlug: initialStoreSlug
 }: { 
   bundles: Bundle[], 
   initialCustomPrices: CustomPrice[],
   storeSlug: string | null
 }) {
+  const [storeSlug, setStoreSlug] = useState(initialStoreSlug || "");
+  const [newSlug, setNewSlug] = useState(initialStoreSlug || "");
+  const [isUpdatingSlug, setIsUpdatingSlug] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   const [customPrices, setCustomPrices] = useState<Record<string, string>>(() => {
     const prices: Record<string, string> = {};
     initialCustomPrices.forEach(cp => {
@@ -73,6 +78,27 @@ export default function StoreManagementClient({
     setIsProcessing(null);
   };
 
+  const handleUpdateSlug = async () => {
+    setIsUpdatingSlug(true);
+    const res = await updateStoreSlug(newSlug);
+    if (res.success) {
+      toast.success("Store link updated!");
+      setStoreSlug(res.slug!);
+      setNewSlug(res.slug!);
+    } else {
+      toast.error(res.error || "Failed to update link");
+    }
+    setIsUpdatingSlug(false);
+  };
+
+  const copyToClipboard = () => {
+    const url = `${window.location.origin}/store/${storeSlug}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    toast.success("Store link copied!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="space-y-8 animate-in pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -90,6 +116,52 @@ export default function StoreManagementClient({
                   <span>View My Store</span>
               </Link>
           )}
+      </div>
+
+      {/* Store Link Setup */}
+      <div className="glass rounded-3xl p-8 border-2 border-indigo-500/20 bg-indigo-50/5 space-y-6">
+        <div className="flex items-center space-x-3 text-indigo-600">
+            <Globe className="h-6 w-6" />
+            <h2 className="text-xl font-bold font-outfit">Store Link Configuration</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+            <div className="space-y-3">
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Store Name (Custom URL)</label>
+                <div className="flex items-center bg-muted/50 rounded-2xl border border-border px-4 py-3 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                    <span className="text-xs font-bold text-muted-foreground shrink-0 border-r border-border pr-3 mr-3">jeilinks.com/store/</span>
+                    <input 
+                        type="text"
+                        value={newSlug}
+                        onChange={(e) => setNewSlug(e.target.value)}
+                        placeholder="my-shop"
+                        className="bg-transparent border-none outline-none w-full text-sm font-bold"
+                    />
+                </div>
+                <p className="text-[10px] text-muted-foreground leading-tight italic">
+                    {storeSlug ? "You can change your store link anytime, but old links will stop working." : "Choose a unique name for your store link."}
+                </p>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+                <button 
+                    onClick={handleUpdateSlug}
+                    disabled={isUpdatingSlug || newSlug === storeSlug || !newSlug}
+                    className="flex-1 bg-indigo-600 text-white px-6 py-3.5 rounded-2xl font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                >
+                    {isUpdatingSlug ? "Updating..." : "Update Store Link"}
+                </button>
+                {storeSlug && (
+                    <button 
+                        onClick={copyToClipboard}
+                        className="p-3.5 bg-white border border-indigo-200 text-indigo-600 rounded-2xl hover:bg-indigo-50 transition-all shadow-sm"
+                        title="Copy Store Link"
+                    >
+                        {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                    </button>
+                )}
+            </div>
+        </div>
       </div>
 
       <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 p-6 rounded-3xl flex items-start space-x-4">
