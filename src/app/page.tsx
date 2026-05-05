@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import type { Bundle } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 import { BundleTabs } from "@/components/BundleTabs";
@@ -27,16 +27,21 @@ export default async function Home() {
   
   // LOGGED IN VIEW
   if (session) {
-    const user = await prisma.user.findUnique({
-      where: { id: (session.user as any).id },
-      include: {
-        orders: {
-          orderBy: { createdAt: "desc" },
-          take: 3,
-          include: { bundle: true }
+    let user = null;
+    try {
+      user = await prisma.user.findUnique({
+        where: { id: (session.user as any).id },
+        include: {
+          orders: {
+            orderBy: { createdAt: "desc" },
+            take: 3,
+            include: { bundle: true }
+          }
         }
-      }
-    });
+      });
+    } catch (err) {
+      console.error("Home page user fetch error:", err);
+    }
 
     if (!user) return null;
 
@@ -74,7 +79,7 @@ export default async function Home() {
                                 <span className="text-xs font-bold uppercase tracking-widest">Available Balance</span>
                             </div>
                             <h2 className="text-4xl font-black font-outfit tracking-tighter">
-                                {formatCurrency(user.balance.toString())}
+                                {formatCurrency(user.balance?.toString() || "0")}
                             </h2>
                         </div>
                         <div className="mt-8 flex gap-3">
@@ -100,8 +105,8 @@ export default async function Home() {
                                     return (
                                         <div key={order.id} className="flex items-center justify-between text-sm">
                                             <div className="flex flex-col">
-                                                <span className="font-bold">{order.bundle.size}</span>
-                                                <span className="text-xs uppercase text-muted-foreground font-medium">{order.bundle.network}</span>
+                                                 <span className="font-bold">{order.bundle?.size || "Custom Bundle"}</span>
+                                                 <span className="text-xs uppercase text-muted-foreground font-medium">{order.bundle?.network || "Data"}</span>
                                             </div>
                                             <div className="flex items-center space-x-2">
                                                 {(order.status === "PROCESSING" || order.status === "PENDING") && (

@@ -7,7 +7,7 @@ import { Users, ShoppingBag, DollarSign, Zap, Wallet, Settings, Trophy, Trending
 import Link from "next/link";
 import { getActiveSupplier } from "@/lib/suppliers";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import AdminStoreCard from "./AdminStoreCard";
 import DateFilter from "./DateFilter";
 

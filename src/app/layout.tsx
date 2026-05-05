@@ -12,7 +12,7 @@ import { Toaster } from "react-hot-toast";
 import { getSystemSettings } from "@/app/admin/settings/actions";
 import { headers } from "next/headers";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { Maintenance } from "@/components/Maintenance";
 import OneSignalInit from "@/components/OneSignalInit";
 
