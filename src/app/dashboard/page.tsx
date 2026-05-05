@@ -93,6 +93,7 @@ export default async function DashboardPage() {
 
   const settings = await getSystemSettings();
   const channelUrl = settings["WHATSAPP_CHANNEL_URL"] || "#";
+  const publicChannelUrl = settings["PUBLIC_WHATSAPP_URL"] || "#";
 
   const statusIcons: Record<string, any> = {
     PENDING: { color: "text-yellow-500 bg-yellow-100", icon: Clock },
@@ -175,6 +176,26 @@ export default async function DashboardPage() {
                 </div>
             </div>
         )}
+
+        {/* WhatsApp Card (PUBLIC - FOR EVERYONE) */}
+        <div className="rounded-2xl p-6 shadow-md border bg-whatsapp/10 text-whatsapp relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
+            <MessageCircle className="h-32 w-32" />
+          </div>
+          <div className="flex items-center space-x-3 mb-4">
+            <MessageCircle className="h-6 w-6" />
+            <h2 className="font-bold font-outfit">Public Channel</h2>
+          </div>
+          <p className="text-sm opacity-90 mb-6">Follow our public channel for general updates and special offers!</p>
+          <a
+            href={publicChannelUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center space-x-2 bg-whatsapp text-white px-4 py-2 rounded-xl text-sm font-bold hover:brightness-110 transition-all"
+          >
+            Join Channel
+          </a>
+        </div>
 
         {/* WhatsApp Card (AGENT ONLY) */}
         {(user.role === 'AGENT' || user.role === 'ADMIN') && (

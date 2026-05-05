@@ -148,6 +148,18 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
           </div>
 
           <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Public WhatsApp Channel Link</label>
+            <input 
+              type="text"
+              value={settings["PUBLIC_WHATSAPP_URL"] || ""}
+              onChange={(e) => setSettings({...settings, PUBLIC_WHATSAPP_URL: e.target.value})}
+              className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
+              placeholder="https://whatsapp.com/channel/..."
+            />
+            <p className="text-[10px] text-muted-foreground">This is shown to all users on their dashboard.</p>
+          </div>
+
+          <div className="space-y-2">
             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Agent Community WhatsApp Group (Private)</label>
             <input 
               type="text"
@@ -156,7 +168,7 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
               className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
               placeholder="https://chat.whatsapp.com/..."
             />
-            <p className="text-[10px] text-muted-foreground">This link is only shown to agents after they upgrade.</p>
+            <p className="text-[10px] text-muted-foreground">Only shown to agents after they upgrade.</p>
           </div>
         </div>
       </div>
