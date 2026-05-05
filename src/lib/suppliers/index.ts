@@ -1,4 +1,5 @@
 import { FuzeServeProvider } from "./fuzeserve";
+import { MySocialBoosterProvider } from "./mysocialbooster";
 import { SupplierProvider } from "./types";
 import prisma from "@/lib/prisma";
 
@@ -16,9 +17,8 @@ export async function getActiveSupplier(): Promise<SupplierProvider> {
     case "FUZESERVE":
       return new FuzeServeProvider(apiKey, apiBase);
     
-    // Future providers
-    // case "OTHER":
-    //   return new OtherProvider(apiKey, apiBase);
+    case "MYSOCIALBOOSTER":
+      return new MySocialBoosterProvider(apiKey || "", apiBase || "");
       
     default:
       return new FuzeServeProvider(apiKey, apiBase);
