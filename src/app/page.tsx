@@ -13,8 +13,9 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { TopUpButton } from "./dashboard/TopUpButton";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { getActiveSupplier } from "@/lib/suppliers";
-import { getCachedBundles, getCachedOrdersCount } from "@/lib/cached-data";
+import { getCachedBundles, getCachedOrdersCount, getDailyAdminStats } from "@/lib/cached-data";
 import { AdminSupplierBalance } from "@/components/AdminStatsLoader";
+import { DollarSign } from "lucide-react";
 
 
 export const metadata: Metadata = {
@@ -156,18 +157,23 @@ export default async function Home() {
   let bundles: Bundle[] = [];
   let totalOrdersCount = 0;
   let adminBalance = 0;
+  let dailyStats = { ordersCount: 0, dailyProfit: 0 };
 
   try {
-    const [bundleData, ordersCount, adminUser] = await Promise.all([
+    const [bundleData, ordersCount, adminUser, dailyData] = await Promise.all([
       getCachedBundles(),
       getCachedOrdersCount(),
-      (session as any)?.user && (session as any).user.role === "ADMIN" ? prisma.user.findUnique({ where: { id: (session as any).user.id } }) : null
+      (session as any)?.user && (session as any).user.role === "ADMIN" ? prisma.user.findUnique({ where: { id: (session as any).user.id } }) : null,
+      (session as any)?.user && (session as any).user.role === "ADMIN" ? getDailyAdminStats() : null
     ]);
 
     bundles = bundleData;
     totalOrdersCount = ordersCount;
     if (adminUser) {
         adminBalance = Number(adminUser.balance);
+    }
+    if (dailyData) {
+        dailyStats = dailyData;
     }
   } catch (error) {
     console.error("Home page data fetch error:", error);
@@ -207,39 +213,50 @@ export default async function Home() {
       {/* Dynamic Stats Bar - ONLY FOR ADMIN */}
       {isAdmin && (
         <section className="py-8 px-4 -mt-10 relative z-10">
-            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Total Orders */}
-                <div className="glass p-6 rounded-3xl border border-border shadow-xl flex items-center space-x-6 group hover:border-primary/30 transition-all">
-                    <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
-                        <Package className="h-6 w-6" />
+            <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Today's Orders */}
+                <Link href="/admin/orders" className="glass p-5 rounded-3xl border border-border shadow-xl flex items-center space-x-4 group hover:border-primary/30 transition-all">
+                    <div className="p-3 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
+                        <Package className="h-5 w-5" />
                     </div>
                     <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Total Orders</p>
-                        <h3 className="text-3xl font-black font-outfit tracking-tighter">{totalOrdersCount.toLocaleString()}+</h3>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Today's Orders</p>
+                        <h3 className="text-xl font-black font-outfit tracking-tighter">{dailyStats.ordersCount.toLocaleString()}</h3>
+                    </div>
+                </Link>
+
+                {/* Today's Profit */}
+                <div className="glass p-5 rounded-3xl border border-emerald-500/20 bg-emerald-50/5 shadow-xl flex items-center space-x-4 group hover:border-emerald-500/40 transition-all">
+                    <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform">
+                        <DollarSign className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/70">Today's Profit</p>
+                        <h3 className="text-xl font-black font-outfit tracking-tighter text-emerald-600">{formatCurrency(dailyStats.dailyProfit.toString())}</h3>
                     </div>
                 </div>
 
                 {/* Supplier Balance */}
-                <Link href="/admin/wallet" className="glass p-6 rounded-3xl border border-orange-500/20 bg-orange-50/5 shadow-xl flex items-center space-x-6 group hover:border-orange-500/40 transition-all">
-                    <div className="p-4 bg-orange-500/10 rounded-2xl text-orange-600 group-hover:scale-110 transition-transform">
-                        <Zap className="h-6 w-6" />
+                <Link href="/admin/wallet" className="glass p-5 rounded-3xl border border-orange-500/20 bg-orange-50/5 shadow-xl flex items-center space-x-4 group hover:border-orange-500/40 transition-all">
+                    <div className="p-3 bg-orange-500/10 rounded-2xl text-orange-600 group-hover:scale-110 transition-transform">
+                        <Zap className="h-5 w-5" />
                     </div>
                     <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-orange-600/70">Supplier Balance</p>
-                        <h3 className="text-3xl font-black font-outfit tracking-tighter text-orange-600">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-orange-600/70">Supplier Balance</p>
+                        <h3 className="text-xl font-black font-outfit tracking-tighter text-orange-600">
                             <AdminSupplierBalance />
                         </h3>
                     </div>
                 </Link>
 
                 {/* Admin Wallet */}
-                <Link href="/admin/wallet" className="glass p-6 rounded-3xl border border-primary/20 bg-primary/5 shadow-xl flex items-center space-x-6 group hover:border-primary/40 transition-all">
-                    <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
-                        <Wallet className="h-6 w-6" />
+                <Link href="/admin/wallet" className="glass p-5 rounded-3xl border border-primary/20 bg-primary/5 shadow-xl flex items-center space-x-4 group hover:border-primary/40 transition-all">
+                    <div className="p-3 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
+                        <Wallet className="h-5 w-5" />
                     </div>
                     <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-primary/70">My Balance</p>
-                        <h3 className="text-3xl font-black font-outfit tracking-tighter text-primary">{formatCurrency(adminBalance.toString())}</h3>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-primary/70">My Balance</p>
+                        <h3 className="text-xl font-black font-outfit tracking-tighter text-primary">{formatCurrency(adminBalance.toString())}</h3>
                     </div>
                 </Link>
             </div>

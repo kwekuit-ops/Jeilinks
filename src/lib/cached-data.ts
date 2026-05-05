@@ -21,3 +21,37 @@ export const getCachedOrdersCount = unstable_cache(
   ["total-orders-count"],
   { revalidate: 300, tags: ["orders"] } // Cache for 5 minutes
 );
+
+export const getDailyAdminStats = unstable_cache(
+  async () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [ordersCount, completedOrders] = await Promise.all([
+      prisma.order.count({
+        where: { createdAt: { gte: today } }
+      }),
+      prisma.order.findMany({
+        where: { 
+          createdAt: { gte: today },
+          status: "COMPLETED"
+        },
+        include: { bundle: true }
+      })
+    ]);
+
+    const dailyProfit = completedOrders.reduce((acc, order) => {
+        const amount = Number(order.amount);
+        const commission = Number(order.commissionEarned);
+        const cost = Number(order.bundle.supplierPrice || 0);
+        return acc + (amount - commission - cost);
+    }, 0);
+
+    return {
+        ordersCount,
+        dailyProfit
+    };
+  },
+  ["daily-admin-stats"],
+  { revalidate: 60, tags: ["orders"] } // Cache for 1 minute
+);
