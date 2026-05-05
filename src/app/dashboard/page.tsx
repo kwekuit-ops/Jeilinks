@@ -25,11 +25,30 @@ export default async function DashboardPage() {
   const [user, completedCount, pendingWithdrawals] = await Promise.all([
     prisma.user.findUnique({
       where: { id: (session.user as any).id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        balance: true,
+        agentExpiry: true,
         orders: {
           orderBy: { createdAt: "desc" },
           take: 10,
-          include: { bundle: true }
+          select: {
+            id: true,
+            status: true,
+            phone: true,
+            amount: true,
+            createdAt: true,
+            supplierStatus: true,
+            bundle: {
+                select: {
+                    network: true,
+                    size: true
+                }
+            }
+          }
         }
       }
     }),

@@ -35,9 +35,21 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
 
   const orders = await prisma.order.findMany({
     where,
-    include: {
-      user: true,
-      bundle: true,
+    select: {
+      id: true,
+      status: true,
+      phone: true,
+      amount: true,
+      createdAt: true,
+      supplierStatus: true,
+      supplierOrderId: true,
+      commissionEarned: true,
+      user: {
+        select: { id: true, name: true, email: true, role: true }
+      },
+      bundle: {
+        select: { network: true, size: true, supplierPrice: true }
+      }
     },
     orderBy: { createdAt: "desc" },
   });

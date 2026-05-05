@@ -167,17 +167,34 @@ export default async function Home() {
     const [bundleData, ordersCount, adminUser, dailyOrders] = await Promise.all([
       prisma.bundle.findMany({
         where: { isActive: true },
+        select: {
+          id: true,
+          network: true,
+          size: true,
+          userPrice: true,
+          agentPrice: true,
+          isActive: true
+        },
         orderBy: [{ network: 'asc' }, { userPrice: 'asc' }]
       }),
       prisma.order.count(),
-      isAdmin ? prisma.user.findUnique({ where: { id: (session?.user as any).id } }) : null,
+      isAdmin ? prisma.user.findUnique({ 
+        where: { id: (session?.user as any).id },
+        select: { balance: true }
+      }) : null,
       isAdmin ? prisma.order.findMany({
         where: { createdAt: { gte: today }, status: "COMPLETED" },
-        include: { bundle: true }
+        select: {
+            amount: true,
+            commissionEarned: true,
+            bundle: {
+                select: { supplierPrice: true }
+            }
+        }
       }) : []
     ]);
 
-    bundles = bundleData;
+    bundles = bundleData as any[];
     totalOrdersCount = ordersCount;
     
     if (adminUser) {
@@ -189,7 +206,7 @@ export default async function Home() {
         dailyStats.dailyProfit = dailyOrders.reduce((acc, order) => {
             const amount = Number(order.amount);
             const commission = Number(order.commissionEarned);
-            const cost = Number(order.bundle?.supplierPrice || 0);
+            const cost = Number((order as any).bundle?.supplierPrice || 0);
             return acc + (amount - commission - cost);
         }, 0);
     }
