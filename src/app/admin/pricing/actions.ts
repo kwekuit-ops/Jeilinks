@@ -41,44 +41,63 @@ export async function savePricing(network: string, bundles: any[]) {
 
 export async function syncSupplierProducts() {
   try {
+    const settingsList = await prisma.systemSetting.findMany();
+    const settings: Record<string, string> = {};
+    settingsList.forEach(s => settings[s.key] = s.value);
+    const activeSupplierType = settings["SUPPLIER_TYPE"] || "FUZESERVE";
+
     const supplier = await getActiveSupplier();
     const products = await supplier.fetchProducts();
     
     let updatedCount = 0;
 
     for (const prod of products) {
-      // Find matching bundle by network and size OR by supplier ID
+      // Find matching bundle by network and size
       const existing = await prisma.bundle.findFirst({
         where: {
-          OR: [
-            { supplierProductId: prod.id.toString() },
-            { 
-              network: prod.network,
-              size: prod.size 
-            }
-          ]
+            network: prod.network,
+            size: prod.size 
         }
       });
 
       if (existing) {
+        // Update Bundle (Cache current active supplier)
         await prisma.bundle.update({
           where: { id: existing.id },
           data: {
             network: prod.network,
             size: prod.size,
             supplierProductId: prod.id.toString(),
-            // Keep existing prices if they set custom ones, optionally we can auto-update the base prices.
-            // But let's just make sure the IDs hit. If it was blank, let's set the supplier's default prices:
             userPrice: existing.userPrice ? existing.userPrice : prod.price,
             agentPrice: existing.agentPrice ? existing.agentPrice : prod.resellerPrice,
             supplierPrice: prod.resellerPrice || prod.price || 0,
             isActive: true,
           }
         });
+
+        // Update Mapping
+        await prisma.supplierMapping.upsert({
+            where: {
+                bundleId_supplierType: {
+                    bundleId: existing.id,
+                    supplierType: activeSupplierType
+                }
+            },
+            update: {
+                supplierProductId: prod.id.toString(),
+                supplierPrice: prod.resellerPrice || prod.price || 0,
+            },
+            create: {
+                bundleId: existing.id,
+                supplierType: activeSupplierType,
+                supplierProductId: prod.id.toString(),
+                supplierPrice: prod.resellerPrice || prod.price || 0,
+            }
+        });
         updatedCount++;
       } else {
-        // Create it completely new if it wasn't a template
-        await prisma.bundle.create({
+        // Create new bundle
+        const newBundle = await prisma.bundle.create({
           data: {
              network: prod.network,
              size: prod.size,
@@ -89,14 +108,19 @@ export async function syncSupplierProducts() {
              isActive: true,
           }
         });
+
+        // Create Mapping
+        await prisma.supplierMapping.create({
+            data: {
+                bundleId: newBundle.id,
+                supplierType: activeSupplierType,
+                supplierProductId: prod.id.toString(),
+                supplierPrice: prod.resellerPrice || prod.price || 0,
+            }
+        });
         updatedCount++;
       }
     }
-
-    // Cleanup: Delete bundles that don't have a supplier ID (not in FuzeServe list)
-    await prisma.bundle.deleteMany({
-      where: { supplierProductId: null }
-    });
 
     revalidatePath("/admin/pricing");
     revalidatePath("/");

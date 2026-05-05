@@ -65,7 +65,8 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
               onChange={(e) => setSettings({...settings, SUPPLIER_TYPE: e.target.value})}
               className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
             >
-              <option value="FUZESERVE">FuzeServe (Active)</option>
+              <option value="FUZESERVE">FuzeServe</option>
+              <option value="MYSOCIALBOOSTER">MySocialBooster</option>
               <option value="VODAFONE_GH">Vodafone Direct (Coming Soon)</option>
               <option value="MTN_MOMO">MTN MoMo API (Coming Soon)</option>
             </select>

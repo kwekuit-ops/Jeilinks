@@ -64,9 +64,25 @@ model Bundle {
   agentPrice        Decimal
   supplierProductId String?
   supplierPrice     Decimal?
-  isActive          Boolean  @default(true)
+  isActive          Boolean            @default(true)
   orders            Order[]
   customPrices      AgentBundlePrice[]
+  mappings          SupplierMapping[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @default(now()) @updatedAt
+}
+
+model SupplierMapping {
+  id                String   @id @default(cuid())
+  bundleId          String
+  bundle            Bundle   @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  supplierType      String // e.g. "FUZESERVE", "MYSOCIALBOOSTER"
+  supplierProductId String
+  supplierPrice     Decimal?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([bundleId, supplierType])
 }
 
 model Order {
