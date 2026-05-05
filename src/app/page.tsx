@@ -93,60 +93,60 @@ export default async function Home() {
 
                 {/* ADMIN STATS BAR */}
                 {user.role === "ADMIN" && (
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-2 md:pb-4">
                         {/* Today's Orders */}
-                        <Link href="/admin/orders" className="glass p-5 rounded-3xl border border-border shadow-xl flex items-center space-x-4 group hover:border-primary/30 transition-all">
-                            <div className="p-3 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
-                                <Package className="h-5 w-5" />
+                        <Link href="/admin/orders" className="glass p-4 md:p-5 rounded-2xl md:rounded-3xl border border-border shadow-lg flex items-center space-x-3 md:space-x-4 group hover:border-primary/30 transition-all">
+                            <div className="p-2 md:p-3 bg-primary/10 rounded-xl md:rounded-2xl text-primary group-hover:scale-110 transition-transform">
+                                <Package className="h-4 w-4 md:h-5 md:w-5" />
                             </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Today's Orders</p>
-                                <h3 className="text-xl font-black font-outfit tracking-tighter">
+                            <div className="min-w-0">
+                                <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">Orders Today</p>
+                                <h3 className="text-lg md:text-xl font-black font-outfit tracking-tighter truncate">
                                     {todayOrdersCount.toLocaleString()}
                                 </h3>
                             </div>
                         </Link>
 
                         {/* Today's Profit */}
-                        <div className="glass p-5 rounded-3xl border border-emerald-500/20 bg-emerald-50/5 shadow-xl flex items-center space-x-4 group hover:border-emerald-500/40 transition-all">
-                            <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform">
-                                <DollarSign className="h-5 w-5" />
+                        <div className="glass p-4 md:p-5 rounded-2xl md:rounded-3xl border border-emerald-500/20 bg-emerald-50/5 shadow-lg flex items-center space-x-3 md:space-x-4 group hover:border-emerald-500/40 transition-all">
+                            <div className="p-2 md:p-3 bg-emerald-500/10 rounded-xl md:rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform">
+                                <DollarSign className="h-4 w-4 md:h-5 md:w-5" />
                             </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/70">Today's Profit</p>
-                                <h3 className="text-xl font-black font-outfit tracking-tighter text-emerald-600">
+                            <div className="min-w-0">
+                                <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-emerald-600/70 truncate">Profit Today</p>
+                                <h3 className="text-lg md:text-xl font-black font-outfit tracking-tighter text-emerald-600 truncate">
                                     {formatCurrency(todayProfit.toString())}
                                 </h3>
                             </div>
                         </div>
 
                         {/* Supplier Balance */}
-                        <Link href="/admin/wallet" className="glass p-5 rounded-3xl border border-orange-500/20 bg-orange-50/5 shadow-xl flex items-center space-x-4 group hover:border-orange-500/40 transition-all">
-                            <div className="p-3 bg-orange-500/10 rounded-2xl text-orange-600 group-hover:scale-110 transition-transform">
-                                <Zap className="h-5 w-5" />
+                        <Link href="/admin/wallet" className="glass p-4 md:p-5 rounded-2xl md:rounded-3xl border border-orange-500/20 bg-orange-50/5 shadow-lg flex items-center space-x-3 md:space-x-4 group hover:border-orange-500/40 transition-all">
+                            <div className="p-2 md:p-3 bg-orange-500/10 rounded-xl md:rounded-2xl text-orange-600 group-hover:scale-110 transition-transform">
+                                <Zap className="h-4 w-4 md:h-5 md:w-5" />
                             </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-orange-600/70">Supplier Balance</p>
-                                <h3 className="text-xl font-black font-outfit tracking-tighter text-orange-600">
+                            <div className="min-w-0">
+                                <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-orange-600/70 truncate">Supplier</p>
+                                <h3 className="text-lg md:text-xl font-black font-outfit tracking-tighter text-orange-600 truncate">
                                     <AdminSupplierBalance />
                                 </h3>
                             </div>
                         </Link>
 
                         {/* My Wallet */}
-                        <div className="glass p-5 rounded-3xl border border-primary/20 bg-primary/5 shadow-xl flex items-center space-x-4 group hover:border-primary/40 transition-all">
-                            <div className="p-3 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
-                                <Wallet className="h-5 w-5" />
+                        <div className="glass p-4 md:p-5 rounded-2xl md:rounded-3xl border border-primary/20 bg-primary/5 shadow-lg flex items-center space-x-3 md:space-x-4 group hover:border-primary/40 transition-all">
+                            <div className="p-2 md:p-3 bg-primary/10 rounded-xl md:rounded-2xl text-primary group-hover:scale-110 transition-transform">
+                                <Wallet className="h-4 w-4 md:h-5 md:w-5" />
                             </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-primary/70">My Wallet</p>
-                                <h3 className="text-xl font-black font-outfit tracking-tighter text-primary">{formatCurrency(user.balance?.toString() || "0")}</h3>
+                            <div className="min-w-0">
+                                <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-primary/70 truncate">My Wallet</p>
+                                <h3 className="text-lg md:text-xl font-black font-outfit tracking-tighter text-primary truncate">{formatCurrency(user.balance?.toString() || "0")}</h3>
                             </div>
                         </div>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     {/* Balance Card */}
                     <div className="glass rounded-3xl p-8 border border-primary/20 shadow-xl shadow-primary/5 flex flex-col justify-between group hover:border-primary/40 transition-all">
                         <div>
