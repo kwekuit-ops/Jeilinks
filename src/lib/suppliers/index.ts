@@ -9,18 +9,20 @@ export async function getActiveSupplier(): Promise<SupplierProvider> {
   const settings: Record<string, string> = {};
   settingsList.forEach(s => settings[s.key] = s.value);
 
-  const type = settings["SUPPLIER_TYPE"] || process.env.SUPPLIER_TYPE || "FUZESERVE";
-  const apiKey = settings["SUPPLIER_API_KEY"] || process.env.SUPPLIER_API_KEY;
-  const apiBase = settings["SUPPLIER_API_BASE"] || process.env.SUPPLIER_API_BASE;
+  const type = (settings["SUPPLIER_TYPE"] || process.env.SUPPLIER_TYPE || "FUZESERVE").toUpperCase();
+  
+  // Try to get supplier-specific keys first, fallback to generic
+  const apiKey = settings[`${type}_API_KEY`] || settings["SUPPLIER_API_KEY"] || process.env.SUPPLIER_API_KEY;
+  const apiBase = settings[`${type}_API_BASE`] || settings["SUPPLIER_API_BASE"] || process.env.SUPPLIER_API_BASE;
 
-  switch (type.toUpperCase()) {
+  switch (type) {
     case "FUZESERVE":
-      return new FuzeServeProvider(apiKey, apiBase);
+      return new FuzeServeProvider(apiKey || "", apiBase || "");
     
     case "MYSOCIALBOOSTER":
       return new MySocialBoosterProvider(apiKey || "", apiBase || "");
       
     default:
-      return new FuzeServeProvider(apiKey, apiBase);
+      return new FuzeServeProvider(apiKey || "", apiBase || "");
   }
 }

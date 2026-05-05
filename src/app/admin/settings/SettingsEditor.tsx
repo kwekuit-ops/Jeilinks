@@ -73,23 +73,23 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Supplier API Key</label>
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{settings["SUPPLIER_TYPE"] || "FUZESERVE"} API Key</label>
             <input 
               type="password"
-              value={settings["SUPPLIER_API_KEY"] || ""}
-              onChange={(e) => setSettings({...settings, SUPPLIER_API_KEY: e.target.value})}
+              value={settings[`${settings["SUPPLIER_TYPE"] || "FUZESERVE"}_API_KEY`] || settings["SUPPLIER_API_KEY"] || ""}
+              onChange={(e) => setSettings({...settings, [`${settings["SUPPLIER_TYPE"] || "FUZESERVE"}_API_KEY`]: e.target.value})}
               className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
               placeholder="fzs_live_..."
             />
-            <p className="text-[10px] text-muted-foreground">Your secret key from the supplier's dashboard.</p>
+            <p className="text-[10px] text-muted-foreground">Your secret key for the selected supplier.</p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">API Base URL</label>
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{settings["SUPPLIER_TYPE"] || "FUZESERVE"} API Base URL</label>
             <input 
               type="text"
-              value={settings["SUPPLIER_API_BASE"] || "https://fuzeserve.com/api"}
-              onChange={(e) => setSettings({...settings, SUPPLIER_API_BASE: e.target.value})}
+              value={settings[`${settings["SUPPLIER_TYPE"] || "FUZESERVE"}_API_BASE`] || settings["SUPPLIER_API_BASE"] || ""}
+              onChange={(e) => setSettings({...settings, [`${settings["SUPPLIER_TYPE"] || "FUZESERVE"}_API_BASE`]: e.target.value})}
               className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
