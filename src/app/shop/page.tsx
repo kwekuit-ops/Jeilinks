@@ -17,13 +17,29 @@ export default async function ShopPage() {
   
   let bundles: Bundle[] = [];
   try {
-    bundles = await prisma.bundle.findMany({
-      where: { isActive: true },
+    const rawBundles = await prisma.bundle.findMany({
+      where: { 
+        isActive: true,
+        supplierProductId: { not: null } // Only show bundles that can actually be bought
+      },
       orderBy: [
         { network: 'asc' },
-        { userPrice: 'asc' }
       ]
     });
+
+    // Helper to sort by data size numerically (e.g. "500MB" < "2GB" < "10GB")
+    const parseSize = (size: string) => {
+      const num = parseFloat(size);
+      if (size.toUpperCase().includes("GB")) return num * 1024;
+      if (size.toUpperCase().includes("TB")) return num * 1024 * 1024;
+      return num;
+    };
+
+    bundles = rawBundles.sort((a, b) => {
+      if (a.network !== b.network) return 0; // Already sorted by prisma
+      return parseSize(a.size) - parseSize(b.size);
+    });
+
   } catch (error) {
     console.error("Shop page bundle fetch error:", error);
   }

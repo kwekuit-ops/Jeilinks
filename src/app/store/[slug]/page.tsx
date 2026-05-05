@@ -19,18 +19,32 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
     notFound();
   }
 
-  const [bundles, customPrices] = await Promise.all([
+  const [rawBundles, customPrices] = await Promise.all([
     prisma.bundle.findMany({
-      where: { isActive: true },
+      where: { 
+        isActive: true,
+        supplierProductId: { not: null }
+      },
       orderBy: [
-        { network: 'asc' },
-        { userPrice: 'asc' }
+        { network: 'asc' }
       ]
     }),
     prisma.agentBundlePrice.findMany({
       where: { agentId: agent.id }
     })
   ]);
+
+  const parseSize = (size: string) => {
+    const num = parseFloat(size);
+    if (size.toUpperCase().includes("GB")) return num * 1024;
+    if (size.toUpperCase().includes("TB")) return num * 1024 * 1024;
+    return num;
+  };
+
+  const bundles = rawBundles.sort((a, b) => {
+    if (a.network !== b.network) return 0;
+    return parseSize(a.size) - parseSize(b.size);
+  });
 
   // Apply custom prices
   const customizedBundles = bundles.map(bundle => {
