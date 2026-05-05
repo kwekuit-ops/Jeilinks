@@ -119,7 +119,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
                     <div className="flex items-center space-x-2">
                         <Package className="h-4 w-4 text-primary" />
                         <p className="font-bold text-sm">
-                            <span className="text-primary">{order.bundle.network}</span> {order.bundle.size}
+                            <span className="text-primary">{order.bundle?.network || "Data"}</span> {order.bundle?.size || "Bundle"}
                         </p>
                     </div>
                     <div className="flex items-center space-x-2 pl-6">

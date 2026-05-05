@@ -138,7 +138,7 @@ export default function SalesClient({ initialData }: { initialData: any }) {
                <tbody className="divide-y divide-border/50">
                   {data.orders.map((order: any) => {
                      const revenue = Number(order.amount);
-                     const cost = Number(order.bundle.supplierPrice || 0);
+                     const cost = Number(order.bundle?.supplierPrice || 0);
                      const profit = revenue - cost;
                      
                      return (
@@ -153,8 +153,8 @@ export default function SalesClient({ initialData }: { initialData: any }) {
                            </td>
                            <td className="px-6 py-4">
                               <div className="flex items-center space-x-2">
-                                 <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-bold uppercase">{order.bundle.network}</span>
-                                 <span className="font-medium">{order.bundle.size}</span>
+                                 <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-bold uppercase">{order.bundle?.network || "Data"}</span>
+                                 <span className="font-medium">{order.bundle?.size || "Bundle"}</span>
                               </div>
                            </td>
                            <td className="px-6 py-4 font-bold">

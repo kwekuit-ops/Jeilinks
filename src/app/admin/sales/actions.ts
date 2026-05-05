@@ -41,7 +41,7 @@ export async function getSalesReport(startDate?: Date, endDate?: Date) {
   const stats = orders.reduce(
     (acc, order) => {
       const revenue = Number(order.amount);
-      const cost = Number(order.bundle.supplierPrice || 0);
+      const cost = Number(order.bundle?.supplierPrice || 0);
       const profit = revenue - cost;
 
       return {

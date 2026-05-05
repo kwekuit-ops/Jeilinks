@@ -92,7 +92,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   const totalProfit = completedOrdersWithBundles.reduce((acc, order) => {
       const amount = Number(order.amount);
       const commission = Number(order.commissionEarned);
-      const cost = Number(order.bundle.supplierPrice || 0);
+      const cost = Number(order.bundle?.supplierPrice || 0);
       return acc + (amount - commission - cost);
   }, 0);
 
