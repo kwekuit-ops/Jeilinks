@@ -9,8 +9,8 @@ import DateFilter from "../DateFilter";
 import StatusFilter from "./StatusFilter";
 import { Suspense } from "react";
 
-export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ date?: string, endDate?: string, status?: string }> }) {
-  const { date: startDateParam, endDate: endDateParam, status } = await searchParams;
+export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ date?: string, endDate?: string }> }) {
+  const { date: startDateParam, endDate: endDateParam } = await searchParams;
   
   const today = new Date().toISOString().split('T')[0];
   const filterDate = startDateParam || today;
@@ -28,10 +28,6 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         lte: endDate
     }
   };
-
-  if (status && status !== "ALL") {
-    where.status = status;
-  }
 
   const orders = await prisma.order.findMany({
     where,
@@ -72,7 +68,6 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         </div>
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
             <Suspense fallback={<div>Loading filters...</div>}>
-                <StatusFilter />
                 <DateFilter />
             </Suspense>
         </div>
