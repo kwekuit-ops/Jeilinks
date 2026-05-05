@@ -100,15 +100,47 @@ export async function syncSupplierProducts() {
         });
         updatedCount++;
 
-        // --- NEW: DUPLICATE CLEANUP ---
-        // Delete any other bundles with the same network and size (orphans)
-        await prisma.bundle.deleteMany({
+        // --- NEW: SAFE DUPLICATE CLEANUP ---
+        // 1. Find the orphans (duplicates)
+        const orphans = await prisma.bundle.findMany({
           where: {
             id: { not: existing.id },
             network: { equals: normalizedNetwork, mode: 'insensitive' },
             size: { equals: normalizedSize, mode: 'insensitive' }
-          }
+          },
+          select: { id: true }
         });
+
+        if (orphans.length > 0) {
+          const orphanIds = orphans.map(o => o.id);
+          
+          // 2. Migrate Orders to the main bundle
+          await prisma.order.updateMany({
+            where: { bundleId: { in: orphanIds } },
+            data: { bundleId: existing.id }
+          });
+
+          // 3. Migrate Agent Custom Prices (ignore errors if main already has one)
+          for (const orphanId of orphanIds) {
+            try {
+              const prices = await prisma.agentBundlePrice.findMany({ where: { bundleId: orphanId } });
+              for (const p of prices) {
+                 await prisma.agentBundlePrice.upsert({
+                    where: { agentId_bundleId: { agentId: p.agentId, bundleId: existing.id } },
+                    update: { customPrice: p.customPrice },
+                    create: { agentId: p.agentId, bundleId: existing.id, customPrice: p.customPrice }
+                 });
+              }
+            } catch (e) {
+              console.error("Migration error for AgentBundlePrice:", e);
+            }
+          }
+
+          // 4. Finally delete the orphans
+          await prisma.bundle.deleteMany({
+            where: { id: { in: orphanIds } }
+          });
+        }
       } else {
         // Create new bundle
         const newBundle = await prisma.bundle.create({
