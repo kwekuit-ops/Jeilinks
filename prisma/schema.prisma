@@ -62,7 +62,7 @@ model Bundle {
   size              String
   userPrice         Decimal
   agentPrice        Decimal
-  supplierProductId Int?
+  supplierProductId String?
   supplierPrice     Decimal?
   isActive          Boolean  @default(true)
   orders            Order[]

@@ -13,7 +13,6 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { TopUpButton } from "./dashboard/TopUpButton";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { getActiveSupplier } from "@/lib/suppliers";
-import { getCachedBundles, getCachedOrdersCount, getDailyAdminStats } from "@/lib/cached-data";
 import { AdminSupplierBalance } from "@/components/AdminStatsLoader";
 import { DollarSign } from "lucide-react";
 
@@ -159,21 +158,40 @@ export default async function Home() {
   let adminBalance = 0;
   let dailyStats = { ordersCount: 0, dailyProfit: 0 };
 
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
+
   try {
-    const [bundleData, ordersCount, adminUser, dailyData] = await Promise.all([
-      getCachedBundles(),
-      getCachedOrdersCount(),
-      (session as any)?.user && (session as any).user.role === "ADMIN" ? prisma.user.findUnique({ where: { id: (session as any).user.id } }) : null,
-      (session as any)?.user && (session as any).user.role === "ADMIN" ? getDailyAdminStats() : null
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [bundleData, ordersCount, adminUser, dailyOrders] = await Promise.all([
+      prisma.bundle.findMany({
+        where: { isActive: true },
+        orderBy: [{ network: 'asc' }, { userPrice: 'asc' }]
+      }),
+      prisma.order.count(),
+      isAdmin ? prisma.user.findUnique({ where: { id: (session?.user as any).id } }) : null,
+      isAdmin ? prisma.order.findMany({
+        where: { createdAt: { gte: today }, status: "COMPLETED" },
+        include: { bundle: true }
+      }) : []
     ]);
 
     bundles = bundleData;
     totalOrdersCount = ordersCount;
+    
     if (adminUser) {
         adminBalance = Number(adminUser.balance);
     }
-    if (dailyData) {
-        dailyStats = dailyData;
+
+    if (dailyOrders && dailyOrders.length > 0) {
+        dailyStats.ordersCount = dailyOrders.length;
+        dailyStats.dailyProfit = dailyOrders.reduce((acc, order) => {
+            const amount = Number(order.amount);
+            const commission = Number(order.commissionEarned);
+            const cost = Number(order.bundle?.supplierPrice || 0);
+            return acc + (amount - commission - cost);
+        }, 0);
     }
   } catch (error) {
     console.error("Home page data fetch error:", error);
