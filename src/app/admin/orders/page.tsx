@@ -41,9 +41,11 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       phone: true,
       amount: true,
       createdAt: true,
+      paymentMethod: true,
       supplierStatus: true,
       supplierOrderId: true,
       commissionEarned: true,
+      failureReason: true,
       user: {
         select: { id: true, name: true, email: true, role: true }
       },

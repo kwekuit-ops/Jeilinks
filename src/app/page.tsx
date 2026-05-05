@@ -158,13 +158,13 @@ export default async function Home() {
   let adminBalance = 0;
   let dailyStats = { ordersCount: 0, dailyProfit: 0 };
 
-  const isAdmin = (session?.user as any)?.role === "ADMIN";
+  const isAdmin = false; // Logged out view
 
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [bundleData, ordersCount, adminUser, dailyOrders] = await Promise.all([
+    const [bundleData, ordersCount] = await Promise.all([
       prisma.bundle.findMany({
         where: { isActive: true },
         select: {
@@ -177,44 +177,17 @@ export default async function Home() {
         },
         orderBy: [{ network: 'asc' }, { userPrice: 'asc' }]
       }),
-      prisma.order.count(),
-      isAdmin ? prisma.user.findUnique({ 
-        where: { id: (session?.user as any).id },
-        select: { balance: true }
-      }) : null,
-      isAdmin ? prisma.order.findMany({
-        where: { createdAt: { gte: today }, status: "COMPLETED" },
-        select: {
-            amount: true,
-            commissionEarned: true,
-            bundle: {
-                select: { supplierPrice: true }
-            }
-        }
-      }) : []
+      prisma.order.count()
     ]);
 
     bundles = bundleData as any[];
     totalOrdersCount = ordersCount;
     
-    if (adminUser) {
-        adminBalance = Number(adminUser.balance);
-    }
 
-    if (dailyOrders && dailyOrders.length > 0) {
-        dailyStats.ordersCount = dailyOrders.length;
-        dailyStats.dailyProfit = dailyOrders.reduce((acc, order) => {
-            const amount = Number(order.amount);
-            const commission = Number(order.commissionEarned);
-            const cost = Number((order as any).bundle?.supplierPrice || 0);
-            return acc + (amount - commission - cost);
-        }, 0);
-    }
   } catch (error) {
     console.error("Home page data fetch error:", error);
   }
 
-  const isAdmin = (session as any)?.user?.role === "ADMIN";
 
   return (
     <div className="flex flex-col min-h-screen">

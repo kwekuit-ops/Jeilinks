@@ -14,7 +14,7 @@ export async function savePricing(network: string, bundles: any[]) {
           data: {
             userPrice: parseFloat(bundle.userPrice),
             agentPrice: parseFloat(bundle.agentPrice),
-            supplierProductId: bundle.supplierProductId ? parseInt(bundle.supplierProductId, 10) : null,
+            supplierProductId: bundle.supplierProductId ? bundle.supplierProductId.toString() : null,
             isActive: bundle.isActive,
           },
         });
@@ -26,7 +26,7 @@ export async function savePricing(network: string, bundles: any[]) {
             size: bundle.size,
             userPrice: parseFloat(bundle.userPrice) || 0,
             agentPrice: parseFloat(bundle.agentPrice) || 0,
-            supplierProductId: bundle.supplierProductId ? parseInt(bundle.supplierProductId, 10) : null,
+            supplierProductId: bundle.supplierProductId ? bundle.supplierProductId.toString() : null,
             isActive: bundle.isActive,
           },
         });
@@ -51,7 +51,7 @@ export async function syncSupplierProducts() {
       const existing = await prisma.bundle.findFirst({
         where: {
           OR: [
-            { supplierProductId: Number(prod.id) },
+            { supplierProductId: prod.id.toString() },
             { 
               network: prod.network,
               size: prod.size 
@@ -66,7 +66,7 @@ export async function syncSupplierProducts() {
           data: {
             network: prod.network,
             size: prod.size,
-            supplierProductId: Number(prod.id),
+            supplierProductId: prod.id.toString(),
             // Keep existing prices if they set custom ones, optionally we can auto-update the base prices.
             // But let's just make sure the IDs hit. If it was blank, let's set the supplier's default prices:
             userPrice: existing.userPrice ? existing.userPrice : prod.price,
@@ -82,7 +82,7 @@ export async function syncSupplierProducts() {
           data: {
              network: prod.network,
              size: prod.size,
-             supplierProductId: Number(prod.id),
+             supplierProductId: prod.id.toString(),
              userPrice: prod.price || 0,
              agentPrice: prod.resellerPrice || prod.price || 0,
              supplierPrice: prod.resellerPrice || prod.price || 0,
