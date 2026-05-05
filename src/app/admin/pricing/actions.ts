@@ -51,12 +51,11 @@ export async function syncSupplierProducts() {
     
     let updatedCount = 0;
 
+    // 1. Process all products from supplier
     for (const prod of products) {
-      // Normalize supplier data
       const normalizedNetwork = prod.network.trim().toUpperCase();
       const normalizedSize = prod.size.trim().toUpperCase();
 
-      // Find matching bundle by network and size (case-insensitive and trimmed)
       const existing = await prisma.bundle.findFirst({
         where: {
             network: { equals: normalizedNetwork, mode: 'insensitive' },
@@ -65,11 +64,11 @@ export async function syncSupplierProducts() {
       });
 
       if (existing) {
-        // Update Bundle (Cache current active supplier)
+        // Update existing bundle
         await prisma.bundle.update({
           where: { id: existing.id },
           data: {
-            network: normalizedNetwork, // Force normalized format
+            network: normalizedNetwork,
             size: normalizedSize,
             supplierProductId: prod.id.toString(),
             userPrice: (existing.userPrice && Number(existing.userPrice) > 0) ? existing.userPrice : prod.price,
@@ -79,7 +78,6 @@ export async function syncSupplierProducts() {
           }
         });
 
-        // Update Mapping
         await prisma.supplierMapping.upsert({
             where: {
                 bundleId_supplierType: {
@@ -98,16 +96,37 @@ export async function syncSupplierProducts() {
                 supplierPrice: prod.resellerPrice || prod.price || 0,
             }
         });
-        updatedCount++;
+      } else {
+        // Create new bundle
+        const newBundle = await prisma.bundle.create({
+          data: {
+             network: normalizedNetwork,
+             size: normalizedSize,
+             supplierProductId: prod.id.toString(),
+             userPrice: prod.price || 0,
+             agentPrice: prod.resellerPrice || prod.price || 0,
+             supplierPrice: prod.resellerPrice || prod.price || 0,
+             isActive: true,
+          }
+        });
 
+        await prisma.supplierMapping.create({
+            data: {
+                bundleId: newBundle.id,
+                supplierType: activeSupplierType,
+                supplierProductId: prod.id.toString(),
+                supplierPrice: prod.resellerPrice || prod.price || 0,
+            }
+        });
+      }
+      updatedCount++;
     }
 
-    // --- NEW: SAFE GLOBAL CLEANUP (Run once at the end for performance) ---
+    // 2. Run Global Cleanup once after sync
     const allBundles = await prisma.bundle.findMany({
-      select: { network: true, size: true }
+      select: { id: true, network: true, size: true, supplierProductId: true }
     });
 
-    // Find unique network/size combinations that might have duplicates
     const seen = new Set<string>();
     const potentialDuplicates: { network: string, size: string }[] = [];
 
@@ -123,7 +142,6 @@ export async function syncSupplierProducts() {
       const normalizedNetwork = dup.network.trim().toUpperCase();
       const normalizedSize = dup.size.trim().toUpperCase();
 
-      // Find the "Main" bundle (the one with the mapping)
       const mainBundle = await prisma.bundle.findFirst({
         where: {
           network: { equals: normalizedNetwork, mode: 'insensitive' },
@@ -153,32 +171,6 @@ export async function syncSupplierProducts() {
             where: { id: { in: orphanIds } }
           });
         }
-      }
-    }
-      } else {
-        // Create new bundle
-        const newBundle = await prisma.bundle.create({
-          data: {
-             network: normalizedNetwork,
-             size: normalizedSize,
-             supplierProductId: prod.id.toString(),
-             userPrice: prod.price || 0,
-             agentPrice: prod.resellerPrice || prod.price || 0,
-             supplierPrice: prod.resellerPrice || prod.price || 0,
-             isActive: true,
-          }
-        });
-
-        // Create Mapping
-        await prisma.supplierMapping.create({
-            data: {
-                bundleId: newBundle.id,
-                supplierType: activeSupplierType,
-                supplierProductId: prod.id.toString(),
-                supplierPrice: prod.resellerPrice || prod.price || 0,
-            }
-        });
-        updatedCount++;
       }
     }
 
