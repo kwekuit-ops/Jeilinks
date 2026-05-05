@@ -6,7 +6,7 @@ import { ShoppingBag, Search, Filter, CheckCircle, XCircle, Clock, Calendar } fr
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { OrdersClient } from "./OrdersClient";
 import DateFilter from "../DateFilter";
-import StatusFilter from "./StatusFilter";
+import { AutoRefreshToggle } from "@/components/AutoRefreshToggle";
 import { Suspense } from "react";
 
 export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ date?: string, endDate?: string }> }) {
@@ -68,6 +68,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         </div>
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
             <Suspense fallback={<div>Loading filters...</div>}>
+                <AutoRefreshToggle />
                 <DateFilter />
             </Suspense>
         </div>
