@@ -57,7 +57,16 @@ export async function upgradeToAgent(paystackRef: string) {
     revalidatePath("/admin/users");
     revalidatePath("/");
     
-    return { success: true };
+    const settings = await prisma.systemSetting.findMany({
+      where: { key: { in: ["WHATSAPP_CHANNEL_URL", "SUPPORT_WHATSAPP"] } }
+    });
+    const settingsMap: Record<string, string> = {};
+    settings.forEach(s => settingsMap[s.key] = s.value);
+
+    return { 
+      success: true, 
+      whatsappGroupUrl: settingsMap["WHATSAPP_CHANNEL_URL"] || "" 
+    };
 
   } catch (error) {
     console.error("Upgrade error:", error);
