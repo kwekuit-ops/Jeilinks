@@ -52,11 +52,15 @@ export async function syncSupplierProducts() {
     let updatedCount = 0;
 
     for (const prod of products) {
-      // Find matching bundle by network and size
+      // Normalize supplier data
+      const normalizedNetwork = prod.network.trim().toUpperCase();
+      const normalizedSize = prod.size.trim().toUpperCase();
+
+      // Find matching bundle by network and size (case-insensitive and trimmed)
       const existing = await prisma.bundle.findFirst({
         where: {
-            network: prod.network,
-            size: prod.size 
+            network: { equals: normalizedNetwork, mode: 'insensitive' },
+            size: { equals: normalizedSize, mode: 'insensitive' }
         }
       });
 
@@ -65,11 +69,11 @@ export async function syncSupplierProducts() {
         await prisma.bundle.update({
           where: { id: existing.id },
           data: {
-            network: prod.network,
-            size: prod.size,
+            network: normalizedNetwork, // Force normalized format
+            size: normalizedSize,
             supplierProductId: prod.id.toString(),
-            userPrice: existing.userPrice ? existing.userPrice : prod.price,
-            agentPrice: existing.agentPrice ? existing.agentPrice : prod.resellerPrice,
+            userPrice: (existing.userPrice && Number(existing.userPrice) > 0) ? existing.userPrice : prod.price,
+            agentPrice: (existing.agentPrice && Number(existing.agentPrice) > 0) ? existing.agentPrice : prod.resellerPrice,
             supplierPrice: prod.resellerPrice || prod.price || 0,
             isActive: true,
           }
@@ -95,12 +99,22 @@ export async function syncSupplierProducts() {
             }
         });
         updatedCount++;
+
+        // --- NEW: DUPLICATE CLEANUP ---
+        // Delete any other bundles with the same network and size (orphans)
+        await prisma.bundle.deleteMany({
+          where: {
+            id: { not: existing.id },
+            network: { equals: normalizedNetwork, mode: 'insensitive' },
+            size: { equals: normalizedSize, mode: 'insensitive' }
+          }
+        });
       } else {
         // Create new bundle
         const newBundle = await prisma.bundle.create({
           data: {
-             network: prod.network,
-             size: prod.size,
+             network: normalizedNetwork,
+             size: normalizedSize,
              supplierProductId: prod.id.toString(),
              userPrice: prod.price || 0,
              agentPrice: prod.resellerPrice || prod.price || 0,
