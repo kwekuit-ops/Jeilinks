@@ -59,11 +59,11 @@ export default async function Home() {
                     createdAt: { gte: startOfToday },
                     status: "COMPLETED"
                 },
-                select: { amount: true, cost: true }
+                include: { bundle: true }
             })
         ]);
         todayOrdersCount = ordersCount;
-        todayProfit = todayOrders.reduce((acc, curr) => acc + (Number(curr.amount) - Number(curr.cost || 0)), 0);
+        todayProfit = todayOrders.reduce((acc, curr) => acc + (Number(curr.amount) - Number(curr.bundle.supplierPrice || 0)), 0);
     }
 
     const statusIcons: Record<string, any> = {
