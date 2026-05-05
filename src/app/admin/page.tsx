@@ -3,7 +3,7 @@ import { Suspense } from "react";
 export const dynamic = "force-dynamic";
 
 import { formatCurrency } from "@/lib/utils";
-import { Users, ShoppingBag, DollarSign, Zap, Wallet, Settings, Trophy, TrendingUp } from "lucide-react";
+import { Users, ShoppingBag, DollarSign, Zap, Wallet, Settings, Trophy, TrendingUp, Megaphone } from "lucide-react";
 import Link from "next/link";
 import { getActiveSupplier } from "@/lib/suppliers";
 import { getServerSession } from "next-auth";
@@ -191,6 +191,10 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
                 <Link href="/admin/pricing" className="p-4 rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all text-center flex flex-col items-center justify-center space-y-2">
                     <DollarSign className="h-5 w-5" />
                     <p className="text-xs font-black uppercase tracking-widest">Set Prices</p>
+                </Link>
+                <Link href="/admin/broadcast" className="p-4 rounded-xl bg-orange-600 text-white hover:brightness-110 transition-all text-center flex flex-col items-center justify-center space-y-2">
+                    <Megaphone className="h-5 w-5" />
+                    <p className="text-xs font-black uppercase tracking-widest">Broadcast</p>
                 </Link>
                 <Link href="/admin/users" className="p-4 rounded-xl bg-secondary hover:bg-muted transition-all text-center flex flex-col items-center justify-center space-y-2">
                     <Users className="h-5 w-5" />
