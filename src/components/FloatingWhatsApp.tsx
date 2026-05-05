@@ -14,14 +14,10 @@ export function FloatingWhatsApp({ number, channelUrl }: { number: string; chann
     cleanNumber = '233' + cleanNumber.substring(1);
   }
 
-  // Determine which URL to use
-  let finalUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(message)}`;
-  let label = "Chat Support";
-
-  if (!isPrivileged && channelUrl) {
-    finalUrl = channelUrl;
-    label = "Join Channel";
-  }
+  // The floating button should always be for Chat Support for regular users.
+  // We remove the auto-redirect to channel for non-privileged users.
+  const finalUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(message)}`;
+  const label = "Chat Support";
 
   return (
     <div className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 flex items-center justify-center">
