@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
-import { Inter, Outfit } from "next/font/google";
+// import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
@@ -16,10 +16,8 @@ import { authOptions } from "@/lib/auth";
 import { Maintenance } from "@/components/Maintenance";
 import OneSignalInit from "@/components/OneSignalInit";
 
-
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", preload: true });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", preload: true });
+// const inter = Inter({ subsets: ["latin"], variable: "--font-inter", preload: true });
+// const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", preload: true });
 
 export const metadata: Metadata = {
   title: "JEILINKS - Mobile Data Reseller",
@@ -49,7 +47,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="light">
-      <body className={`${inter.variable} ${outfit.variable} font-sans antialiased min-h-screen flex flex-col`}>
+      <body className={`font-sans antialiased min-h-screen flex flex-col`}>
         <Providers>
           {showMaintenance ? (
             <Maintenance supportNumber={supportNumber} />
