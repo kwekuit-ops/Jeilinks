@@ -6,7 +6,7 @@ import { CheckCircle2, Clock, RotateCcw, AlertCircle, Search, ClipboardList } fr
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 
 
-export default function UserOrdersClient({ initialOrders }: { initialOrders: any[] }) {
+export default function UserOrdersClient({ initialOrders, currentUserId }: { initialOrders: any[], currentUserId: string }) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredOrders = initialOrders.filter((order) => {
@@ -58,11 +58,15 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
       <div className="md:hidden space-y-4">
         {filteredOrders.map((order) => {
           const StatusIcon = statusIcons[order.status]?.icon || Clock;
+          const isStoreSale = order.agentId === currentUserId && order.userId !== currentUserId;
           return (
             <div key={order.id} className="glass rounded-2xl p-5 border border-border/50 shadow-sm space-y-4">
               <div className="flex justify-between items-start">
                 <div className="flex flex-col">
-                  <span className="font-bold text-lg">{order.bundle.size}</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-lg">{order.bundle.size}</span>
+                    {isStoreSale && <span className="bg-indigo-100 text-indigo-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase">Store Sale</span>}
+                  </div>
                   <span className="text-[10px] uppercase font-black tracking-widest text-primary">{order.bundle.network}</span>
                 </div>
                 <span className={cn(
@@ -81,8 +85,12 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
                   <p className="font-mono text-sm font-bold">{order.phone}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Price</p>
-                  <p className="text-lg font-bold text-primary">{formatCurrency(order.amount.toString())}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">
+                    {isStoreSale ? "Commission" : "Price"}
+                  </p>
+                  <p className="text-lg font-bold text-primary">
+                    {isStoreSale ? formatCurrency(order.commissionEarned?.toString() || "0") : formatCurrency(order.amount.toString())}
+                  </p>
                 </div>
               </div>
 
@@ -119,9 +127,10 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/80 border-b backdrop-blur-md">
               <tr>
+                <th className="px-6 py-5 font-bold uppercase tracking-wider text-[11px]">Type</th>
                 <th className="px-6 py-5 font-bold uppercase tracking-wider text-[11px]">Details</th>
                 <th className="px-6 py-5 font-bold uppercase tracking-wider text-[11px]">Phone Number</th>
-                <th className="px-6 py-5 font-bold uppercase tracking-wider text-[11px]">Price</th>
+                <th className="px-6 py-5 font-bold uppercase tracking-wider text-[11px]">Amount/Profit</th>
                 <th className="px-6 py-5 font-bold uppercase tracking-wider text-[11px]">Current Status</th>
                 <th className="px-6 py-5 font-bold uppercase tracking-wider text-[11px]">Timestamp</th>
                 <th className="px-6 py-5 font-bold uppercase tracking-wider text-[11px] text-right">Receipt</th>
@@ -130,8 +139,16 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
             <tbody className="divide-y divide-border">
               {filteredOrders.map((order) => {
                 const StatusIcon = statusIcons[order.status]?.icon || Clock;
+                const isStoreSale = order.agentId === currentUserId && order.userId !== currentUserId;
                 return (
                   <tr key={order.id} className="hover:bg-primary/[0.02] transition-colors">
+                    <td className="px-6 py-5">
+                        {isStoreSale ? (
+                            <span className="bg-indigo-100 text-indigo-600 text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-tight">Sale</span>
+                        ) : (
+                            <span className="bg-slate-100 text-slate-600 text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-tight">Self</span>
+                        )}
+                    </td>
                     <td className="px-6 py-5">
                         <div className="flex flex-col">
                             <span className="font-bold text-base">{order.bundle.size}</span>
@@ -142,7 +159,12 @@ export default function UserOrdersClient({ initialOrders }: { initialOrders: any
                         <span className="font-mono bg-muted px-2 py-1 rounded text-sm">{order.phone}</span>
                     </td>
                     <td className="px-6 py-5 font-bold text-lg">
-                        {formatCurrency(order.amount.toString())}
+                        <div className="flex flex-col">
+                            <span>{formatCurrency(order.amount.toString())}</span>
+                            {isStoreSale && (
+                                <span className="text-[10px] text-green-600 font-bold">+{formatCurrency(order.commissionEarned?.toString() || "0")} Profit</span>
+                            )}
+                        </div>
                     </td>
                     <td className="px-6 py-5">
                       <span className={cn(

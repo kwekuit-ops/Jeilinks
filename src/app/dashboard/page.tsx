@@ -22,7 +22,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [user, completedCount, pendingWithdrawals] = await Promise.all([
+  const [user, completedCount, pendingWithdrawals, earningsData] = await Promise.all([
     prisma.user.findUnique({
       where: { id: (session.user as any).id },
       select: {
@@ -32,6 +32,7 @@ export default async function DashboardPage() {
         role: true,
         balance: true,
         agentExpiry: true,
+        storeSlug: true,
         orders: {
           orderBy: { createdAt: "desc" },
           take: 10,
@@ -65,10 +66,15 @@ export default async function DashboardPage() {
     prisma.withdrawal.aggregate({
       where: { userId: (session.user as any).id, status: "PENDING" },
       _sum: { amount: true }
+    }),
+    prisma.order.aggregate({
+        where: { agentId: (session.user as any).id, status: "COMPLETED" },
+        _sum: { commissionEarned: true }
     })
   ]);
 
   const pendingWithdrawalSum = Number(pendingWithdrawals._sum.amount || 0);
+  const totalEarnings = Number(earningsData._sum.commissionEarned || 0);
 
   if (!user) return null;
 
@@ -226,15 +232,39 @@ export default async function DashboardPage() {
                   <Store className="h-6 w-6" />
               </div>
               <div className="space-y-1">
-                  <h2 className="font-bold text-lg">Manage My Store</h2>
-                  <p className="text-xs text-muted-foreground">Customize prices & view your store</p>
+                  <h2 className="font-bold text-lg">My Data Store</h2>
+                  {(user as any).storeSlug ? (
+                    <p className="text-[10px] font-mono text-indigo-600 truncate max-w-[150px]">
+                        jeilinks.com/store/{(user as any).storeSlug}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-amber-600 font-bold italic">Link not setup!</p>
+                  )}
               </div>
-              <Link 
-                href="/dashboard/store"
-                className="w-full py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-indigo-200"
-              >
-                  Store Settings
-              </Link>
+              <div className="grid grid-cols-2 gap-2 w-full">
+                  <Link 
+                    href="/dashboard/store"
+                    className="py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-bold hover:brightness-110 active:scale-95 transition-all shadow-md shadow-indigo-200"
+                  >
+                      Settings
+                  </Link>
+                  {(user as any).storeSlug ? (
+                    <Link 
+                        href={`/store/${(user as any).storeSlug}`}
+                        target="_blank"
+                        className="py-2 bg-white border border-indigo-200 text-indigo-600 rounded-xl text-[10px] font-bold hover:bg-indigo-50 active:scale-95 transition-all shadow-sm"
+                    >
+                        Preview
+                    </Link>
+                  ) : (
+                    <Link 
+                        href="/dashboard/store"
+                        className="py-2 bg-amber-500 text-white rounded-xl text-[10px] font-bold hover:brightness-110 active:scale-95 transition-all shadow-md shadow-amber-200"
+                    >
+                        Setup
+                    </Link>
+                  )}
+              </div>
           </div>
         )}
 
@@ -247,6 +277,10 @@ export default async function DashboardPage() {
                     </div>
                     <h2 className="font-bold text-lg">{rank.name} Agent</h2>
                     <p className="text-xs text-muted-foreground">{completedCount} Completed Sales</p>
+                    <div className="mt-2 pt-2 border-t border-border/50 w-full">
+                        <p className="text-[9px] uppercase font-black tracking-widest text-muted-foreground">Lifetime Profit</p>
+                        <p className="text-sm font-bold text-green-600">{formatCurrency(totalEarnings.toString())}</p>
+                    </div>
                 </>
             ) : (
                 <>

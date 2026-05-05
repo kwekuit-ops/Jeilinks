@@ -14,10 +14,18 @@ export default async function UserOrdersPage() {
   }
 
   const orders = await prisma.order.findMany({
-    where: { userId: (session.user as any).id },
+    where: { 
+      OR: [
+        { userId: (session.user as any).id },
+        { agentId: (session.user as any).id }
+      ]
+    },
     orderBy: { createdAt: "desc" },
     include: { bundle: true }
   });
 
-  return <UserOrdersClient initialOrders={JSON.parse(JSON.stringify(orders))} />;
+  return <UserOrdersClient 
+    initialOrders={JSON.parse(JSON.stringify(orders))} 
+    currentUserId={(session.user as any).id}
+  />;
 }

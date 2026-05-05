@@ -25,6 +25,16 @@ export async function processOrderCommission(orderId: string) {
       where: { id: order.agentId },
       data: { balance: { increment: commission } },
     }),
+    // Log transaction
+    prisma.walletTransaction.create({
+        data: {
+            userId: order.agentId,
+            amount: commission,
+            type: "CREDIT",
+            reference: `COMM-${order.id}`,
+            description: `Commission from Store Sale - Order #${order.id.slice(-6)}`
+        }
+    })
   ]);
 
   console.log(`Commission of GHS ${commission} credited to agent ${order.agentId} for order ${order.id}`);
