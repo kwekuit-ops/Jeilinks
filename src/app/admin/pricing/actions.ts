@@ -162,11 +162,34 @@ export async function syncSupplierProducts() {
 
         if (orphans.length > 0) {
           const orphanIds = orphans.map(o => o.id);
+          // 2.1 Migrate Orders to main bundle
           await prisma.order.updateMany({
             where: { bundleId: { in: orphanIds } },
             data: { bundleId: mainBundle.id }
           });
+
+          // 2.2 Migrate Agent Custom Prices
+          for (const orphanId of orphanIds) {
+             const orphanPrices = await prisma.agentBundlePrice.findMany({
+                 where: { bundleId: orphanId }
+             });
+
+             for (const op of orphanPrices) {
+                 // Try to move to mainBundle if mainBundle doesn't already have a price for this agent
+                 const hasMainPrice = await prisma.agentBundlePrice.findFirst({
+                     where: { agentId: op.agentId, bundleId: mainBundle.id }
+                 });
+
+                 if (!hasMainPrice) {
+                     await prisma.agentBundlePrice.update({
+                         where: { id: op.id },
+                         data: { bundleId: mainBundle.id }
+                     });
+                 }
+             }
+          }
           
+          // 2.3 Finally delete orphans
           await prisma.bundle.deleteMany({
             where: { id: { in: orphanIds } }
           });
