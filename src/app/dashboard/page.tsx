@@ -176,25 +176,27 @@ export default async function DashboardPage() {
             </div>
         )}
 
-        {/* WhatsApp Card */}
-        <div className="rounded-2xl p-6 shadow-md border bg-whatsapp text-white relative overflow-hidden group">
-          <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
-            <MessageCircle className="h-32 w-32" />
+        {/* WhatsApp Card (AGENT ONLY) */}
+        {(user.role === 'AGENT' || user.role === 'ADMIN') && (
+          <div className="rounded-2xl p-6 shadow-md border bg-whatsapp text-white relative overflow-hidden group">
+            <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
+              <MessageCircle className="h-32 w-32" />
+            </div>
+            <div className="flex items-center space-x-3 mb-4">
+              <MessageCircle className="h-6 w-6" />
+              <h2 className="font-bold font-outfit">Agent Community</h2>
+            </div>
+            <p className="text-sm opacity-90 mb-6">Join our exclusive community for agent support and instant updates!</p>
+            <a
+              href={channelUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-2 bg-white text-whatsapp px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-100 transition-all"
+            >
+              Join Agent Group
+            </a>
           </div>
-          <div className="flex items-center space-x-3 mb-4">
-            <MessageCircle className="h-6 w-6" />
-            <h2 className="font-bold font-outfit">WhatsApp Channel</h2>
-          </div>
-          <p className="text-sm opacity-90 mb-6">Join our community for daily offers and support updates!</p>
-          <a
-            href={channelUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 bg-white text-whatsapp px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-100 transition-all"
-          >
-            Join Channel
-          </a>
-        </div>
+        )}
 
         {/* Agent Store Card */}
         {user.role === 'AGENT' && (
