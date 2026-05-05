@@ -59,7 +59,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
           <div className="flex items-center space-x-3">
             <h1 className="text-3xl font-bold font-outfit">Platform Orders</h1>
             <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-primary/20">
-                {orders.length} {status && status !== "ALL" ? status.toLowerCase() : ""} Orders
+                {orders.length} Orders
             </span>
           </div>
           <p className="text-muted-foreground">
