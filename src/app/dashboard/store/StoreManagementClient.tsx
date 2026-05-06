@@ -49,11 +49,16 @@ export default function StoreManagementClient({
   };
 
   const handleSave = async (bundleId: string) => {
+    const bundle = bundles.find(b => b.id === bundleId);
     const priceStr = customPrices[bundleId];
     const price = parseFloat(priceStr);
     
     if (!priceStr || isNaN(price) || price <= 0) {
         return toast.error("Please enter a valid price");
+    }
+
+    if (bundle && price < Number(bundle.agentPrice)) {
+        return toast.error(`Price cannot be lower than your cost (GHS ${bundle.agentPrice})`);
     }
 
     setIsProcessing(bundleId);
@@ -243,24 +248,36 @@ export default function StoreManagementClient({
                                             handlePriceChange(bundle.id, val);
                                         }
                                     }}
-                                    className="w-full pl-12 pr-4 py-3 bg-muted/50 border-none rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    className={cn(
+                                        "w-full pl-12 pr-4 py-3 border-2 rounded-xl text-sm font-bold outline-none transition-all",
+                                        profit < 0 
+                                            ? "bg-red-50 border-red-200 text-red-600 focus:ring-red-100" 
+                                            : "bg-muted/50 border-transparent focus:ring-primary/20"
+                                    )}
                                   />
                               </div>
-                              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest px-1">
-                                  {isDefault ? "Current: System Default" : "Current: Custom Price"}
+                              <p className={cn(
+                                  "text-[10px] uppercase font-black tracking-widest px-1",
+                                  profit < 0 ? "text-red-500" : "text-muted-foreground"
+                              )}>
+                                  {profit < 0 ? "⚠️ Below Wholesale Cost" : (isDefault ? "Current: System Default" : "Current: Custom Price")}
                               </p>
                           </div>
-
+                          
                           <div className="md:col-span-2 text-center md:text-left">
                               <div className={cn(
-                                  "inline-flex flex-col px-4 py-2 rounded-2xl border",
-                                  profit >= 0 ? "bg-green-50 border-green-100 text-green-700" : "bg-red-50 border-red-100 text-red-700"
+                                  "inline-flex flex-col px-4 py-2 rounded-2xl border transition-colors",
+                                  profit > 0 ? "bg-green-50 border-green-100 text-green-700" : 
+                                  profit === 0 ? "bg-slate-50 border-slate-100 text-slate-500" :
+                                  "bg-red-50 border-red-100 text-red-700"
                               )}>
                                   <div className="flex items-baseline space-x-1">
                                     <span className="text-lg font-black font-outfit">{formatCurrency(profit.toString())}</span>
                                     {profit > 0 && <span className="text-[10px] font-bold">({profitPercentage.toFixed(1)}%)</span>}
                                   </div>
-                                  <span className="text-[9px] uppercase font-bold tracking-widest">Your Profit</span>
+                                  <span className="text-[9px] uppercase font-bold tracking-widest">
+                                    {profit < 0 ? "Your Loss" : "Your Profit"}
+                                  </span>
                               </div>
                           </div>
 
