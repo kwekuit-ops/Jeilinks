@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import type { Bundle } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 export const dynamic = "force-dynamic";
@@ -29,7 +28,7 @@ export default async function ShopPage() {
 
     const [customPrices] = await Promise.all([
       session?.user ? prisma.agentBundlePrice.findMany({
-        where: { agentId: (session.user as any).id }
+        where: { agentId: (session.user as { id: string }).id }
       }) : Promise.resolve([])
     ]);
 

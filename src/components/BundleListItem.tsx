@@ -5,7 +5,6 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { Smartphone, Zap, ArrowRight, X, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import PaystackButton from "./PaystackButton";
 import { getSystemSettings } from "@/app/admin/settings/actions";
@@ -97,7 +96,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
 
   const style = networkStyles[bundle.network] || { text: "text-primary", bg: "bg-primary/10", border: "border-primary/30", glow: "shadow-primary/20" };
 
-  const handleSuccess = async (reference: any) => {
+  const handleSuccess = async (reference: { reference: string }) => {
     setIsLoading(true);
     try {
       const res = await fetch("/api/orders", {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Save, RotateCcw, Globe, Info, ExternalLink, Copy, Check } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -42,15 +42,6 @@ export default function StoreManagementClient({
     return prices;
   });
 
-  // Sync state if props change (from server revalidation)
-  useEffect(() => {
-    const prices: Record<string, string> = {};
-    initialCustomPrices.forEach(cp => {
-      prices[cp.bundleId] = cp.customPrice.toString();
-    });
-    setCustomPrices(prices);
-  }, [initialCustomPrices]);
-  
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   const handlePriceChange = (bundleId: string, value: string) => {

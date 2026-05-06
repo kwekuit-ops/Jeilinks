@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Home, ShoppingBag, ClipboardList, Wallet, Settings } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 
@@ -11,8 +11,8 @@ export function BottomNav() {
   const pathname = usePathname();
   const isKeyboardVisible = useKeyboardVisible();
   const { data: session } = useSession();
-  const isAdmin = (session?.user as any)?.role === "ADMIN";
-  const isAgent = (session?.user as any)?.role === "AGENT";
+  const isAdmin = (session?.user as { role: string })?.role === "ADMIN";
+  const isAgent = (session?.user as { role: string })?.role === "AGENT";
 
   if (isKeyboardVisible) return null;
 

@@ -9,11 +9,11 @@ export const dynamic = "force-dynamic";
 export default async function StoreManagementPage() {
   const session = await getServerSession(authOptions);
   
-  if (!session || ((session.user as any).role !== "AGENT" && (session.user as any).role !== "ADMIN")) {
+  if (!session || ((session.user as { role: string }).role !== "AGENT" && (session.user as { role: string }).role !== "ADMIN")) {
     redirect("/login");
   }
 
-  const userId = (session.user as any).id;
+  const userId = (session.user as { id: string }).id;
 
   const [bundles, customPrices, user] = await Promise.all([
     prisma.bundle.findMany({
