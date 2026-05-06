@@ -26,12 +26,10 @@ export function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center group">
-              <img 
-                src="/logo.png" 
-                alt="JEILINKS" 
-                className="h-8 md:h-10 w-auto object-contain transition-transform group-hover:scale-105" 
-              />
+            <Link href="/" className="flex items-center space-x-2 group">
+              <span className="text-2xl font-black tracking-tighter text-primary font-outfit group-hover:scale-105 transition-transform">
+                JEI<span className="text-foreground">LINKS</span>
+              </span>
             </Link>
           </div>
 

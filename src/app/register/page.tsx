@@ -44,8 +44,10 @@ export default function RegisterPage() {
     <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8 glass p-8 rounded-2xl shadow-xl animate-in">
         <div className="text-center">
-          <Link href="/" className="inline-block mb-6">
-              <img src="/logo.png" alt="JEILINKS" className="h-16 w-auto mx-auto drop-shadow-sm" />
+          <Link href="/" className="inline-block mb-6 group">
+              <span className="text-4xl font-black tracking-tighter text-primary font-outfit group-hover:scale-105 transition-transform block">
+                  JEI<span className="text-foreground">LINKS</span>
+              </span>
           </Link>
           <h2 className="text-3xl font-bold tracking-tight font-outfit">Create account</h2>
           <p className="mt-2 text-sm text-muted-foreground">
