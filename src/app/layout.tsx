@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
-// import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
@@ -16,9 +15,6 @@ import { authOptions } from "@/lib/auth";
 import { Maintenance } from "@/components/Maintenance";
 import OneSignalInit from "@/components/OneSignalInit";
 import PWAInit from "@/components/PWAInit";
-
-// const inter = Inter({ subsets: ["latin"], variable: "--font-inter", preload: true });
-// const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", preload: true });
 
 export const metadata: Metadata = {
   title: "JEILINKS - Mobile Data Reseller",
