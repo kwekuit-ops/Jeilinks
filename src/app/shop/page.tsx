@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function ShopPage() {
   const session = await getServerSession(authOptions);
   
-  let bundles = [];
+  let bundles: any[] = [];
   try {
     const rawBundles = await prisma.bundle.findMany({
       where: { 
