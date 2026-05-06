@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { BundleTabs } from "@/components/BundleTabs";
 import { notFound } from "next/navigation";
 import { User, Store, ShieldCheck, MessageCircle } from "lucide-react";
+import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 
 export default async function AgentStorePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -113,6 +114,7 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
           </p>
         </div>
       </footer>
+      <FloatingWhatsApp number={agent.phone || ""} />
     </div>
   );
 }

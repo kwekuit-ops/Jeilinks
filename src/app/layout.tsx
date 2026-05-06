@@ -46,6 +46,7 @@ export default async function RootLayout({
   const isAuthRoute = pathname === "/login" || pathname === "/register";
   const isAdminRoute = pathname.startsWith("/admin");
   const isApiRoute = pathname.startsWith("/api");
+  const isStorePage = pathname.startsWith("/store/");
 
   const showMaintenance = isMaintenanceMode && !isAdmin && !isAdminRoute && !isAuthRoute && !isApiRoute;
 
@@ -66,10 +67,12 @@ export default async function RootLayout({
               </main>
               <Footer />
               <BottomNav />
-              <FloatingWhatsApp 
-                number={supportNumber} 
-                channelUrl={settings["WHATSAPP_CHANNEL_URL"] || ""} 
-              />
+              {!isStorePage && (
+                <FloatingWhatsApp 
+                    number={supportNumber} 
+                    channelUrl={settings["WHATSAPP_CHANNEL_URL"] || ""} 
+                />
+              )}
             </>
           )}
           <Toaster position="top-center" />
