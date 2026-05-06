@@ -67,5 +67,3 @@ export function FloatingWhatsApp({ number, channelUrl }: { number: string; chann
     </div>
   );
 }
-
-}
