@@ -60,6 +60,10 @@ export default function StoreManagementClient({
     const res = await updateAgentStorePrice(bundleId, price);
     if (res.success) {
       toast.success("Price updated successfully!");
+      if (res.slug && !storeSlug) {
+          setStoreSlug(res.slug);
+          setNewSlug(res.slug);
+      }
     } else {
       toast.error(res.error || "Failed to update price");
     }
@@ -132,7 +136,10 @@ export default function StoreManagementClient({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
             <div className="space-y-3">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Store Name (Custom URL)</label>
-                <div className="flex items-center bg-muted/50 rounded-2xl border border-border px-4 py-3 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                <div className={cn(
+                    "flex items-center bg-muted/50 rounded-2xl border px-4 py-3 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all",
+                    !storeSlug && "border-amber-400 bg-amber-50/50"
+                )}>
                     <span className="text-xs font-bold text-muted-foreground shrink-0 border-r border-border pr-3 mr-3">jeilinks.com/store/</span>
                     <input 
                         type="text"
@@ -143,18 +150,29 @@ export default function StoreManagementClient({
                     />
                 </div>
                 <p className="text-[10px] text-muted-foreground leading-tight italic">
-                    {storeSlug ? "You can change your store link anytime, but old links will stop working." : "Choose a unique name for your store link."}
+                    {!storeSlug ? "⚠️ Your store link is not set. Choose a name above or save a price below to auto-generate one." : "You can change your store link anytime, but old links will stop working."}
                 </p>
             </div>
             
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-wrap items-center gap-3">
                 <button 
                     onClick={handleUpdateSlug}
                     disabled={isUpdatingSlug || newSlug === storeSlug || !newSlug}
-                    className="flex-1 bg-indigo-600 text-white px-6 py-3.5 rounded-2xl font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                    className="flex-1 min-w-[200px] bg-indigo-600 text-white px-6 py-3.5 rounded-2xl font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
                 >
                     {isUpdatingSlug ? "Updating..." : "Update Store Link"}
                 </button>
+                {!storeSlug && (
+                    <button 
+                        onClick={() => {
+                            const random = Math.floor(1000 + Math.random() * 9000);
+                            setNewSlug(`shop-${random}`);
+                        }}
+                        className="px-6 py-3.5 bg-amber-100 text-amber-700 rounded-2xl font-bold hover:bg-amber-200 transition-all shadow-sm border border-amber-200"
+                    >
+                        Suggest Name
+                    </button>
+                )}
                 {storeSlug && (
                     <button 
                         onClick={copyToClipboard}

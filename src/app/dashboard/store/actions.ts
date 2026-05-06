@@ -54,16 +54,29 @@ export async function updateAgentStorePrice(bundleId: string, customPrice: numbe
       }
     });
 
+    // Check if user has a store slug, if not, generate one
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { storeSlug: true }
+      select: { storeSlug: true, name: true }
     });
 
-    revalidatePath("/dashboard/store");
-    if (user?.storeSlug) {
-        revalidatePath(`/store/${user.storeSlug}`);
+    let slug = user?.storeSlug;
+    if (!slug) {
+        const baseName = user?.name || "store";
+        const randomStr = Math.floor(1000 + Math.random() * 9000).toString();
+        slug = baseName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') + "-" + randomStr;
+        
+        await prisma.user.update({
+            where: { id: userId },
+            data: { storeSlug: slug }
+        });
     }
-    return { success: true };
+
+    revalidatePath("/dashboard/store");
+    if (slug) {
+        revalidatePath(`/store/${slug}`);
+    }
+    return { success: true, slug: slug };
   } catch (error: any) {
     console.error("Update custom price error:", error);
     return { success: false, error: error.message || "Failed to update price" };
