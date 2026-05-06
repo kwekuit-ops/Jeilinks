@@ -136,39 +136,72 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
 
   return (
     <div className={cn(
-        "group relative transition-all duration-500 bg-white border rounded-[2rem] overflow-hidden",
+        "group relative transition-all duration-500 bg-white border rounded-[2rem] md:rounded-[2.5rem] overflow-hidden",
         isExpanding ? "ring-2 ring-primary shadow-2xl scale-[1.01]" : "hover:shadow-xl hover:border-primary/30",
         isSuccess && "ring-2 ring-green-500"
     )}>
-      <div className="p-4 md:p-8 flex items-center justify-between gap-4">
-        <div className="flex items-center space-x-3 md:space-x-6 min-w-0 flex-shrink">
-          <div className={cn("p-3 md:p-5 rounded-2xl md:rounded-[1.5rem] shrink-0 transition-transform group-hover:scale-110", style.bg, style.text)}>
-            <Smartphone className="h-6 w-6 md:h-8 md:w-8" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="text-base md:text-2xl font-black font-outfit tracking-tight leading-tight">{bundle.size}</h3>
-            <p className={cn("text-[9px] md:text-xs font-black uppercase tracking-[0.2em]", style.text)}>{bundle.network}</p>
-          </div>
+      {/* Agent Savings Badge - Top Right */}
+      {(role === "AGENT" || role === "ADMIN") && (
+        <div className="absolute top-4 right-6 z-10 animate-in fade-in slide-in-from-right-4 duration-700">
+            <span className="bg-emerald-500 text-white text-[9px] font-black px-2 py-1 rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
+                {role} Deal
+            </span>
         </div>
- 
-        <div className="flex items-center space-x-3 md:space-x-8 shrink-0">
-          <div className="text-right">
-            <p className="text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Price</p>
-            <p className="text-lg md:text-3xl font-black text-slate-900 font-outfit leading-none">{formatCurrency(price)}</p>
+      )}
+
+      <div className="p-4 md:p-8">
+        <div className="grid grid-cols-[48px_1fr] md:grid-cols-[80px_1fr_auto] items-center gap-3 md:gap-8">
+          {/* Icon Area */}
+          <div className={cn(
+            "p-3 md:p-5 rounded-2xl md:rounded-[1.5rem] flex items-center justify-center transition-transform group-hover:scale-110", 
+            style.bg, style.text
+          )}>
+            <Smartphone className="h-5 w-5 md:h-8 md:w-8" />
+          </div>
+
+          {/* Details & Price Area (Stacked on mobile, side-by-side on desktop) */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-8 min-w-0">
+            <div className="min-w-0">
+              <h3 className="text-lg md:text-2xl font-black font-outfit tracking-tight leading-tight truncate">
+                {bundle.size}
+              </h3>
+              <p className={cn("text-[9px] md:text-xs font-black uppercase tracking-[0.2em] opacity-70", style.text)}>
+                {bundle.network}
+              </p>
+            </div>
+
+            <div className="flex items-end md:items-center space-x-2 md:space-x-4">
+              <div className="md:text-right">
+                <p className="hidden md:block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Price</p>
+                <div className="flex items-center space-x-2">
+                    {(role === "AGENT" || role === "ADMIN") && (
+                        <span className="text-xs md:text-sm text-slate-300 line-through font-bold">
+                            {formatCurrency(Number(bundle.userPrice))}
+                        </span>
+                    )}
+                    <p className="text-xl md:text-3xl font-black text-slate-900 font-outfit leading-none">
+                        {formatCurrency(price)}
+                    </p>
+                </div>
+              </div>
+            </div>
           </div>
           
-          <button
-            onClick={handleBuyClick}
-            className={cn(
-                "flex items-center space-x-2 px-4 md:px-8 py-3 md:py-4 rounded-2xl md:rounded-[1.3rem] font-black transition-all shrink-0 active:scale-95 text-xs md:text-base",
-                isExpanding 
-                    ? "bg-slate-100 text-slate-600" 
-                    : "bg-primary text-white shadow-xl shadow-primary/25 hover:brightness-110"
-            )}
-          >
-            {isExpanding ? <X className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
-            <span>{isExpanding ? "Close" : "Buy Now"}</span>
-          </button>
+          {/* Action Button Area */}
+          <div className="col-span-2 md:col-span-1 pt-2 md:pt-0">
+            <button
+                onClick={handleBuyClick}
+                className={cn(
+                    "w-full flex items-center justify-center space-x-2 px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-[1.3rem] font-black transition-all active:scale-95 text-xs md:text-base",
+                    isExpanding 
+                        ? "bg-slate-100 text-slate-600" 
+                        : "bg-primary text-white shadow-xl shadow-primary/25 hover:brightness-110"
+                )}
+            >
+                {isExpanding ? <X className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+                <span>{isExpanding ? "Close" : "Buy Now"}</span>
+            </button>
+          </div>
         </div>
       </div>
 
