@@ -12,38 +12,29 @@ export function BottomNav() {
   const isKeyboardVisible = useKeyboardVisible();
   const { data: session } = useSession();
   const isAdmin = (session?.user as any)?.role === "ADMIN";
+  const isAgent = (session?.user as any)?.role === "AGENT";
 
   if (isKeyboardVisible) return null;
 
-  const navItems = [
-    {
-      name: "Home",
-      href: "/",
-      emoji: "🏠",
-    },
-    {
-      name: "Shop",
-      href: "/shop",
-      emoji: "🛍️",
-    },
-    {
-      name: "Orders",
-      href: isAdmin ? "/admin/orders" : (session ? "/dashboard/orders" : "/track"),
-      emoji: "📦",
-    },
-    {
-      name: "Wallet",
-      href: isAdmin ? "/admin/wallet" : "/dashboard",
-      emoji: "💳",
-      auth: true,
-    },
-    {
-      name: isAdmin ? "Admin" : "Profile",
-      href: isAdmin ? "/admin" : "/dashboard",
-      emoji: "⚙️",
-      auth: true,
-    },
-  ];
+  const navItems = [];
+  navItems.push({ name: "Home", href: "/", emoji: "🏠" });
+
+  if (isAdmin) {
+    navItems.push({ name: "Orders", href: "/admin/orders", emoji: "📦" });
+    navItems.push({ name: "Pricing", href: "/admin/pricing", emoji: "💰" });
+    navItems.push({ name: "Admin", href: "/admin", emoji: "⚙️" });
+  } else if (session) {
+    navItems.push({ name: "Shop", href: "/shop", emoji: "🛍️" });
+    navItems.push({ name: "Orders", href: "/dashboard/orders", emoji: "📦" });
+    if (isAgent) {
+      navItems.push({ name: "Store", href: "/dashboard/store", emoji: "🏪" });
+    }
+    navItems.push({ name: "Dashboard", href: "/dashboard", emoji: "👤" });
+  } else {
+    navItems.push({ name: "Shop", href: "/shop", emoji: "🛍️" });
+    navItems.push({ name: "Track", href: "/track", emoji: "📦" });
+    navItems.push({ name: "Login", href: "/login", emoji: "🔑" });
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[999] bg-white dark:bg-slate-950 border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
@@ -51,13 +42,7 @@ export function BottomNav() {
         {navItems.map((item) => {
           if (item.auth && !session) return null;
 
-          const isActive = item.href === "/"
-            ? pathname === "/"
-            : item.href === "/admin"
-              ? pathname === "/admin" || (pathname.startsWith("/admin") && !pathname.startsWith("/admin/wallet") && !pathname.startsWith("/admin/orders"))
-              : item.href === "/dashboard" && item.name === (isAdmin ? "Admin" : "Profile")
-                ? pathname === "/dashboard"
-                : pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/")) || (pathname.startsWith(item.href) && item.href !== "/admin" && item.href !== "/dashboard");
+          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"));
 
           return (
             <Link
