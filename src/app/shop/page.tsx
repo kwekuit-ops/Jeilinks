@@ -15,19 +15,25 @@ export const metadata: Metadata = {
 export default async function ShopPage() {
   const session = await getServerSession(authOptions);
   
-  let bundles: Bundle[] = [];
+  let bundles = [];
   try {
     const rawBundles = await prisma.bundle.findMany({
       where: { 
         isActive: true,
-        supplierProductId: { not: null } // Only show bundles that can actually be bought
+        supplierProductId: { not: null }
       },
       orderBy: [
         { network: 'asc' },
       ]
     });
 
-    // Helper to sort by data size numerically (e.g. "500MB" < "2GB" < "10GB")
+    const [customPrices] = await Promise.all([
+      session?.user ? prisma.agentBundlePrice.findMany({
+        where: { agentId: (session.user as any).id }
+      }) : Promise.resolve([])
+    ]);
+
+    // Helper to sort by data size numerically
     const parseSize = (size: string) => {
       const num = parseFloat(size);
       if (size.toUpperCase().includes("GB")) return num * 1024;
@@ -36,8 +42,17 @@ export default async function ShopPage() {
     };
 
     bundles = rawBundles.sort((a, b) => {
-      if (a.network !== b.network) return 0; // Already sorted by prisma
+      if (a.network !== b.network) return 0;
       return parseSize(a.size) - parseSize(b.size);
+    }).map(bundle => {
+      const custom = customPrices.find(cp => cp.bundleId === bundle.id);
+      if (custom) {
+        return {
+          ...bundle,
+          userPrice: custom.customPrice
+        };
+      }
+      return bundle;
     });
 
   } catch (error) {

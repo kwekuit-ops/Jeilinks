@@ -34,6 +34,7 @@ export default async function StoreManagementPage() {
 
   return (
     <StoreManagementClient 
+        key={`${customPrices.length}-${user?.storeSlug || 'no-slug'}`}
         bundles={JSON.parse(JSON.stringify(bundles))} 
         initialCustomPrices={JSON.parse(JSON.stringify(customPrices))}
         storeSlug={user?.storeSlug || null}
