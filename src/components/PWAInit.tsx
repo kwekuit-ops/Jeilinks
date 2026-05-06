@@ -1,80 +1,125 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Download, Smartphone } from "lucide-react";
+import { X, Download, Smartphone, Share, PlusSquare } from "lucide-react";
 
 export default function PWAInit() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showBanner, setShowBanner] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
-    // 1. Register Service Worker
+    // 1. Check if already installed
+    const standalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+    setIsStandalone(standalone);
+
+    // 2. Detect iOS
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(ios);
+
+    // 3. Register Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').then((reg) => {
         console.log('SW Registered', reg);
       });
     }
 
-    // 2. Handle the Before Install Prompt
+    // 4. Handle the Before Install Prompt (Android/Chrome)
     const handler = (e: any) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e);
-      // Update UI notify the user they can install the PWA
-      setShowBanner(true);
+      if (!standalone) {
+        setShowBanner(true);
+      }
     };
 
     window.addEventListener('beforeinstallprompt', handler);
+
+    // 5. For iOS, show banner if not standalone
+    if (ios && !standalone) {
+      const hasDismissed = localStorage.getItem('pwa-banner-dismissed');
+      if (!hasDismissed) {
+        setShowBanner(true);
+      }
+    }
 
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   const handleInstall = async () => {
+    if (isIOS) {
+      // For iOS, we just show instructions (the banner itself changes state or we can use an alert)
+      return;
+    }
+
     if (!deferredPrompt) return;
-
-    // Show the install prompt
     deferredPrompt.prompt();
-
-    // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
     console.log(`User response to the install prompt: ${outcome}`);
-
-    // We've used the prompt, and can't use it again, throw it away
     setDeferredPrompt(null);
     setShowBanner(false);
   };
 
-  if (!showBanner) return null;
+  const dismissBanner = () => {
+    setShowBanner(false);
+    if (isIOS) {
+      localStorage.setItem('pwa-banner-dismissed', 'true');
+    }
+  };
+
+  if (!showBanner || isStandalone) return null;
 
   return (
-    <div className="fixed bottom-28 left-4 right-4 z-[60] animate-in slide-in-from-bottom-10 fade-in duration-500">
-      <div className="bg-slate-900 text-white p-4 rounded-3xl shadow-2xl flex items-center justify-between border border-white/10 backdrop-blur-xl">
-        <div className="flex items-center space-x-3">
-          <div className="bg-primary/20 p-2 rounded-xl border border-primary/30">
-            <Smartphone className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-bold text-sm">Add JEILINKS to Home Screen</h3>
-            <p className="text-[10px] text-slate-400 font-medium">Enjoy a faster experience and instant access!</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
+    <div className="fixed bottom-24 left-4 right-4 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-700">
+      <div className="relative overflow-hidden bg-slate-900/90 text-white p-5 rounded-[2rem] shadow-2xl border border-white/20 backdrop-blur-2xl">
+        {/* Decorative background glow */}
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="relative flex flex-col space-y-4">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-gradient-to-br from-primary to-blue-600 p-3 rounded-2xl shadow-lg shadow-primary/20">
+                <Smartphone className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base tracking-tight">Install JEILINKS App</h3>
+                <p className="text-xs text-slate-400 font-medium">Fast access & better experience</p>
+              </div>
+            </div>
             <button 
+              onClick={dismissBanner}
+              className="p-2 -mr-2 text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {isIOS ? (
+            <div className="bg-white/5 rounded-2xl p-4 border border-white/10 space-y-3">
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                To install, tap the <span className="inline-flex items-center px-1.5 py-0.5 bg-white/10 rounded-md mx-0.5"><Share className="h-3 w-3 inline" /></span> icon in Safari and select <span className="font-bold text-white uppercase tracking-wider mx-1 text-[10px]">"Add to Home Screen"</span>
+              </p>
+              <div className="flex justify-center pt-1">
+                <div className="animate-bounce">
+                    <PlusSquare className="h-5 w-5 text-primary" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-end pt-1">
+              <button 
                 onClick={handleInstall}
-                className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20 flex items-center space-x-2"
-            >
-                <Download className="h-3 w-3" />
-                <span>Install</span>
-            </button>
-            <button 
-                onClick={() => setShowBanner(false)}
-                className="p-2 text-slate-400 hover:text-white"
-            >
-                <X className="h-4 w-4" />
-            </button>
+                className="w-full bg-primary hover:bg-blue-600 text-white py-3 rounded-2xl text-sm font-black transition-all active:scale-[0.98] shadow-xl shadow-primary/30 flex items-center justify-center space-x-2 group"
+              >
+                <Download className="h-4 w-4 group-hover:translate-y-0.5 transition-transform" />
+                <span>INSTALL NOW</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+

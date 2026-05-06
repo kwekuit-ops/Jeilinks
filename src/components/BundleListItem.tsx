@@ -1,8 +1,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { formatCurrency } from "@/lib/utils";
-import { Smartphone, Zap, ArrowRight, X } from "lucide-react";
+import { formatCurrency, cn } from "@/lib/utils";
+import { Smartphone, Zap, ArrowRight, X, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,6 @@ interface BundleListItemProps {
 
 export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   const { data: session } = useSession();
-  const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanding, setIsExpanding] = useState(false);
@@ -52,7 +51,6 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
 
   const role = (session?.user as any)?.role || "USER";
   const price = (role === "AGENT" || role === "ADMIN") ? bundle.agentPrice : bundle.userPrice;
-
 
   const handleWalletPay = async () => {
     if (!phoneNumber || !/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, ""))) {
@@ -89,11 +87,13 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
     }
   };
 
-  const networkColors: Record<string, string> = {
-    MTN: "text-mtn",
-    Telecel: "text-telecel",
-    AirtelTigo: "text-airteltigo",
+  const networkStyles: Record<string, { text: string; bg: string; border: string; glow: string }> = {
+    MTN: { text: "text-mtn", bg: "bg-mtn/10", border: "border-mtn/30", glow: "shadow-mtn/20" },
+    Telecel: { text: "text-telecel", bg: "bg-telecel/10", border: "border-telecel/30", glow: "shadow-telecel/20" },
+    AirtelTigo: { text: "text-airteltigo", bg: "bg-airteltigo/10", border: "border-airteltigo/30", glow: "shadow-airteltigo/20" },
   };
+
+  const style = networkStyles[bundle.network] || { text: "text-primary", bg: "bg-primary/10", border: "border-primary/30", glow: "shadow-primary/20" };
 
   const handleSuccess = async (reference: any) => {
     setIsLoading(true);
@@ -129,62 +129,77 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
     setIsExpanding(!isExpanding);
   };
 
+  const isValidPhone = /^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, ""));
+
   return (
-    <div className={`group relative transition-all duration-300 bg-card border border-border/50 rounded-xl overflow-hidden ${isExpanding ? 'ring-2 ring-primary shadow-2xl' : 'hover:shadow-lg hover:border-primary/30'}`}>
-      <div className="p-2 md:p-6 flex items-center justify-between gap-1 md:gap-4">
-        <div className="flex items-center space-x-1.5 md:space-x-4 min-w-0 flex-shrink">
-          <div className={`p-1.5 md:p-3 rounded-lg md:rounded-xl bg-muted/50 ${networkColors[bundle.network]} shrink-0`}>
-            <Smartphone className="h-4 w-4 md:h-6 md:w-6" />
+    <div className={cn(
+        "group relative transition-all duration-500 bg-white border rounded-[2rem] overflow-hidden",
+        isExpanding ? "ring-2 ring-primary shadow-2xl scale-[1.01]" : "hover:shadow-xl hover:border-primary/30",
+        isSuccess && "ring-2 ring-green-500"
+    )}>
+      <div className="p-4 md:p-8 flex items-center justify-between gap-4">
+        <div className="flex items-center space-x-3 md:space-x-6 min-w-0 flex-shrink">
+          <div className={cn("p-3 md:p-5 rounded-2xl md:rounded-[1.5rem] shrink-0 transition-transform group-hover:scale-110", style.bg, style.text)}>
+            <Smartphone className="h-6 w-6 md:h-8 md:w-8" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-[13px] md:text-lg font-bold font-outfit leading-tight">{bundle.size}</h3>
-            <p className="text-[7px] md:text-xs text-muted-foreground uppercase font-black tracking-widest">{bundle.network}</p>
+            <h3 className="text-base md:text-2xl font-black font-outfit tracking-tight leading-tight">{bundle.size}</h3>
+            <p className={cn("text-[9px] md:text-xs font-black uppercase tracking-[0.2em]", style.text)}>{bundle.network}</p>
           </div>
         </div>
  
-        <div className="flex items-center space-x-1.5 md:space-x-6 shrink-0">
+        <div className="flex items-center space-x-3 md:space-x-8 shrink-0">
           <div className="text-right">
-            <p className="text-[7px] md:text-xs text-muted-foreground font-medium uppercase leading-none mb-0.5">Price</p>
-            <p className="text-sm md:text-xl font-bold text-primary font-outfit leading-none">{formatCurrency(price)}</p>
+            <p className="text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Price</p>
+            <p className="text-lg md:text-3xl font-black text-slate-900 font-outfit leading-none">{formatCurrency(price)}</p>
           </div>
           
           <button
             onClick={handleBuyClick}
-            className={`flex items-center space-x-1 md:space-x-2 px-2.5 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-bold transition-all shrink-0 ${
-              isExpanding 
-                ? 'bg-secondary text-foreground' 
-                : 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95'
-            }`}
+            className={cn(
+                "flex items-center space-x-2 px-4 md:px-8 py-3 md:py-4 rounded-2xl md:rounded-[1.3rem] font-black transition-all shrink-0 active:scale-95 text-xs md:text-base",
+                isExpanding 
+                    ? "bg-slate-100 text-slate-600" 
+                    : "bg-primary text-white shadow-xl shadow-primary/25 hover:brightness-110"
+            )}
           >
-            {isExpanding ? <X className="h-3 w-3 md:h-4 md:w-4" /> : <Zap className="h-3 w-3 md:h-4 md:w-4" />}
-            <span className="text-[9px] md:text-sm">{isExpanding ? "Cancel" : "Buy"}</span>
+            {isExpanding ? <X className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+            <span>{isExpanding ? "Close" : "Buy Now"}</span>
           </button>
         </div>
       </div>
 
       {isExpanding && (
-        <div className="p-6 bg-muted/20 border-t border-dashed animate-in slide-in-from-top-4 duration-300">
+        <div className="p-6 md:p-10 bg-slate-50/80 border-t border-dashed border-slate-200 animate-in slide-in-from-top-8 duration-500">
           {isSuccess ? (
-             <div className="max-w-md mx-auto text-center space-y-6 py-4 animate-in zoom-in duration-500">
-                <div className="h-20 w-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                    <Zap className="h-10 w-10 fill-current" />
-                </div>
-                <div>
-                    <h3 className="text-2xl font-black font-outfit text-green-600">Order Successful!</h3>
-                    <p className="text-muted-foreground mt-2">Your data is being processed. It usually takes 1 to 30 minutes.</p>
-                </div>
-                
-                <div className="bg-white p-4 rounded-2xl border border-dashed border-green-200">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Recipient</p>
-                    <p className="text-lg font-black font-mono">{orderRef}</p>
+             <div className="max-w-md mx-auto text-center space-y-8 py-6 animate-in zoom-in duration-700">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-green-500/20 rounded-full blur-2xl animate-pulse" />
+                    <div className="relative h-24 w-24 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-200">
+                        <CheckCircle2 className="h-12 w-12" />
+                    </div>
                 </div>
 
-                <div className="flex flex-col space-y-3">
+                <div>
+                    <h3 className="text-3xl font-black font-outfit text-slate-900 leading-tight">Great Choice!</h3>
+                    <p className="text-slate-500 mt-2 font-medium">Your {bundle.size} bundle is being delivered to <span className="text-slate-900 font-bold">{orderRef}</span>.</p>
+                </div>
+                
+                <div className="bg-white p-6 rounded-3xl border border-dashed border-green-200 shadow-sm">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Delivery Status</p>
+                    <div className="flex items-center justify-center space-x-2 text-green-600 font-black">
+                        <Zap className="h-4 w-4 animate-pulse" />
+                        <span>PROCESSING</span>
+                    </div>
+                </div>
+
+                <div className="flex flex-col space-y-4">
                     <Link 
                       href={`/track?ref=${orderRef}`}
-                      className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+                      className="w-full bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-lg shadow-2xl hover:bg-black active:scale-[0.98] transition-all flex items-center justify-center space-x-3"
                     >
-                      Track Delivery Status
+                      <span>TRACK MY ORDER</span>
+                      <ArrowRight className="h-5 w-5" />
                     </Link>
                     <button 
                       onClick={() => {
@@ -192,93 +207,96 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                         setIsSuccess(false);
                         setPhoneNumber("");
                       }}
-                      className="text-sm font-bold text-muted-foreground hover:text-foreground"
+                      className="text-sm font-bold text-slate-400 hover:text-slate-900 transition-colors"
                     >
                       Buy another bundle
                     </button>
                 </div>
              </div>
           ) : (
-            <div className="max-w-md mx-auto space-y-4">
-            <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium">Recipient Number:</span>
-                <span className="text-sm font-bold text-primary">{bundle.network} Network</span>
-            </div>
+            <div className="max-w-md mx-auto space-y-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                        <div className={cn("h-2 w-2 rounded-full animate-pulse", style.text.replace('text-', 'bg-'))} />
+                        <span className="text-sm font-black uppercase tracking-widest text-slate-500">{bundle.network} Network</span>
+                    </div>
+                    <div className="flex items-center text-[10px] font-bold text-slate-400 bg-white px-3 py-1 rounded-full border border-slate-100">
+                        <ShieldCheck className="h-3 w-3 mr-1 text-green-500" />
+                        SECURE CHECKOUT
+                    </div>
+                </div>
             
-            <div className="relative">
-                <input
-                  type="tel"
-                  placeholder="054XXXXXXX"
-                  value={phoneNumber}
-                  autoFocus
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="w-full rounded-xl border border-input bg-background px-4 py-4 text-lg font-bold outline-none focus:ring-2 focus:ring-primary shadow-inner"
-                />
-            </div>
+                <div className="relative group/input">
+                    <div className={cn("absolute inset-y-0 left-5 flex items-center transition-colors", isValidPhone ? "text-primary" : "text-slate-400")}>
+                        <Smartphone className="h-6 w-6" />
+                    </div>
+                    <input
+                        type="tel"
+                        placeholder="Recipient Phone Number (e.g. 054...)"
+                        value={phoneNumber}
+                        autoFocus
+                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\s/g, ""))}
+                        className="w-full rounded-[1.5rem] border-2 border-slate-200 bg-white pl-14 pr-4 py-5 text-xl font-black outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-slate-300 placeholder:font-bold"
+                    />
+                </div>
 
-            <div className="space-y-4">
-                {(userBalance !== null && userBalance >= price) ? (
-                    <div className="space-y-3">
-                        <button
-                            onClick={handleWalletPay}
-                            disabled={!/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, "")) || isLoading}
-                            className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
-                        >
-                            {isLoading ? "Processing..." : "Confirm & Pay with Wallet"}
-                        </button>
-                        <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
-                            Payment will be deducted from your JEILINKS balance
-                        </p>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        <div className="bg-primary/5 border border-primary/20 p-4 rounded-2xl text-center space-y-2">
-                             <p className="text-xs text-primary font-black uppercase tracking-widest">
-                               {session ? "Insufficient Wallet Balance" : "Guest Checkout"}
-                             </p>
-                             {session && <p className="text-xl font-black font-outfit">{formatCurrency(userBalance || 0)}</p>}
-                             <p className="text-[10px] text-muted-foreground font-bold">
-                               {session ? `You need ${formatCurrency(price)} to buy this bundle.` : "Pay securely with Paystack"}
-                             </p>
+                <div className="space-y-4 pt-2">
+                    {(userBalance !== null && userBalance >= price) ? (
+                        <div className="space-y-4">
+                            <button
+                                onClick={handleWalletPay}
+                                disabled={!isValidPhone || isLoading}
+                                className="w-full bg-primary text-white py-5 rounded-[1.5rem] font-black text-xl shadow-2xl shadow-primary/30 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale"
+                            >
+                                {isLoading ? "PROCESSING..." : "PAY WITH WALLET"}
+                            </button>
+                            <div className="flex items-center justify-center space-x-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                <span>Wallet Balance:</span>
+                                <span className="text-slate-900 font-black">{formatCurrency(userBalance)}</span>
+                            </div>
                         </div>
-                        
-                        <PaystackButton
-                            email={session?.user?.email || `${phoneNumber}@jeilinks.com`}
-                            amount={price}
-                            publicKey={paystackKey}
-                            onSuccess={handleSuccess}
-                            onClose={() => setIsLoading(false)}
-                            label={`Pay ${formatCurrency(price)} with Paystack`}
-                            disabled={!/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, "")) || isLoading}
-                            className="w-full bg-[#00c3f7] text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-blue-200 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
-                        />
-                        
-                        {session && (
-                          <Link 
-                              href="/dashboard"
-                              className="block w-full bg-secondary text-foreground text-center py-3 rounded-2xl font-bold text-sm border border-border hover:bg-secondary/80 transition-all"
-                          >
-                              Top Up Wallet
-                          </Link>
-                        )}
-                        
-                        <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
-                            Secure payment processed by Paystack
-                        </p>
-                    </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <PaystackButton
+                                email={session?.user?.email || `${phoneNumber}@jeilinks.com`}
+                                amount={price}
+                                publicKey={paystackKey}
+                                onSuccess={handleSuccess}
+                                onClose={() => setIsLoading(false)}
+                                label={isLoading ? "PREPARING..." : `PAY ${formatCurrency(price)} NOW`}
+                                disabled={!isValidPhone || isLoading}
+                                className="w-full bg-[#00c3f7] text-white py-5 rounded-[1.5rem] font-black text-xl shadow-2xl shadow-blue-200 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
+                            />
+                            
+                            {session && (
+                                <Link 
+                                    href="/dashboard"
+                                    className="flex items-center justify-center w-full text-slate-500 font-bold text-xs hover:text-primary transition-colors"
+                                >
+                                    Insufficient Balance? Top up here
+                                </Link>
+                            )}
+                            
+                            <p className="text-[10px] text-center text-slate-400 font-black uppercase tracking-[0.2em] pt-2">
+                                Encrypted & Secure Payment
+                            </p>
+                        </div>
+                    )}
+                </div>
+                
+                {(role === "AGENT" || role === "ADMIN") && (
+                <div className="bg-green-50 border border-green-100 p-3 rounded-2xl flex items-center justify-center space-x-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <span className="text-[10px] text-green-700 font-black uppercase tracking-wider">
+                        Wholesale {role} Pricing Applied
+                    </span>
+                </div>
                 )}
             </div>
-            
-            {(role === "AGENT" || role === "ADMIN") && (
-              <p className="text-center text-[10px] text-green-600 font-bold uppercase mt-4">
-                ★ {role === "ADMIN" ? "Admin" : "Agent"} Wholesale Pricing Applied
-              </p>
-            )}
-
-          </div>
-        )}
-      </div>
-    )}
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
