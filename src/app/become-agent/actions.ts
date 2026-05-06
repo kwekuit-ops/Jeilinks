@@ -13,22 +13,33 @@ export async function upgradeToAgent(paystackRef: string) {
   }
 
   try {
-    // 1. Verify Paystack Payment
+    // 1. Get Paystack Secret Key from Settings
+    const setting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
+    const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
+
+    if (!paystackSecret) {
+        throw new Error("Payment gateway not configured");
+    }
+
+    // 2. Verify Paystack Payment
     const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
       headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${paystackSecret}`,
       },
     });
 
     const verifyData = await verifyRes.json();
 
-    if (!verifyRes.ok || verifyData.data.status !== "success" || verifyData.data.amount < 1000) {
-      return { success: false, error: "Payment verification failed" };
+    // Check for success and minimum amount (e.g. 10 GHS = 1000 pesewas)
+    // We can also make the upgrade price a setting in the future
+    if (!verifyRes.ok || verifyData.data?.status !== "success" || (verifyData.data?.amount || 0) < 1000) {
+      return { success: false, error: "Payment verification failed or insufficient amount" };
     }
 
-    // 2. Upgrade the user
+    // 3. Upgrade the user
+    const userId = (session.user as any).id;
     const user = await prisma.user.findUnique({
-      where: { id: (session.user as any).id },
+      where: { id: userId },
     });
 
     if (!user) return { success: false, error: "User not found" };
@@ -40,14 +51,18 @@ export async function upgradeToAgent(paystackRef: string) {
     }
     newExpiry.setDate(newExpiry.getDate() + 14);
 
-    const baseName = user.name || "agent";
-    const storeSlug = baseName.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
+    // Generate a clean slug if they don't have one
+    let storeSlug = user.storeSlug;
+    if (!storeSlug) {
+        const baseName = (user.name || "agent").toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, '-');
+        storeSlug = `${baseName}-${Math.floor(1000 + Math.random() * 9000)}`;
+    }
 
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: userId },
       data: {
         role: "AGENT",
-        storeSlug: user.storeSlug || storeSlug,
+        storeSlug: storeSlug,
         agentExpiry: newExpiry
       },
     });
@@ -57,19 +72,20 @@ export async function upgradeToAgent(paystackRef: string) {
     revalidatePath("/admin/users");
     revalidatePath("/");
     
-    const settings = await prisma.systemSetting.findMany({
+    const communitySettings = await prisma.systemSetting.findMany({
       where: { key: { in: ["WHATSAPP_CHANNEL_URL", "SUPPORT_WHATSAPP"] } }
     });
-    const settingsMap: Record<string, string> = {};
-    settings.forEach(s => settingsMap[s.key] = s.value);
+    
+    const whatsappGroupUrl = communitySettings.find(s => s.key === "WHATSAPP_CHANNEL_URL")?.value || "";
 
     return { 
       success: true, 
-      whatsappGroupUrl: settingsMap["WHATSAPP_CHANNEL_URL"] || "" 
+      whatsappGroupUrl
     };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Upgrade error:", error);
-    return { success: false, error: "An internal error occurred" };
+    return { success: false, error: error.message || "An internal error occurred" };
   }
 }
+

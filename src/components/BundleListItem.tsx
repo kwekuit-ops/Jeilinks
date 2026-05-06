@@ -10,14 +10,16 @@ import Link from "next/link";
 import PaystackButton from "./PaystackButton";
 import { getSystemSettings } from "@/app/admin/settings/actions";
 
+interface Bundle {
+  id: string;
+  network: string;
+  size: string;
+  userPrice: number | string;
+  agentPrice: number | string;
+}
+
 interface BundleListItemProps {
-  bundle: {
-    id: string;
-    network: string;
-    size: string;
-    userPrice: number;
-    agentPrice: number;
-  };
+  bundle: Bundle;
   agentId?: string;
 }
 
@@ -49,8 +51,8 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
     loadData();
   }, [session]);
 
-  const role = (session?.user as any)?.role || "USER";
-  const price = (role === "AGENT" || role === "ADMIN") ? bundle.agentPrice : bundle.userPrice;
+  const role = (session?.user as { role?: string })?.role || "USER";
+  const price = (role === "AGENT" || role === "ADMIN") ? Number(bundle.agentPrice) : Number(bundle.userPrice);
 
   const handleWalletPay = async () => {
     if (!phoneNumber || !/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, ""))) {
@@ -75,7 +77,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
       const data = await res.json();
       if (res.ok) {
         setIsSuccess(true);
-        setOrderRef(phoneNumber);
+        setOrderRef(data.id || phoneNumber);
         toast.success("Order placed successfully via Wallet!");
       } else {
         toast.error(data.message || "Wallet payment failed");
@@ -111,8 +113,9 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
       });
 
       if (res.ok) {
+        const data = await res.json();
         setIsSuccess(true);
-        setOrderRef(phoneNumber);
+        setOrderRef(data.id || phoneNumber);
         toast.success("Order placed successfully!");
       } else {
         const data = await res.json();

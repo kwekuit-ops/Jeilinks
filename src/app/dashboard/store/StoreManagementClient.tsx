@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
-import { Save, RotateCcw, Store, Info, ExternalLink, ShieldCheck, Copy, Check, Globe } from "lucide-react";
+import { Save, RotateCcw, Globe, Info, ExternalLink, Copy, Check } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { updateAgentStorePrice, resetAgentStorePrice, updateStoreSlug } from "./actions";
 import Link from "next/link";
@@ -11,13 +11,13 @@ interface Bundle {
   id: string;
   network: string;
   size: string;
-  userPrice: any;
-  agentPrice: any;
+  userPrice: number | string;
+  agentPrice: number | string;
 }
 
 interface CustomPrice {
   bundleId: string;
-  customPrice: any;
+  customPrice: number | string;
 }
 
 export default function StoreManagementClient({ 
@@ -49,8 +49,12 @@ export default function StoreManagementClient({
   };
 
   const handleSave = async (bundleId: string) => {
-    const price = parseFloat(customPrices[bundleId]);
-    if (isNaN(price) || price <= 0) return toast.error("Invalid price");
+    const priceStr = customPrices[bundleId];
+    const price = parseFloat(priceStr);
+    
+    if (!priceStr || isNaN(price) || price <= 0) {
+        return toast.error("Please enter a valid price");
+    }
 
     setIsProcessing(bundleId);
     const res = await updateAgentStorePrice(bundleId, price);
@@ -180,7 +184,11 @@ export default function StoreManagementClient({
               const currentCustomPrice = customPrices[bundle.id];
               const isDefault = !currentCustomPrice;
               const displayPrice = isDefault ? bundle.userPrice.toString() : currentCustomPrice;
-              const profit = parseFloat(displayPrice) - parseFloat(bundle.agentPrice.toString());
+              
+              const parsedDisplayPrice = parseFloat(displayPrice);
+              const parsedWholesalePrice = parseFloat(bundle.agentPrice.toString());
+              const profit = isNaN(parsedDisplayPrice) ? 0 : parsedDisplayPrice - parsedWholesalePrice;
+              const profitPercentage = parsedWholesalePrice > 0 ? (profit / parsedWholesalePrice) * 100 : 0;
 
               return (
                   <div key={bundle.id} className="glass rounded-3xl p-6 border border-border/50 shadow-sm hover:border-primary/20 transition-all">
@@ -189,7 +197,7 @@ export default function StoreManagementClient({
                               <div className="flex items-center space-x-2">
                                 <span className={cn(
                                     "px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest",
-                                    bundle.network === "MTN" ? "bg-mtn text-mtn-foreground" :
+                                    bundle.network === "MTN" ? "bg-mtn text-black" :
                                     bundle.network === "Telecel" ? "bg-telecel text-white" : "bg-airteltigo text-white"
                                 )}>
                                     {bundle.network}
@@ -228,9 +236,12 @@ export default function StoreManagementClient({
                           <div className="md:col-span-2 text-center md:text-left">
                               <div className={cn(
                                   "inline-flex flex-col px-4 py-2 rounded-2xl border",
-                                  profit > 0 ? "bg-green-50 border-green-100 text-green-700" : "bg-red-50 border-red-100 text-red-700"
+                                  profit >= 0 ? "bg-green-50 border-green-100 text-green-700" : "bg-red-50 border-red-100 text-red-700"
                               )}>
-                                  <span className="text-lg font-black font-outfit">{formatCurrency(profit.toString())}</span>
+                                  <div className="flex items-baseline space-x-1">
+                                    <span className="text-lg font-black font-outfit">{formatCurrency(profit.toString())}</span>
+                                    {profit > 0 && <span className="text-[10px] font-bold">({profitPercentage.toFixed(1)}%)</span>}
+                                  </div>
                                   <span className="text-[9px] uppercase font-bold tracking-widest">Your Profit</span>
                               </div>
                           </div>
@@ -248,7 +259,7 @@ export default function StoreManagementClient({
                               )}
                               <button
                                 onClick={() => handleSave(bundle.id)}
-                                disabled={isProcessing === bundle.id || isDefault && displayPrice === bundle.userPrice.toString() || !currentCustomPrice && isDefault}
+                                disabled={isProcessing === bundle.id || (isDefault && displayPrice === bundle.userPrice.toString()) || (!currentCustomPrice && isDefault)}
                                 className={cn(
                                     "flex items-center space-x-2 px-6 py-3 rounded-xl font-bold text-xs transition-all",
                                     "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 disabled:opacity-50"
@@ -266,3 +277,4 @@ export default function StoreManagementClient({
     </div>
   );
 }
+
