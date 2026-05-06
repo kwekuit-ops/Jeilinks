@@ -44,6 +44,9 @@ export default function RegisterPage() {
     <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8 glass p-8 rounded-2xl shadow-xl animate-in">
         <div className="text-center">
+          <Link href="/" className="inline-block mb-6">
+              <img src="/logo.png" alt="JEILINKS" className="h-16 w-auto mx-auto drop-shadow-sm" />
+          </Link>
           <h2 className="text-3xl font-bold tracking-tight font-outfit">Create account</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Join JEILINKS and start toping up easily

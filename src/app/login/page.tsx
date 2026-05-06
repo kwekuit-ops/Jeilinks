@@ -44,6 +44,9 @@ function LoginForm() {
   return (
     <div className="w-full max-w-md space-y-8 glass p-8 rounded-2xl shadow-xl animate-in">
       <div className="text-center">
+        <Link href="/" className="inline-block mb-6">
+            <img src="/logo.png" alt="JEILINKS" className="h-16 w-auto mx-auto drop-shadow-sm" />
+        </Link>
         <h2 className="text-3xl font-bold tracking-tight font-outfit">Welcome back</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Sign in to your account

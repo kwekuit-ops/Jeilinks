@@ -64,8 +64,8 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
       {/* Agent Header */}
       <section className="py-8 md:py-16 px-4 bg-primary text-primary-foreground">
         <div className="max-w-7xl mx-auto text-center">
-            <div className="inline-flex p-3 md:p-4 bg-white/10 rounded-full mb-3 md:mb-6">
-                <Store className="h-6 w-6 md:h-10 md:w-10" />
+            <div className="inline-flex p-1 bg-white rounded-full mb-3 md:mb-6 shadow-xl">
+                <img src="/logo.png" alt="JEILINKS" className="h-12 w-12 md:h-16 md:w-16 object-contain" />
             </div>
           <h1 className="text-2xl md:text-4xl font-black font-outfit tracking-tight mb-2">
             {agent.name || "Agent"}'s Data Store
