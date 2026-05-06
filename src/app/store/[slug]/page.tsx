@@ -78,7 +78,7 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
             </div>
           
           <h1 className="text-3xl md:text-6xl font-black font-outfit tracking-tighter mb-3 text-white">
-            {agent.name || "Agent"}'s Store
+            {(agent.name || "Agent").split(' ')[0]}&apos;s Store
           </h1>
           
           <div className="flex flex-col items-center space-y-4">

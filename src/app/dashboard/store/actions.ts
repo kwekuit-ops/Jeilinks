@@ -5,9 +5,23 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
-async function ensureAgent() {
-  const session = await getServerSession(authOptions);
-  if (!session || ((session.user as any).role !== "AGENT" && (session.user as any).role !== "ADMIN")) {
+import { Session } from "next-auth";
+
+interface AuthUser {
+  id: string;
+  role: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+}
+
+interface AuthSession extends Session {
+  user: AuthUser;
+}
+
+async function ensureAgent(): Promise<AuthSession> {
+  const session = await getServerSession(authOptions) as AuthSession | null;
+  if (!session || (session.user.role !== "AGENT" && session.user.role !== "ADMIN")) {
     throw new Error("Unauthorized");
   }
   return session;
@@ -15,7 +29,7 @@ async function ensureAgent() {
 
 export async function getAgentCustomPrices() {
   const session = await ensureAgent();
-  const userId = (session.user as any).id;
+  const userId = session.user.id;
 
   return await prisma.agentBundlePrice.findMany({
     where: { agentId: userId }
@@ -25,7 +39,7 @@ export async function getAgentCustomPrices() {
 export async function updateAgentStorePrice(bundleId: string, customPrice: number) {
   try {
     const session = await ensureAgent();
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     // Verify bundle exists
     const bundle = await prisma.bundle.findUnique({
@@ -77,16 +91,16 @@ export async function updateAgentStorePrice(bundleId: string, customPrice: numbe
         revalidatePath(`/store/${slug}`);
     }
     return { success: true, slug: slug };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Update custom price error:", error);
-    return { success: false, error: error.message || "Failed to update price" };
+    return { success: false, error: error instanceof Error ? error.message : "Failed to update price" };
   }
 }
 
 export async function resetAgentStorePrice(bundleId: string) {
   try {
     const session = await ensureAgent();
-    const userId = (session.user as any).id;
+    const userId = session.user.id;
 
     await prisma.agentBundlePrice.delete({
       where: {
@@ -107,7 +121,7 @@ export async function resetAgentStorePrice(bundleId: string) {
         revalidatePath(`/store/${user.storeSlug}`);
     }
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     return { success: false, error: "Failed to reset price" };
   }
 }
@@ -115,7 +129,7 @@ export async function resetAgentStorePrice(bundleId: string) {
 export async function updateStoreSlug(slug: string) {
     try {
         const session = await ensureAgent();
-        const userId = (session.user as any).id;
+        const userId = session.user.id;
 
         // Basic validation
         if (!slug || slug.length < 3) {
@@ -148,7 +162,7 @@ export async function updateStoreSlug(slug: string) {
 
         revalidatePath("/dashboard/store");
         return { success: true, slug: formattedSlug };
-    } catch (error: any) {
-        return { success: false, error: error.message || "Failed to update store name" };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : "Failed to update store name" };
     }
 }
