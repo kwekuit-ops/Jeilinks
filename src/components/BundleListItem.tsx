@@ -51,7 +51,13 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   }, [session]);
 
   const role = (session?.user as { role?: string })?.role || "USER";
-  const price = (role === "AGENT" || role === "ADMIN") ? Number(bundle.agentPrice) : Number(bundle.userPrice);
+  
+  // If we are on an agent's store page, we want to see the retail price 
+  // (which might be customized) even if we are logged in as an agent.
+  const isStorePage = !!agentId;
+  const price = (isStorePage || (role !== "AGENT" && role !== "ADMIN")) 
+    ? Number(bundle.userPrice) 
+    : Number(bundle.agentPrice);
 
   const handleWalletPay = async () => {
     if (!phoneNumber || !/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, ""))) {
@@ -156,7 +162,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                 <h3 className="text-base md:text-2xl font-black font-outfit tracking-tight leading-tight truncate">
                     {bundle.size}
                 </h3>
-                {(role === "AGENT" || role === "ADMIN") && (
+                {(role === "AGENT" || role === "ADMIN") && !isStorePage && (
                     <span className="bg-emerald-500 text-white text-[7px] md:text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-tighter">
                         AGENT DEAL
                     </span>
@@ -171,7 +177,8 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
               <div className="md:text-right">
                 <p className="hidden md:block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Price</p>
                 <div className="flex items-center space-x-2">
-                    {(role === "AGENT" || role === "ADMIN") && (
+                    {/* Only show "Original Price" crossed out if we are an agent seeing our discount, OR if it's a store page and we want to show a value deal */}
+                    {(role === "AGENT" || role === "ADMIN") && !isStorePage && (
                         <span className="text-[10px] md:text-sm text-slate-400 line-through font-bold">
                             {formatCurrency(Number(bundle.userPrice))}
                         </span>
