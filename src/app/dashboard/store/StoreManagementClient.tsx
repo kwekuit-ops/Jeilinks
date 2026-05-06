@@ -208,10 +208,15 @@ export default function StoreManagementClient({
                               <div className="relative">
                                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">GHS</span>
                                   <input 
-                                    type="number"
-                                    step="0.01"
+                                    type="text"
+                                    inputMode="decimal"
                                     value={displayPrice}
-                                    onChange={(e) => handlePriceChange(bundle.id, e.target.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                                            handlePriceChange(bundle.id, val);
+                                        }
+                                    }}
                                     className="w-full pl-12 pr-4 py-3 bg-muted/50 border-none rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                                   />
                               </div>
