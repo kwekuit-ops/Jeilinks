@@ -20,6 +20,7 @@ export function BottomNav() {
   navItems.push({ name: "Home", href: "/", emoji: "🏠" });
 
   if (isAdmin) {
+    navItems.push({ name: "Shop", href: "/shop", emoji: "🛍️" });
     navItems.push({ name: "Orders", href: "/admin/orders", emoji: "📦" });
     navItems.push({ name: "Pricing", href: "/admin/pricing", emoji: "💰" });
     navItems.push({ name: "Admin", href: "/admin", emoji: "⚙️" });
