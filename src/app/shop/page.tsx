@@ -67,7 +67,7 @@ export default async function ShopPage() {
   } catch (error) {
     console.error("Shop page bundle fetch error:", error);
   }
-
+  return (
     <div className="flex flex-col min-h-screen bg-slate-50/50">
       {/* Shop Hero Section */}
       <section className="relative pt-16 pb-24 md:pt-24 md:pb-36 px-4 overflow-hidden bg-slate-900">
@@ -99,6 +99,7 @@ export default async function ShopPage() {
         ) : (
           <BundleTabs bundles={JSON.parse(JSON.stringify(bundles))} />
         )}
+      </div>
       </div>
 
       <div className="mt-16 text-center">
