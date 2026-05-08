@@ -57,8 +57,8 @@ export default function StoreManagementClient({
         return toast.error("Please enter a valid price");
     }
 
-    if (bundle && price < Number(bundle.agentPrice)) {
-        return toast.error(`Price cannot be lower than your cost (GHS ${bundle.agentPrice})`);
+    if (bundle && price < (Number(bundle.agentPrice) + 0.1)) {
+        return toast.error(`Price cannot be lower than your cost (GHS ${Number(bundle.agentPrice) + 0.1})`);
     }
 
     setIsProcessing(bundleId);
@@ -209,7 +209,7 @@ export default function StoreManagementClient({
               const displayPrice = isDefault ? bundle.userPrice.toString() : currentCustomPrice;
               
               const parsedDisplayPrice = parseFloat(displayPrice);
-              const parsedWholesalePrice = parseFloat(bundle.agentPrice.toString());
+              const parsedWholesalePrice = parseFloat(bundle.agentPrice.toString()) + 0.1;
               const profit = isNaN(parsedDisplayPrice) ? 0 : parsedDisplayPrice - parsedWholesalePrice;
               const profitPercentage = parsedWholesalePrice > 0 ? (profit / parsedWholesalePrice) * 100 : 0;
 
@@ -231,7 +231,7 @@ export default function StoreManagementClient({
                           </div>
 
                           <div className="md:col-span-2 space-y-1">
-                              <p className="text-lg font-black">{formatCurrency(bundle.agentPrice.toString())}</p>
+                              <p className="text-lg font-black">{formatCurrency((Number(bundle.agentPrice) + 0.1).toString())}</p>
                               <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Wholesale Cost</p>
                           </div>
 

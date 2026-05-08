@@ -10,7 +10,8 @@ export async function processOrderCommission(orderId: string) {
     return;
   }
 
-  const commission = Number(order.amount) - Number(order.bundle.agentPrice);
+  // The hidden 0.1 service fee stays with the platform
+  const commission = Number(order.amount) - (Number(order.bundle.agentPrice) + 0.1);
 
   if (commission <= 0) return;
 

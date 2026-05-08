@@ -45,14 +45,23 @@ export default async function ShopPage() {
       if (a.network !== b.network) return 0;
       return parseSize(a.size) - parseSize(b.size);
     }).map(bundle => {
+      // Add hidden 0.1 service fee to base prices
+      const baseUserPrice = Number(bundle.userPrice) + 0.1;
+      const baseAgentPrice = Number(bundle.agentPrice) + 0.1;
+
       const custom = customPrices.find(cp => cp.bundleId === bundle.id);
       if (custom) {
         return {
           ...bundle,
-          userPrice: custom.customPrice
+          userPrice: Number(custom.customPrice) + 0.1,
+          agentPrice: baseAgentPrice
         };
       }
-      return bundle;
+      return {
+        ...bundle,
+        userPrice: baseUserPrice,
+        agentPrice: baseAgentPrice
+      };
     });
 
   } catch (error) {
