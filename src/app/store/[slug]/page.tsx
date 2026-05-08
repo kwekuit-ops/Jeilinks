@@ -63,29 +63,36 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
   return (
     <div className="flex flex-col min-h-screen animate-in bg-slate-50/50">
       {/* Agent Header - Premium Mesh Gradient */}
-      <section className="relative py-12 md:py-24 px-4 overflow-hidden bg-primary">
-        {/* Animated background elements */}
+      <section className="relative py-16 md:py-32 px-4 overflow-hidden bg-slate-900">
+        {/* Animated background elements - Mesh Gradient */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-            <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-blue-400/30 rounded-full blur-[120px] animate-pulse" />
-            <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-indigo-600/30 rounded-full blur-[100px]" />
+            <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[80%] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[80%] bg-indigo-600/20 rounded-full blur-[120px] animation-delay-2000" />
+            <div className="absolute top-[20%] right-[10%] w-[30%] h-[40%] bg-blue-400/10 rounded-full blur-[80px]" />
         </div>
 
         <div className="relative max-w-7xl mx-auto text-center z-10">
-            <div className="inline-flex p-1.5 bg-white/10 backdrop-blur-xl rounded-[2rem] mb-4 md:mb-8 border border-white/20 shadow-2xl">
-                <div className="bg-white p-2 rounded-[1.8rem]">
-                    <img src="/logo.png" alt="JEILINKS" className="h-14 w-14 md:h-20 md:w-20 object-contain" />
+            <div className="inline-flex p-2 bg-white/5 backdrop-blur-2xl rounded-[2.5rem] mb-6 md:mb-10 border border-white/10 shadow-[0_0_50px_-12px_rgba(255,255,255,0.1)]">
+                <div className="bg-white p-3 rounded-[2.2rem] shadow-2xl">
+                    <img src="/logo.png" alt="JEILINKS" className="h-16 w-16 md:h-24 md:w-24 object-contain" />
                 </div>
             </div>
           
-          <h1 className="text-3xl md:text-6xl font-black font-outfit tracking-tighter mb-3 text-white">
-            {(agent.name || "Agent").split(' ')[0]}&apos;s Store
+          <h1 className="text-4xl md:text-7xl font-black font-outfit tracking-tight mb-4 text-white">
+            {(agent.name || "Agent").split(' ')[0]}<span className="text-primary-foreground/60">&apos;s</span> Store
           </h1>
           
-          <div className="flex flex-col items-center space-y-4">
-            <p className="inline-flex items-center space-x-2 bg-white/15 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-xs md:text-sm font-bold border border-white/20">
-                <ShieldCheck className="h-4 w-4 text-blue-300" />
-                <span>Verified JEILINKS Partner</span>
-            </p>
+          <div className="flex flex-col items-center space-y-6">
+            <div className="flex flex-wrap justify-center gap-3">
+                <p className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-5 py-2 rounded-full text-white text-xs md:text-sm font-black border border-white/10">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    <span className="uppercase tracking-widest">Verified Partner</span>
+                </p>
+                <div className="inline-flex items-center space-x-2 bg-emerald-500/10 backdrop-blur-md px-5 py-2 rounded-full text-emerald-400 text-xs md:text-sm font-black border border-emerald-500/20">
+                    <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="uppercase tracking-widest">Active Now</span>
+                </div>
+            </div>
 
             <StoreActions storeName={agent.name || "Agent"} storeSlug={slug} />
           </div>

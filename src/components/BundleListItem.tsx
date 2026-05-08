@@ -142,17 +142,29 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   return (
     <div className={cn(
         "group relative transition-all duration-500 bg-white border rounded-[2rem] md:rounded-[2.5rem] overflow-hidden",
-        isExpanding ? "ring-2 ring-primary shadow-2xl scale-[1.01]" : "hover:shadow-xl hover:border-primary/30",
+        isExpanding ? "ring-2 ring-primary shadow-2xl scale-[1.01]" : cn("hover:shadow-2xl hover:border-transparent hover:-translate-y-1", 
+            bundle.network === "MTN" ? "hover:shadow-mtn/20" : 
+            bundle.network === "Telecel" ? "hover:shadow-telecel/20" : 
+            "hover:shadow-airteltigo/20"
+        ),
         isSuccess && "ring-2 ring-green-500"
     )}>
-      <div className="p-4 md:p-8">
-        <div className="grid grid-cols-[44px_1fr] md:grid-cols-[80px_1fr_auto] items-center gap-3 md:gap-8">
+      {/* Premium Gradient Overlay on Hover */}
+      <div className={cn(
+        "absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 pointer-events-none",
+        bundle.network === "MTN" ? "bg-mtn" : 
+        bundle.network === "Telecel" ? "bg-telecel" : 
+        "bg-airteltigo"
+      )} />
+
+      <div className="p-4 md:p-8 relative z-10">
+        <div className="grid grid-cols-[48px_1fr] md:grid-cols-[80px_1fr_auto] items-center gap-4 md:gap-8">
           {/* Icon Area */}
           <div className={cn(
-            "p-2.5 md:p-5 rounded-xl md:rounded-[1.5rem] flex items-center justify-center transition-transform group-hover:scale-110", 
+            "p-3 md:p-5 rounded-2xl md:rounded-[1.5rem] flex items-center justify-center transition-all duration-500 group-hover:rotate-6 group-hover:scale-110 shadow-sm", 
             style.bg, style.text
           )}>
-            <Smartphone className="h-5 w-5 md:h-8 md:w-8" />
+            <Smartphone className="h-6 w-6 md:h-8 md:w-8" />
           </div>
 
           {/* Details & Price Area */}
