@@ -5,11 +5,14 @@ import { ArrowUpRight, Loader2, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { requestWithdrawal } from "./withdraw-action";
 
-export function WithdrawButton() {
+export function WithdrawButton({ variant = "WALLET", balance = "0" }: { variant?: "WALLET" | "COMMISSION", balance?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  const title = variant === "COMMISSION" ? "Withdraw Earnings" : "Withdraw Profit";
+  const label = variant === "COMMISSION" ? "Claim Earnings" : "Withdraw Profit";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +30,7 @@ export function WithdrawButton() {
 
     setLoading(true);
     try {
-      const res = await requestWithdrawal(Number(amount), sanitizedPhone);
+      const res = await requestWithdrawal(Number(amount), sanitizedPhone, variant);
       if (res.success) {
         toast.success("Withdrawal request sent!");
         setIsOpen(false);
@@ -50,7 +53,7 @@ export function WithdrawButton() {
         className="w-full mt-4 bg-secondary text-foreground py-3 rounded-xl font-bold flex items-center justify-center space-x-2 hover:bg-secondary/80 transition-all border border-border"
       >
         <ArrowUpRight className="h-4 w-4" />
-        <span>Withdraw Profit</span>
+        <span>{label}</span>
       </button>
 
       {isOpen && (
@@ -63,7 +66,7 @@ export function WithdrawButton() {
                 <X className="h-5 w-5 text-muted-foreground" />
             </button>
 
-            <h2 className="text-2xl font-black font-outfit mb-2">Withdraw Profit</h2>
+            <h2 className="text-2xl font-black font-outfit mb-2">{title}</h2>
             <p className="text-muted-foreground text-sm mb-6 pr-8">Enter the amount and MoMo number to receive your funds.</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">

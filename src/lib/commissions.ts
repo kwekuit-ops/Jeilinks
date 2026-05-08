@@ -20,10 +20,10 @@ export async function processOrderCommission(orderId: string) {
       where: { id: order.id },
       data: { commissionEarned: commission },
     }),
-    // Credit agent's wallet
+    // Credit agent's commission wallet
     prisma.user.update({
       where: { id: order.agentId },
-      data: { balance: { increment: commission } },
+      data: { commissionBalance: { increment: commission } },
     }),
     // Log transaction
     prisma.walletTransaction.create({

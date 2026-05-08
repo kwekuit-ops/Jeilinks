@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
-export async function requestWithdrawal(amount: number, phone: string) {
+export async function requestWithdrawal(amount: number, phone: string, source: "WALLET" | "COMMISSION" = "WALLET") {
   const session = await getServerSession(authOptions);
   if (!session) return { success: false, error: "Unauthorized" };
 
@@ -15,17 +15,23 @@ export async function requestWithdrawal(amount: number, phone: string) {
     const result = await prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
         where: { id: userId },
-        select: { balance: true }
+        select: { balance: true, commissionBalance: true }
       });
 
-      if (!user || Number(user.balance) < amount) {
-        throw new Error("Insufficient balance for withdrawal");
+      if (!user) throw new Error("User not found");
+
+      const currentBalance = source === "COMMISSION" ? Number(user.commissionBalance) : Number(user.balance);
+
+      if (currentBalance < amount) {
+        throw new Error(`Insufficient ${source === "COMMISSION" ? "earnings" : "wallet"} balance for withdrawal`);
       }
 
-      // Deduct balance immediately
+      // Deduct from correct balance
       await tx.user.update({
         where: { id: userId },
-        data: { balance: { decrement: amount } }
+        data: source === "COMMISSION" 
+            ? { commissionBalance: { decrement: amount } }
+            : { balance: { decrement: amount } }
       });
 
       // Create withdrawal request

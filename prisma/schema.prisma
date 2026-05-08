@@ -17,6 +17,7 @@ model User {
   phone         String?
   role          String    @default("USER")
   balance       Decimal   @default(0)
+  commissionBalance Decimal @default(0)
   storeSlug     String?   @unique
   createdAt     DateTime  @default(now())
   agentExpiry   DateTime?

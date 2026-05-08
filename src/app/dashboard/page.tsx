@@ -9,6 +9,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { TopUpButton } from "./TopUpButton";
 import { WithdrawButton } from "./WithdrawButton";
+import { TransferButton } from "./TransferButton";
 import { getActiveSupplier } from "@/lib/suppliers";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { getSystemSettings } from "../admin/settings/actions";
@@ -31,6 +32,7 @@ export default async function DashboardPage() {
         email: true,
         role: true,
         balance: true,
+        commissionBalance: true,
         agentExpiry: true,
         storeSlug: true,
         orders: {
@@ -147,7 +149,7 @@ export default async function DashboardPage() {
 
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Wallet Card */}
         <div className="glass rounded-2xl p-6 shadow-sm border border-border/50">
           <div className="flex items-center space-x-3 mb-4 text-primary">
@@ -164,8 +166,27 @@ export default async function DashboardPage() {
           )}
 
           <TopUpButton email={user.email || ""} />
-          {user.role === "AGENT" && <WithdrawButton />}
         </div>
+
+        {/* Store Earnings Card (AGENT ONLY) */}
+        {user.role === "AGENT" && (
+            <div className="glass rounded-2xl p-6 shadow-sm border border-emerald-500/20 bg-emerald-50/5">
+                <div className="flex items-center space-x-3 mb-4 text-emerald-600">
+                    <History className="h-6 w-6" />
+                    <h2 className="font-bold font-outfit">Store Earnings</h2>
+                </div>
+                <p className="text-4xl font-black font-outfit tracking-tight text-emerald-600">
+                    {formatCurrency((user as any).commissionBalance.toString())}
+                </p>
+                <div className="mt-2 flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-emerald-600/60">
+                    <span>Available to claim</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mt-6">
+                    <TransferButton balance={(user as any).commissionBalance.toString()} />
+                    <WithdrawButton variant="COMMISSION" balance={(user as any).commissionBalance.toString()} />
+                </div>
+            </div>
+        )}
 
         {user.role === "ADMIN" && (
             <div className="glass rounded-2xl p-6 shadow-md border border-orange-500/20 bg-orange-50/10">
