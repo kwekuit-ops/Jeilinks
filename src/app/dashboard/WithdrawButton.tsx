@@ -11,8 +11,12 @@ export function WithdrawButton({ variant = "WALLET", balance = "0" }: { variant?
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   
-  const title = variant === "COMMISSION" ? "Withdraw Earnings" : "Withdraw Profit";
-  const label = variant === "COMMISSION" ? "Claim Earnings" : "Withdraw Profit";
+  const isFriday = new Date().getDay() === 5;
+  const isCommission = variant === "COMMISSION";
+  const canWithdraw = !isCommission || isFriday;
+
+  const title = isCommission ? "Withdraw Earnings" : "Withdraw Profit";
+  const label = isCommission ? "Claim Earnings" : "Withdraw Profit";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,15 +101,24 @@ export function WithdrawButton({ variant = "WALLET", balance = "0" }: { variant?
                 <p className="text-[10px] text-muted-foreground mt-1 px-1 italic">Funds will be sent to this number upon approval.</p>
               </div>
 
-              <div className="flex space-x-3 pt-6">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-primary text-white py-4 rounded-2xl font-black shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-2 transition-all"
-                >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <span>Request Payout</span>}
-                </button>
-              </div>
+              {!canWithdraw ? (
+                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start space-x-3 mt-6">
+                      <ArrowUpRight className="h-5 w-5 text-amber-600 shrink-0 mt-0.5 rotate-45" />
+                      <p className="text-xs text-amber-800 leading-relaxed">
+                          <strong>Withdrawal Locked:</strong> Store earnings can only be withdrawn on <strong>Fridays</strong>. Please check back then!
+                      </p>
+                  </div>
+              ) : (
+                  <div className="flex space-x-3 pt-6">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-primary text-white py-4 rounded-2xl font-black shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-2 transition-all"
+                    >
+                      {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <span>Request Payout</span>}
+                    </button>
+                  </div>
+              )}
             </form>
           </div>
         </div>

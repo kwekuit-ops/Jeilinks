@@ -178,8 +178,14 @@ export default async function DashboardPage() {
                 <p className="text-4xl font-black font-outfit tracking-tight text-emerald-600">
                     {formatCurrency((user as any).commissionBalance.toString())}
                 </p>
-                <div className="mt-2 flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-emerald-600/60">
-                    <span>Available to claim</span>
+                <div className="mt-2 flex items-center justify-between">
+                    <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-emerald-600/60">
+                        <span>Available to claim</span>
+                    </div>
+                    <div className="flex items-center space-x-1 text-[9px] font-black uppercase tracking-tighter bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
+                        <Clock className="h-2.5 w-2.5" />
+                        <span>Payouts on Fridays</span>
+                    </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-6">
                     <TransferButton balance={(user as any).commissionBalance.toString()} />

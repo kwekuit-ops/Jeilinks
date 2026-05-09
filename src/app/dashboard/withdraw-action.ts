@@ -11,6 +11,14 @@ export async function requestWithdrawal(amount: number, phone: string, source: "
 
   const userId = (session.user as any).id;
 
+  // Restriction: Store earnings (COMMISSION) can only be withdrawn on Fridays
+  if (source === "COMMISSION") {
+    const today = new Date().getDay(); // 0: Sunday, 1: Monday, ..., 5: Friday, 6: Saturday
+    if (today !== 5) {
+      return { success: false, error: "Store earnings can only be withdrawn on Fridays" };
+    }
+  }
+
   try {
     const result = await prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
