@@ -98,7 +98,8 @@ export class MySocialBoosterProvider implements SupplierProvider {
     const n = name.toUpperCase();
     if (n.includes("MTN")) return "MTN";
     if (n.includes("VODA") || n.includes("TELECEL")) return "Telecel";
-    if (n.includes("AIRTEL") || n.includes("TIGO")) return "AirtelTigo";
+    if (n.includes("AIRTEL") || n.includes("TIGO") || n.includes("AT")) return "AirtelTigo";
+    if (n.includes("GLO")) return "Glo";
     return "OTHER";
   }
 

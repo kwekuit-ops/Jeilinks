@@ -98,6 +98,8 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
     MTN: { text: "text-mtn", bg: "bg-mtn/10", border: "border-mtn/30", glow: "shadow-mtn/20" },
     Telecel: { text: "text-telecel", bg: "bg-telecel/10", border: "border-telecel/30", glow: "shadow-telecel/20" },
     AirtelTigo: { text: "text-airteltigo", bg: "bg-airteltigo/10", border: "border-airteltigo/30", glow: "shadow-airteltigo/20" },
+    Glo: { text: "text-glo", bg: "bg-glo/10", border: "border-glo/30", glow: "shadow-glo/20" },
+    OTHER: { text: "text-other", bg: "bg-other/10", border: "border-other/30", glow: "shadow-other/20" },
   };
 
   const style = networkStyles[bundle.network] || { text: "text-primary", bg: "bg-primary/10", border: "border-primary/30", glow: "shadow-primary/20" };

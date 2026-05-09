@@ -233,7 +233,9 @@ export default function StoreManagementClient({
                         <span className={cn(
                             "w-2 h-2 rounded-full",
                             network === "MTN" ? "bg-mtn" :
-                            network === "Telecel" ? "bg-telecel" : "bg-airteltigo"
+                            network === "Telecel" ? "bg-telecel" : 
+                            network === "Glo" ? "bg-glo" :
+                            network === "OTHER" ? "bg-other" : "bg-airteltigo"
                         )} />
                         <span>{network}</span>
                         <span className={cn(
@@ -278,7 +280,9 @@ export default function StoreManagementClient({
                                     <span className={cn(
                                         "px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest",
                                         bundle.network === "MTN" ? "bg-mtn text-black" :
-                                        bundle.network === "Telecel" ? "bg-telecel text-white" : "bg-airteltigo text-white"
+                                        bundle.network === "Telecel" ? "bg-telecel text-white" : 
+                                        bundle.network === "Glo" ? "bg-glo text-white" :
+                                        bundle.network === "OTHER" ? "bg-other text-white" : "bg-airteltigo text-white"
                                     )}>
                                         {bundle.network}
                                     </span>

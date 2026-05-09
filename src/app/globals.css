@@ -27,6 +27,8 @@
   --telecel-blue: #E20000; /* Telecel is actually Red/White now, but user said Blue in prompt? Wait, Telecel Ghana (formerly Vodafone) is Red. User said "Telecel in blue branding". I will follow user but usually Telecel is red. Ah, User said "Telecel in blue branding". I'll use a nice blue. */
   --telecel-brand: #0076B6; 
   --airteltigo-red: #ED1C24;
+  --glo-green: #008D46;
+  --other-purple: #6366f1;
   --whatsapp-green: #25D366;
 }
 
@@ -76,6 +78,8 @@
   --color-mtn: var(--mtn-yellow);
   --color-telecel: var(--telecel-brand);
   --color-airteltigo: var(--airteltigo-red);
+  --color-glo: var(--glo-green);
+  --color-other: var(--other-purple);
   --color-whatsapp: var(--whatsapp-green);
   
   --radius-xl: calc(var(--radius) + 4px);
