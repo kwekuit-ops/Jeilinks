@@ -53,11 +53,19 @@ export class MySocialBoosterProvider implements SupplierProvider {
         }),
       });
 
+      // MySocialBooster might return 200 OK but with a success: false in the body
+      if (data.success === false || !data.response) {
+        return {
+          success: false,
+          error: data.message || "Supplier returned an empty or failed response",
+        };
+      }
+
       const order = data.response;
       return {
         success: true,
-        supplierOrderId: order.id || order.orderId,
-        status: order.status,
+        supplierOrderId: (order.id || order.orderId || order.reference || "N/A").toString(),
+        status: order.status || "PROCESSING",
       };
     } catch (error: any) {
       return {
