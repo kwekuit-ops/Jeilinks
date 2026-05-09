@@ -41,9 +41,20 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
       </div>
 
       <div className="flex flex-col space-y-2 md:space-y-3 px-2 md:px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        {filteredBundles.map((bundle) => (
-          <BundleListItem key={bundle.id} bundle={bundle} agentId={agentId} />
-        ))}
+        {filteredBundles
+          .sort((a, b) => {
+            const parse = (s: string) => {
+              const num = parseFloat(s);
+              if (s.toUpperCase().includes('GB')) return num * 1024;
+              if (s.toUpperCase().includes('TB')) return num * 1024 * 1024;
+              if (s.toUpperCase().includes('MB')) return num;
+              return num;
+            };
+            return parse(a.size) - parse(b.size);
+          })
+          .map((bundle) => (
+            <BundleListItem key={bundle.id} bundle={bundle} agentId={agentId} />
+          ))}
         {filteredBundles.length === 0 && (
           <div className="py-16 text-center text-muted-foreground glass rounded-3xl border border-dashed">
             <p>No bundles available for {activeTab} at the moment.</p>
