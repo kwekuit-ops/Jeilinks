@@ -88,7 +88,7 @@ export async function refreshOrderStatus(orderId: string) {
             }
           });
 
-          if (newStatus === "COMPLETED") {
+          if (newStatus === "COMPLETED" || newStatus === "PROCESSING") {
             await processOrderCommission(order.id);
           }
         }

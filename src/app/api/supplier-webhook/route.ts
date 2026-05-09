@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       },
     });
 
-    if (newStatus === "COMPLETED") {
+    if (newStatus === "COMPLETED" || newStatus === "PROCESSING") {
         await processOrderCommission(order.id);
         
         if (order.userId) {

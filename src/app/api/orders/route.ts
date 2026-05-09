@@ -158,7 +158,7 @@ export async function POST(req: Request) {
           },
         });
 
-        if (normalizedStatus === "COMPLETED") {
+        if (normalizedStatus === "COMPLETED" || normalizedStatus === "PROCESSING") {
           await processOrderCommission(order.id);
         }
       }

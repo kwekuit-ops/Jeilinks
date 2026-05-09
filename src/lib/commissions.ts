@@ -6,7 +6,8 @@ export async function processOrderCommission(orderId: string) {
     include: { bundle: true },
   });
 
-  if (!order || !order.agentId || order.status !== "COMPLETED" || Number(order.commissionEarned) > 0) {
+  const allowedStatuses = ["PROCESSING", "COMPLETED"];
+  if (!order || !order.agentId || !allowedStatuses.includes(order.status) || Number(order.commissionEarned) > 0) {
     return;
   }
 
