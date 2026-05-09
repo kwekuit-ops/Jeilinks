@@ -45,7 +45,7 @@ export default function StoreManagementClient({
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   const networks = Array.from(new Set(bundles.map(b => b.network)))
-    .filter(n => n !== "OTHER")
+    .filter(n => n !== "OTHER" && n !== "Glo")
     .sort((a, b) => {
         const order = ["MTN", "Telecel", "AirtelTigo", "Glo"];
         const indexA = order.indexOf(a);
