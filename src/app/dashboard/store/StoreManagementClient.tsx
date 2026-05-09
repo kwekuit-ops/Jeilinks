@@ -44,15 +44,17 @@ export default function StoreManagementClient({
 
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
-  const networks = Array.from(new Set(bundles.map(b => b.network))).sort((a, b) => {
-    const order = ["MTN", "Telecel", "AirtelTigo"];
-    const indexA = order.indexOf(a);
-    const indexB = order.indexOf(b);
-    if (indexA === -1 && indexB === -1) return a.localeCompare(b);
-    if (indexA === -1) return 1;
-    if (indexB === -1) return -1;
-    return indexA - indexB;
-  });
+  const networks = Array.from(new Set(bundles.map(b => b.network)))
+    .filter(n => n !== "OTHER")
+    .sort((a, b) => {
+        const order = ["MTN", "Telecel", "AirtelTigo", "Glo"];
+        const indexA = order.indexOf(a);
+        const indexB = order.indexOf(b);
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+    });
   const [activeNetwork, setActiveNetwork] = useState(networks[0] || "");
 
   const handlePriceChange = (bundleId: string, value: string) => {
