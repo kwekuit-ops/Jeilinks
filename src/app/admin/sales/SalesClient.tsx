@@ -138,8 +138,9 @@ export default function SalesClient({ initialData }: { initialData: any }) {
                <tbody className="divide-y divide-border/50">
                   {data.orders.map((order: any) => {
                      const revenue = Number(order.amount);
+                     const commission = Number(order.commissionEarned || 0);
                      const cost = Number(order.bundle?.supplierPrice || 0);
-                     const profit = revenue - cost;
+                     const profit = revenue - commission - cost;
                      
                      return (
                         <tr key={order.id} className="hover:bg-muted/20 transition-colors text-sm">

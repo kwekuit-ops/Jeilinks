@@ -84,12 +84,28 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   // we'll do a slightly more complex query if we want perfect accuracy, or just use a placeholder for now.
   // Let's try to get a rough profit: Revenue - Commissions - (Orders * Avg Supplier Price)
   // Or better: fetch all completed orders with bundle info (might be slow if many, but fine for now)
-  const completedOrdersWithBundles = await prisma.order.findMany({
-      where: { status: "COMPLETED" },
-      include: { bundle: true }
-  });
+  const [completedOrdersWithBundles, rangeOrdersWithBundles] = await Promise.all([
+      prisma.order.findMany({
+          where: { status: "COMPLETED" },
+          include: { bundle: true }
+      }),
+      prisma.order.findMany({
+          where: { 
+            status: "COMPLETED",
+            createdAt: { gte: startDate, lte: endDate }
+          },
+          include: { bundle: true }
+      })
+  ]);
   
   const totalProfit = completedOrdersWithBundles.reduce((acc, order) => {
+      const amount = Number(order.amount);
+      const commission = Number(order.commissionEarned);
+      const cost = Number(order.bundle?.supplierPrice || 0);
+      return acc + (amount - commission - cost);
+  }, 0);
+
+  const rangeProfit = rangeOrdersWithBundles.reduce((acc, order) => {
       const amount = Number(order.amount);
       const commission = Number(order.commissionEarned);
       const cost = Number(order.bundle?.supplierPrice || 0);
@@ -105,9 +121,10 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     { name: "Completed", value: completedOrders, icon: ShoppingBag, color: "text-green-500 bg-green-100", href: "/admin/orders?status=COMPLETED" },
     { name: "Pending", value: allPendingOrders, icon: ShoppingBag, color: "text-orange-500 bg-orange-100", href: "/admin/orders?status=PENDING" },
     { name: "Failed", value: failedOrders, icon: ShoppingBag, color: "text-red-500 bg-red-100", href: "/admin/orders?status=FAILED" },
-    { name: "Total Profit", value: formatCurrency(totalProfit.toString()), icon: DollarSign, color: "text-emerald-600 bg-emerald-50", href: "/admin/sales" },
-    { name: "Orders (Range)", value: orderCount, icon: ShoppingBag, color: "text-orange-400 bg-orange-50", href: "/admin/orders" },
+    { name: "Profit (Range)", value: formatCurrency(rangeProfit.toString()), icon: TrendingUp, color: "text-emerald-600 bg-emerald-50", href: "/admin/sales" },
     { name: "Revenue (Range)", value: formatCurrency((totalRevenue._sum.amount || 0).toString()), icon: DollarSign, color: "text-green-400 bg-green-50", href: "/admin/sales" },
+    { name: "Orders (Range)", value: orderCount, icon: ShoppingBag, color: "text-orange-400 bg-orange-50", href: "/admin/orders" },
+    { name: "Total Profit", value: formatCurrency(totalProfit.toString()), icon: Trophy, color: "text-yellow-600 bg-yellow-50", href: "/admin/sales" },
   ];
 
   // Fetch Weekly Ranking (Top 5 users by completed order volume in last 7 days)
