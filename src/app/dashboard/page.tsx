@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 import { formatCurrency, cn } from "@/lib/utils";
-import { Wallet, History, MessageCircle, ArrowRight, CheckCircle2, Clock, RotateCcw, AlertCircle, Zap, Store } from "lucide-react";
+import { Wallet, History, MessageCircle, ArrowRight, CheckCircle2, Clock, RotateCcw, AlertCircle, Zap, Store, Trophy } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { TopUpButton } from "./TopUpButton";
