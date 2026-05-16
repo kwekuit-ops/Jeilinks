@@ -77,6 +77,34 @@ export default async function DashboardPage() {
     })
   ]);
 
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const [todayCompletedCount, rankingsToday] = await Promise.all([
+    prisma.order.count({
+      where: {
+        OR: [
+          { userId: (session.user as any).id },
+          { agentId: (session.user as any).id }
+        ],
+        createdAt: { gte: startOfToday },
+        status: "COMPLETED"
+      }
+    }),
+    prisma.order.groupBy({
+      by: ['userId'],
+      where: {
+        createdAt: { gte: startOfToday },
+        status: "COMPLETED"
+      },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } }
+    })
+  ]);
+
+  const dailyRank = rankingsToday.findIndex(r => r.userId === (session.user as any).id) + 1;
+  const totalPerformers = rankingsToday.length;
+
   const pendingWithdrawalSum = Number(pendingWithdrawals._sum.amount || 0);
   const totalEarnings = Number(earningsData._sum.commissionEarned || 0);
 
@@ -303,26 +331,43 @@ export default async function DashboardPage() {
         )}
 
         {/* Rank / Stats Card */}
-        <div className="glass rounded-2xl p-6 shadow-sm border border-border/50 text-center flex flex-col items-center justify-center">
+        <div className="glass rounded-2xl p-6 shadow-sm border border-border/50 text-center flex flex-col items-center justify-center relative overflow-hidden group">
+            {dailyRank > 0 && dailyRank <= 3 && (
+                <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[8px] font-black px-4 py-1.5 rotate-45 shadow-sm">TOP PERFORMER</div>
+            )}
+            
             {user.role === 'AGENT' ? (
                 <>
-                    <div className={cn("h-16 w-16 rounded-full flex items-center justify-center text-3xl mb-3 shadow-inner", rank.color.replace('bg-', 'bg-opacity-20 text-'))}>
-                        {rank.icon}
+                    <div className={cn("h-16 w-16 rounded-full flex items-center justify-center text-3xl mb-3 shadow-inner", dailyRank === 1 ? "bg-yellow-100 text-yellow-600" : rank.color.replace('bg-', 'bg-opacity-20 text-'))}>
+                        {dailyRank === 1 ? "🏆" : dailyRank === 2 ? "🥈" : dailyRank === 3 ? "🥉" : rank.icon}
                     </div>
-                    <h2 className="font-bold text-lg">{rank.name} Agent</h2>
-                    <p className="text-xs text-muted-foreground">{completedCount} Completed Sales</p>
+                    <h2 className="font-bold text-lg">
+                        {dailyRank > 0 ? `Daily Rank: #${dailyRank}` : `${rank.name} Agent`}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                        {todayCompletedCount} Orders Today
+                    </p>
+                    
                     <div className="mt-2 pt-2 border-t border-border/50 w-full">
-                        <p className="text-[9px] uppercase font-black tracking-widest text-muted-foreground">Lifetime Profit</p>
-                        <p className="text-sm font-bold text-green-600">{formatCurrency(totalEarnings.toString())}</p>
+                        <div className="flex items-center justify-between text-[9px] uppercase font-black tracking-widest text-muted-foreground">
+                            <span>Lifetime Orders</span>
+                            <span className="text-slate-900">{completedCount}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-[9px] uppercase font-black tracking-widest text-muted-foreground mt-1">
+                            <span>Lifetime Profit</span>
+                            <span className="text-green-600">{formatCurrency(totalEarnings.toString())}</span>
+                        </div>
                     </div>
                 </>
             ) : (
                 <>
                     <div className="p-3 bg-secondary rounded-full mb-3">
-                        <History className="h-6 w-6 text-muted-foreground" />
+                        <Trophy className={cn("h-6 w-6", dailyRank > 0 ? "text-yellow-500" : "text-muted-foreground")} />
                     </div>
-                    <h2 className="font-bold">{user.orders.length} Orders</h2>
-                    <p className="text-sm text-muted-foreground">Total orders placed so far</p>
+                    <h2 className="font-bold">{dailyRank > 0 ? `Position: #${dailyRank}` : `${user.orders.length} Orders`}</h2>
+                    <p className="text-sm text-muted-foreground">
+                        {dailyRank > 0 ? `Out of ${totalPerformers} active users today` : "Total orders placed so far"}
+                    </p>
                 </>
             )}
         </div>
