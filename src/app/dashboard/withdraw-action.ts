@@ -74,3 +74,51 @@ export async function requestWithdrawal(amount: number, phone: string, source: "
     return { success: false, error: error.message || "An error occurred" };
   }
 }
+
+export async function transferCommissionToWallet(amount: number) {
+    const session = await getServerSession(authOptions);
+    if (!session) return { success: false, error: "Unauthorized" };
+  
+    const userId = (session.user as any).id;
+  
+    if (amount <= 0) return { success: false, error: "Invalid amount" };
+  
+    try {
+      await prisma.$transaction(async (tx) => {
+        const user = await tx.user.findUnique({
+          where: { id: userId },
+          select: { commissionBalance: true }
+        });
+  
+        if (!user) throw new Error("User not found");
+        if (Number(user.commissionBalance) < amount) {
+          throw new Error("Insufficient earnings for transfer");
+        }
+  
+        // Move funds
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            commissionBalance: { decrement: amount },
+            balance: { increment: amount }
+          }
+        });
+  
+        // Record log
+        await tx.walletTransaction.create({
+            data: {
+                userId,
+                amount,
+                type: "CREDIT",
+                reference: `XFER-${Date.now()}`,
+                description: `Transferred earnings to main wallet`
+            }
+        });
+      });
+  
+      revalidatePath("/dashboard");
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message || "Transfer failed" };
+    }
+}

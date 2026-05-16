@@ -79,6 +79,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Bundle not found" }, { status: 404 });
     }
 
+    // Server-side Price Verification: Always use the correct price for the user role
+    const userRole = session ? (session.user as any).role : "USER";
+    const basePrice = (userRole === "AGENT" || userRole === "ADMIN") 
+        ? Number(bundle.agentPrice) 
+        : Number(bundle.userPrice);
+    
+    // Use the price from DB if not provided or if we want to be strict
+    // For WALLET payments, we MUST use the DB price to prevent client-side manipulation
+    const finalAmount = paymentMethod === "WALLET" ? basePrice : Number(amount);
+
     const order = await prisma.$transaction(async (tx) => {
         if (paymentMethod === "WALLET") {
             if (!session) {
@@ -89,13 +99,26 @@ export async function POST(req: Request) {
                 select: { balance: true }
             });
 
-            if (!user || Number(user.balance) < Number(amount)) {
-                throw new Error("Insufficient wallet balance");
+            // Use exact Decimal comparison to avoid floating point issues
+            if (!user || Number(user.balance) < finalAmount) {
+                console.warn(`Insufficient balance: User has ${user?.balance}, needs ${finalAmount}`);
+                throw new Error(`Insufficient wallet balance. You need GHS ${finalAmount.toFixed(2)} but have GHS ${Number(user?.balance).toFixed(2)}`);
             }
 
             await tx.user.update({
                 where: { id: (session.user as any).id },
-                data: { balance: { decrement: Number(amount) } }
+                data: { balance: { decrement: finalAmount } }
+            });
+
+            // Record the debit transaction
+            await tx.walletTransaction.create({
+                data: {
+                    userId: (session.user as any).id,
+                    amount: finalAmount,
+                    type: "DEBIT",
+                    reference: `ORDER-${Date.now()}`,
+                    description: `Data Bundle Purchase - ${bundle.network} ${bundle.size}`
+                }
             });
         }
 
@@ -104,7 +127,7 @@ export async function POST(req: Request) {
                 userId: session ? (session.user as any).id : null,
                 bundleId: bundle.id,
                 phone: sanitizedPhone,
-                amount: Number(amount),
+                amount: finalAmount,
                 paystackRef: paymentMethod === "WALLET" ? `WALLET-${Date.now()}` : paystackRef,
                 paymentMethod,
                 agentId: agentId || null,

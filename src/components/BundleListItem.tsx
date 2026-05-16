@@ -27,7 +27,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanding, setIsExpanding] = useState(false);
-  const [userBalance, setUserBalance] = useState<number | null>(null);
+  const [userBalance, setUserBalance] = useState<{ wallet: number, commission: number } | null>(null);
   const [paystackKey, setPaystackKey] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderRef, setOrderRef] = useState("");
@@ -41,7 +41,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
           try {
             const res = await fetch('/api/user/balance');
             const data = await res.json();
-            if (res.ok) setUserBalance(data.balance);
+            if (res.ok) setUserBalance({ wallet: data.balance, commission: data.commissionBalance || 0 });
           } catch (e) {
             console.error("Balance fetch error:", e);
           }
@@ -52,12 +52,14 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
 
   const role = (session?.user as { role?: string })?.role || "USER";
   
-  // If we are on an agent's store page, we want to see the retail price 
-  // (which might be customized) even if we are logged in as an agent.
-  const isStorePage = !!agentId;
-  const price = (isStorePage || (role !== "AGENT" && role !== "ADMIN")) 
-    ? Number(bundle.userPrice) 
-    : Number(bundle.agentPrice);
+  // If we are logged in as an agent, we should always get the agent price 
+  // unless we are specifically on ANOTHER agent's store page.
+  const isMyOwnStore = session?.user && (session.user as any).id === agentId;
+  const isAgent = role === "AGENT" || role === "ADMIN";
+  
+  const price = (isAgent && (!agentId || isMyOwnStore))
+    ? Number(bundle.agentPrice) 
+    : Number(bundle.userPrice);
 
   const handleWalletPay = async () => {
     if (!phoneNumber || !/^(02|05)\d{8}$/.test(phoneNumber.replace(/\s/g, ""))) {
@@ -295,7 +297,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                    {(userBalance !== null && userBalance >= price) ? (
+                    {(userBalance !== null && userBalance.wallet >= price) ? (
                         <div className="space-y-4">
                             <button
                                 onClick={handleWalletPay}
@@ -304,9 +306,17 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                             >
                                 {isLoading ? "PROCESSING..." : "PAY WITH WALLET"}
                             </button>
-                            <div className="flex items-center justify-center space-x-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                <span>Wallet Balance:</span>
-                                <span className="text-slate-900 font-black">{formatCurrency(userBalance)}</span>
+                            <div className="flex flex-col items-center justify-center space-y-1 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                <div className="flex items-center space-x-2">
+                                    <span>Wallet:</span>
+                                    <span className="text-slate-900 font-black">{formatCurrency(userBalance.wallet)}</span>
+                                </div>
+                                {userBalance.commission > 0 && (
+                                    <div className="flex items-center space-x-2 opacity-60">
+                                        <span>Earnings:</span>
+                                        <span className="text-slate-600">{formatCurrency(userBalance.commission)}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : (

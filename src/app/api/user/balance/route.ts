@@ -13,14 +13,17 @@ export async function GET() {
   try {
     const user = await prisma.user.findUnique({
       where: { id: (session.user as any).id },
-      select: { balance: true }
+      select: { balance: true, commissionBalance: true }
     });
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ balance: Number(user.balance) });
+    return NextResponse.json({ 
+        balance: Number(user.balance),
+        commissionBalance: Number(user.commissionBalance)
+    });
   } catch (error) {
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
