@@ -14,6 +14,9 @@ interface UserType {
   role: string;
   balance: any;
   createdAt: any;
+  _count: {
+    orders: number;
+  };
 }
 
 export default function UserManagementClient({ users: initialUsers }: { users: UserType[] }) {
@@ -74,6 +77,7 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
             <tr>
               <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">User Details</th>
               <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center">Role</th>
+              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center">Orders</th>
               <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Balance</th>
               <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Joined</th>
               <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right">Actions</th>
@@ -97,6 +101,11 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
                     {user.role === "ADMIN" ? <Shield className="h-3 w-3" /> : 
                      user.role === "AGENT" ? <Star className="h-3 w-3" /> : <User className="h-3 w-3" />}
                     <span>{user.role}</span>
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary font-black text-xs">
+                    {user._count.orders}
                   </span>
                 </td>
                 <td className="px-6 py-4 font-mono font-bold text-primary">
