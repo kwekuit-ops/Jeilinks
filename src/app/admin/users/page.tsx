@@ -5,14 +5,28 @@ import { Plus } from "lucide-react";
 import UserManagementClient from "./UserManagementClient";
 
 export default async function AdminUsersPage() {
-  const users = await prisma.user.findMany({
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const rawUsers = await prisma.user.findMany({
     include: {
       _count: {
         select: { orders: true }
+      },
+      orders: {
+        where: {
+          createdAt: { gte: startOfToday },
+          status: "COMPLETED"
+        },
+        select: { id: true }
       }
-    },
-    orderBy: { createdAt: "desc" }
+    }
   });
+
+  const users = rawUsers.map(u => ({
+    ...u,
+    todayOrderCount: u.orders.length
+  })).sort((a, b) => b.todayOrderCount - a.todayOrderCount);
 
   return (
     <div className="space-y-8 animate-in">

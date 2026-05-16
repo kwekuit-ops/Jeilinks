@@ -17,6 +17,7 @@ interface UserType {
   _count: {
     orders: number;
   };
+  todayOrderCount: number;
 }
 
 export default function UserManagementClient({ users: initialUsers }: { users: UserType[] }) {
@@ -84,7 +85,7 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {users.map((user) => (
+            {users.map((user, index) => (
               <tr key={user.id} className={cn("hover:bg-muted/30 transition-colors", isProcessing === user.id && "opacity-50 pointer-events-none")}>
                 <td className="px-6 py-4">
                     <div className="flex flex-col">
@@ -104,9 +105,20 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
                   </span>
                 </td>
                 <td className="px-6 py-4 text-center">
-                  <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary font-black text-xs">
-                    {user._count.orders}
-                  </span>
+                  <div className="flex flex-col items-center">
+                    <span className={cn(
+                        "inline-flex items-center justify-center h-8 w-8 rounded-full font-black text-xs transition-all",
+                        user.todayOrderCount > 0 ? "bg-green-100 text-green-700 scale-110 shadow-sm" : "bg-muted text-muted-foreground opacity-50"
+                    )}>
+                      {user.todayOrderCount}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground mt-1 font-bold uppercase tracking-tighter">
+                        {user._count.orders} Total
+                    </span>
+                    {user.todayOrderCount > 0 && index === 0 && (
+                        <span className="text-[8px] bg-yellow-400 text-black px-1 rounded-sm font-black mt-1 animate-pulse">TOP</span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 font-mono font-bold text-primary">
                     {formatCurrency(user.balance.toString())}
