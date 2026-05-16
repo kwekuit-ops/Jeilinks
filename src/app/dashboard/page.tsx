@@ -15,6 +15,8 @@ import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { getSystemSettings } from "../admin/settings/actions";
 import { SecuritySettings } from "./SecuritySettings";
 import { AdminSupplierBalance } from "@/components/AdminStatsLoader";
+import { AutoRefreshToggle } from "@/components/AutoRefreshToggle";
+import { Suspense } from "react";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -134,18 +136,23 @@ export default async function DashboardPage() {
           </div>
         </div>
         
-        {(user.role === "USER" || user.role === "AGENT") && (
-          <Link
-            href="/become-agent"
-            className={cn(
-                "inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-bold transition-all border",
-                user.role === "AGENT" ? "bg-secondary text-foreground hover:bg-secondary/80 border-border" : "bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
-            )}
-          >
-            <span>{user.role === "AGENT" ? "Renew Subscription" : "Upgrade to AGENT"}</span>
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        )}
+        <div className="flex items-center space-x-3">
+          <Suspense fallback={null}>
+            <AutoRefreshToggle />
+          </Suspense>
+          {(user.role === "USER" || user.role === "AGENT") && (
+            <Link
+              href="/become-agent"
+              className={cn(
+                  "inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-bold transition-all border",
+                  user.role === "AGENT" ? "bg-secondary text-foreground hover:bg-secondary/80 border-border" : "bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
+              )}
+            >
+              <span>{user.role === "AGENT" ? "Renew Subscription" : "Upgrade to AGENT"}</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+        </div>
 
       </header>
 

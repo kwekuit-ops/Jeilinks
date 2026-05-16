@@ -14,9 +14,16 @@ export async function topUpWallet(paystackRef: string) {
   }
 
   try {
+    const setting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
+    const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
+
+    if (!paystackSecret) {
+      return { success: false, error: "Payment gateway not configured" };
+    }
+
     const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
       headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${paystackSecret}`,
       },
     });
 

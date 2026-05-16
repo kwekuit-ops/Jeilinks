@@ -320,6 +320,12 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                                 label={isLoading ? "PREPARING..." : `PAY ${formatCurrency(price)} NOW`}
                                 disabled={!isValidPhone || isLoading}
                                 className="w-full bg-[#00c3f7] text-white py-5 rounded-[1.5rem] font-black text-xl shadow-2xl shadow-blue-200 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
+                                metadata={{
+                                    type: "BUNDLE_PURCHASE",
+                                    bundleId: bundle.id,
+                                    phone: phoneNumber,
+                                    agentId: agentId || null
+                                }}
                             />
                             
                             {session && (

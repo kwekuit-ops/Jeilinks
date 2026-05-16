@@ -4,6 +4,7 @@ import { useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
 import { CheckCircle2, Clock, RotateCcw, AlertCircle, Search, ClipboardList } from "lucide-react";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
+import { AutoRefreshToggle } from "@/components/AutoRefreshToggle";
 
 
 export default function UserOrdersClient({ initialOrders, currentUserId }: { initialOrders: any[], currentUserId: string }) {
@@ -33,11 +34,14 @@ export default function UserOrdersClient({ initialOrders, currentUserId }: { ini
           <h1 className="text-3xl font-black font-outfit tracking-tight">Order History</h1>
           <p className="text-muted-foreground">Track all your data bundle purchases in one place.</p>
         </div>
-        <div className="bg-primary/5 px-6 py-3 rounded-2xl border border-primary/10 flex items-center space-x-4 w-fit">
-            <ClipboardList className="h-6 w-6 text-primary" />
-            <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 leading-none mb-1">Total Orders</p>
-                <p className="text-xl font-black font-outfit leading-none">{initialOrders.length}</p>
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
+            <AutoRefreshToggle />
+            <div className="bg-primary/5 px-6 py-3 rounded-2xl border border-primary/10 flex items-center space-x-4 w-fit">
+                <ClipboardList className="h-6 w-6 text-primary" />
+                <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 leading-none mb-1">Total Orders</p>
+                    <p className="text-xl font-black font-outfit leading-none">{initialOrders.length}</p>
+                </div>
             </div>
         </div>
       </div>

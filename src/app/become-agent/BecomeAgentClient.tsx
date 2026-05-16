@@ -157,6 +157,10 @@ export default function BecomeAgentPage() {
               disabled={isProcessing}
               label={isProcessing ? "Processing..." : isAlreadyAgent ? "Pay & Renew Now" : "Pay & Upgrade Now"}
               className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+              metadata={{
+                type: "UPGRADE",
+                userId: (session?.user as any)?.id
+              }}
             />
             
             <p className="text-[10px] text-muted-foreground mt-4 uppercase font-bold tracking-tighter">Secure Payment via Paystack</p>

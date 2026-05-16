@@ -12,6 +12,7 @@ interface PaystackButtonProps {
     label: string;
     className?: string;
     disabled?: boolean;
+    metadata?: any;
 }
 
 // Dynamically import the inner button so react-paystack (which accesses `window`

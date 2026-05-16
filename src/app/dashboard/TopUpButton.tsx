@@ -56,6 +56,10 @@ export function TopUpButton({ email }: { email: string }) {
         disabled={isProcessing || !amount || parseFloat(amount) <= 0}
         onSuccess={handleSuccess}
         onClose={() => toast.error("Payment cancelled")}
+        metadata={{
+          type: "TOPUP",
+          amount: parseFloat(amount)
+        }}
       />
     </div>
   );

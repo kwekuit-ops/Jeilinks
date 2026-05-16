@@ -66,6 +66,7 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
       });
 
       if (res.ok) {
+        const orderData = await res.json();
         toast.promise(
           new Promise((resolve) => setTimeout(resolve, 2000)),
           {
@@ -74,7 +75,12 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
             error: 'Failed to place order',
           }
         );
-        router.push("/dashboard");
+        
+        if (session) {
+          router.push("/dashboard");
+        } else {
+          router.push(`/track?ref=${orderData.id}`);
+        }
       } else {
         toast.error("Failed to create order. Please contact support.");
       }
@@ -156,6 +162,12 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
               disabled={!phoneNumber || isLoading}
               onSuccess={handleSuccess}
               onClose={() => toast.error("Payment cancelled")}
+              metadata={{
+                type: "BUNDLE_PURCHASE",
+                bundleId: bundle.id,
+                phone: phoneNumber,
+                agentId: agentId || null
+              }}
             />
           </div>
         ) : (

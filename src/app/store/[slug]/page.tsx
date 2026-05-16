@@ -12,8 +12,12 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
 
   const agent = await prisma.user.findUnique({
     where: { storeSlug: slug },
-    include: {
-      orders: true 
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      role: true,
+      storeSlug: true
     }
   });
 
@@ -48,23 +52,20 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
     return parseSize(a.size) - parseSize(b.size);
   });
 
-  // Apply custom prices and hidden fee
+  // Apply custom prices and hidden fee, and sanitize for client component
   const customizedBundles = bundles.map(bundle => {
       // Add hidden 0.1 service fee to base prices
       const baseUserPrice = Number(bundle.userPrice) + 0.1;
       const baseAgentPrice = Number(bundle.agentPrice) + 0.1;
 
       const custom = customPrices.find(cp => cp.bundleId === bundle.id);
-      if (custom) {
-          return {
-              ...bundle,
-              userPrice: Number(custom.customPrice) + 0.1,
-              agentPrice: baseAgentPrice
-          };
-      }
+      
       return {
-          ...bundle,
-          userPrice: baseUserPrice,
+          id: bundle.id,
+          network: bundle.network,
+          size: bundle.size,
+          isActive: bundle.isActive,
+          userPrice: custom ? Number(custom.customPrice) + 0.1 : baseUserPrice,
           agentPrice: baseAgentPrice
       };
   });
@@ -140,7 +141,7 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
               <p className="text-lg text-slate-400 font-medium">No bundles available at the moment.</p>
             </div>
           ) : (
-            <BundleTabs bundles={JSON.parse(JSON.stringify(customizedBundles))} agentId={agent.id} />
+            <BundleTabs bundles={customizedBundles} agentId={agent.id} />
           )}
         </div>
       </section>

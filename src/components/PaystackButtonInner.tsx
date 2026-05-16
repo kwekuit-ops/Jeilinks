@@ -12,6 +12,7 @@ interface PaystackButtonInnerProps {
     label: string;
     className?: string;
     disabled?: boolean;
+    metadata?: any;
 }
 
 export default function PaystackButtonInner({ 
@@ -22,7 +23,8 @@ export default function PaystackButtonInner({
     onClose, 
     label, 
     className,
-    disabled 
+    disabled,
+    metadata
 }: PaystackButtonInnerProps) {
     const [mounted, setMounted] = useState(false);
 
@@ -31,11 +33,12 @@ export default function PaystackButtonInner({
     }, []);
 
     const config = {
-        reference: (new Date()).getTime().toString(),
+        reference: `JL-${(new Date()).getTime()}-${Math.floor(Math.random() * 1000)}`,
         email,
         amount: Math.round(amount * 100), // convert to pesewas
         publicKey: publicKey || process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
         currency: "GHS",
+        metadata: metadata || {},
     };
 
     const initializePayment = usePaystackPayment(config);
