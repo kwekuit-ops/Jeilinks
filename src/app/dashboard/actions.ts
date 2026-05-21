@@ -33,7 +33,7 @@ export async function changePassword(formData: any) {
       return { success: false, error: "Current password is incorrect." };
     }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
     await prisma.user.update({
       where: { id: user.id },
       data: { password: hashedNewPassword }
@@ -56,6 +56,11 @@ export async function refreshOrderStatus(orderId: string) {
 
     if (!order) {
       return { success: false, error: "Order not found." };
+    }
+    
+    const session = await getServerSession(authOptions);
+    if (!session || (order.userId !== (session.user as any).id && (session.user as any).role !== "ADMIN")) {
+      return { success: false, error: "Unauthorized to refresh this order." };
     }
 
     if (order.status === "COMPLETED" || order.status === "FAILED") {

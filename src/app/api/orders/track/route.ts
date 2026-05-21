@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -28,8 +30,17 @@ export async function GET(req: Request) {
     });
 
 
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     if (!order) {
       return NextResponse.json({ message: "Order not found" }, { status: 404 });
+    }
+
+    if (order.userId !== (session.user as any).id && (session.user as any).role !== "ADMIN") {
+        return NextResponse.json({ message: "Unauthorized to track this order" }, { status: 403 });
     }
 
     // Don't leak internal sensitive user info, just return bundle and status

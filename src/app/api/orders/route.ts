@@ -80,8 +80,11 @@ export async function POST(req: Request) {
     }
 
     // Server-side Price Verification: Always use the correct price for the user role
+    // If agentId is set, the buyer is on an agent's store page and should pay the store price (userPrice),
+    // even if the buyer is also an agent. Agents only get agentPrice when buying directly (no agentId).
     const userRole = session ? (session.user as any).role : "USER";
-    const basePrice = (userRole === "AGENT" || userRole === "ADMIN") 
+    const isOnAgentStore = !!agentId && agentId !== (session?.user as any)?.id;
+    const basePrice = (!isOnAgentStore && (userRole === "AGENT" || userRole === "ADMIN")) 
         ? Number(bundle.agentPrice) 
         : Number(bundle.userPrice);
     
@@ -99,10 +102,12 @@ export async function POST(req: Request) {
                 select: { balance: true }
             });
 
-            // Use exact Decimal comparison to avoid floating point issues
-            if (!user || Number(user.balance) < finalAmount) {
+            // Use Decimal-safe comparison with small epsilon to avoid floating point rejection
+            const userBal = Number(user?.balance ?? 0);
+            const EPSILON = 0.005; // half a pesewa tolerance
+            if (!user || (userBal + EPSILON) < finalAmount) {
                 console.warn(`Insufficient balance: User has ${user?.balance}, needs ${finalAmount}`);
-                throw new Error(`Insufficient wallet balance. You need GHS ${finalAmount.toFixed(2)} but have GHS ${Number(user?.balance).toFixed(2)}`);
+                throw new Error(`Insufficient wallet balance. You need GHS ${finalAmount.toFixed(2)} but have GHS ${userBal.toFixed(2)}`);
             }
 
             await tx.user.update({

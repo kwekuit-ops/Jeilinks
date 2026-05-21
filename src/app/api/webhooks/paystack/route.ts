@@ -98,14 +98,25 @@ export async function POST(req: Request) {
                 storeSlug = `${baseName}-${Math.floor(1000 + Math.random() * 9000)}`;
             }
 
-            await prisma.user.update({
-              where: { id: userId },
-              data: {
-                role: "AGENT",
-                storeSlug: storeSlug,
-                agentExpiry: newExpiry
-              }
-            });
+            await prisma.$transaction([
+              prisma.user.update({
+                where: { id: userId },
+                data: {
+                  role: "AGENT",
+                  storeSlug: storeSlug,
+                  agentExpiry: newExpiry
+                }
+              }),
+              prisma.walletTransaction.create({
+                data: {
+                  userId: userId,
+                  amount: amountGHS,
+                  type: "CREDIT",
+                  reference: reference,
+                  description: "Agent Upgrade (Webhook)"
+                }
+              })
+            ]);
             
             console.log(`🎖️ Webhook: Upgraded user ${customerEmail} to AGENT`);
           }

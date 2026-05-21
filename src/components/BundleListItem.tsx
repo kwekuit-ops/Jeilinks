@@ -32,22 +32,34 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderRef, setOrderRef] = useState("");
 
+  // Determine if we are on another agent's store page
+  const isStorePage = !!agentId;
+
+  const fetchBalance = async () => {
+    if (!session) return;
+    try {
+      const res = await fetch('/api/user/balance');
+      const data = await res.json();
+      if (res.ok) setUserBalance({ wallet: data.balance, commission: data.commissionBalance || 0 });
+    } catch (e) {
+      console.error("Balance fetch error:", e);
+    }
+  };
+
   useEffect(() => {
     async function loadData() {
       const settings = await getSystemSettings();
       setPaystackKey(settings["NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY"] || process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "");
-      
-      if (session) {
-          try {
-            const res = await fetch('/api/user/balance');
-            const data = await res.json();
-            if (res.ok) setUserBalance({ wallet: data.balance, commission: data.commissionBalance || 0 });
-          } catch (e) {
-            console.error("Balance fetch error:", e);
-          }
-      }
+      fetchBalance();
     }
     loadData();
+  }, [session]);
+
+  // Re-fetch balance when the user returns to the tab to prevent stale data
+  useEffect(() => {
+    const handleFocus = () => fetchBalance();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [session]);
 
   const role = (session?.user as { role?: string })?.role || "USER";
@@ -86,6 +98,8 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
         setIsSuccess(true);
         setOrderRef(data.id || phoneNumber);
         toast.success("Order placed successfully via Wallet!");
+        // Re-fetch balance immediately after successful wallet payment
+        fetchBalance();
       } else {
         toast.error(data.message || "Wallet payment failed");
       }
