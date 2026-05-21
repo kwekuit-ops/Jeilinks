@@ -13,19 +13,23 @@ export default async function UserOrdersPage() {
     redirect("/login");
   }
 
-  const orders = await prisma.order.findMany({
-    where: { 
-      OR: [
-        { userId: (session.user as any).id },
-        { agentId: (session.user as any).id }
-      ]
-    },
-    orderBy: { createdAt: "desc" },
-    include: { bundle: true }
-  });
+  const [orders, whatsappSetting] = await Promise.all([
+    prisma.order.findMany({
+      where: { 
+        OR: [
+          { userId: (session.user as any).id },
+          { agentId: (session.user as any).id }
+        ]
+      },
+      orderBy: { createdAt: "desc" },
+      include: { bundle: true }
+    }),
+    prisma.systemSetting.findUnique({ where: { key: "SUPPORT_WHATSAPP" } })
+  ]);
 
   return <UserOrdersClient 
     initialOrders={JSON.parse(JSON.stringify(orders))} 
     currentUserId={(session.user as any).id}
+    adminWhatsApp={whatsappSetting?.value || ""}
   />;
 }

@@ -5,9 +5,10 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { CheckCircle2, Clock, RotateCcw, AlertCircle, Search, ClipboardList } from "lucide-react";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { AutoRefreshToggle } from "@/components/AutoRefreshToggle";
+import { ReportIssueButton } from "@/components/ReportIssueButton";
 
 
-export default function UserOrdersClient({ initialOrders, currentUserId }: { initialOrders: any[], currentUserId: string }) {
+export default function UserOrdersClient({ initialOrders, currentUserId, adminWhatsApp }: { initialOrders: any[], currentUserId: string, adminWhatsApp: string }) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredOrders = initialOrders.filter((order) => {
@@ -109,9 +110,9 @@ export default function UserOrdersClient({ initialOrders, currentUserId }: { ini
                             <span>Refresh</span>
                         </div>
                     )}
-                    <button className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-lg">
-                        View Details
-                    </button>
+                    {adminWhatsApp && (
+                      <ReportIssueButton order={order} adminWhatsApp={adminWhatsApp} />
+                    )}
                 </div>
 
               </div>
@@ -191,9 +192,9 @@ export default function UserOrdersClient({ initialOrders, currentUserId }: { ini
                             {(order.status === "PROCESSING" || order.status === "PENDING") && (
                                 <RefreshOrderButton orderId={order.id} />
                             )}
-                            <button className="text-[10px] font-bold text-primary hover:underline uppercase tracking-widest">
-                                View
-                            </button>
+                            {adminWhatsApp && (
+                              <ReportIssueButton order={order} adminWhatsApp={adminWhatsApp} />
+                            )}
                         </div>
 
                     </td>
