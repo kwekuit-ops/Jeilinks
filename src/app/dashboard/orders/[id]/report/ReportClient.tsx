@@ -62,8 +62,11 @@ export function ReportClient({ order, adminWhatsApp }: ReportClientProps) {
     ].filter(Boolean).join("\n");
 
     const encoded = encodeURIComponent(message);
-    const number = adminWhatsApp.replace(/\D/g, "");
-    window.open(`https://wa.me/${number}?text=${encoded}`, "_blank");
+    let cleanNumber = adminWhatsApp.replace(/\D/g, "");
+    if (cleanNumber.startsWith("0")) {
+      cleanNumber = "233" + cleanNumber.substring(1);
+    }
+    window.open(`https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encoded}`, "_blank");
   };
 
   const statusColors: Record<string, string> = {
