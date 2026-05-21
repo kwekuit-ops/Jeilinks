@@ -100,9 +100,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             
             <div className="pt-8 flex flex-col items-center space-y-4">
                 <p className="text-sm text-muted-foreground">Need help with this order?</p>
-                <a href="#" className="w-full text-center py-3 rounded-2xl border border-primary text-primary font-bold hover:bg-primary/5 transition-colors">
-                    Contact Support
-                </a>
+                <Link href={`/dashboard/orders/${order.id}/report`} className="w-full text-center py-3 rounded-2xl border border-primary text-primary font-bold hover:bg-primary/5 transition-colors">
+                    Report an Issue
+                </Link>
             </div>
         </div>
       </div>
