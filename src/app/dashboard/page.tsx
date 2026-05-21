@@ -17,6 +17,7 @@ import { SecuritySettings } from "./SecuritySettings";
 import { AdminSupplierBalance } from "@/components/AdminStatsLoader";
 import { AutoRefreshToggle } from "@/components/AutoRefreshToggle";
 import { Suspense } from "react";
+import { ReportIssueButton } from "@/components/ReportIssueButton";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -25,7 +26,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [user, completedCount, pendingWithdrawals, earningsData] = await Promise.all([
+  const [user, completedCount, pendingWithdrawals, earningsData, recentOrders, totalOrdersCount] = await Promise.all([
     prisma.user.findUnique({
       where: { id: (session.user as any).id },
       select: {
@@ -36,25 +37,7 @@ export default async function DashboardPage() {
         balance: true,
         commissionBalance: true,
         agentExpiry: true,
-        storeSlug: true,
-        orders: {
-          orderBy: { createdAt: "desc" },
-          take: 10,
-          select: {
-            id: true,
-            status: true,
-            phone: true,
-            amount: true,
-            createdAt: true,
-            supplierStatus: true,
-            bundle: {
-                select: {
-                    network: true,
-                    size: true
-                }
-            }
-          }
-        }
+        storeSlug: true
       }
     }),
 
@@ -72,8 +55,40 @@ export default async function DashboardPage() {
       _sum: { amount: true }
     }),
     prisma.order.aggregate({
-        where: { agentId: (session.user as any).id, status: "COMPLETED" },
-        _sum: { commissionEarned: true }
+      where: { agentId: (session.user as any).id, status: "COMPLETED" },
+      _sum: { commissionEarned: true }
+    }),
+    prisma.order.findMany({
+      where: {
+        OR: [
+          { userId: (session.user as any).id },
+          { agentId: (session.user as any).id }
+        ]
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        status: true,
+        phone: true,
+        amount: true,
+        createdAt: true,
+        supplierStatus: true,
+        bundle: {
+          select: {
+            network: true,
+            size: true
+          }
+        }
+      }
+    }),
+    prisma.order.count({
+      where: {
+        OR: [
+          { userId: (session.user as any).id },
+          { agentId: (session.user as any).id }
+        ]
+      }
     })
   ]);
 
@@ -132,6 +147,7 @@ export default async function DashboardPage() {
   const settings = await getSystemSettings();
   const channelUrl = settings["WHATSAPP_CHANNEL_URL"] || "#";
   const publicChannelUrl = settings["PUBLIC_WHATSAPP_URL"] || "#";
+  const adminWhatsApp = settings["SUPPORT_WHATSAPP"] || "";
 
   const statusIcons: Record<string, any> = {
     PENDING: { color: "text-yellow-500 bg-yellow-100", icon: Clock },
@@ -364,7 +380,7 @@ export default async function DashboardPage() {
                     <div className="p-3 bg-secondary rounded-full mb-3">
                         <Trophy className={cn("h-6 w-6", dailyRank > 0 ? "text-yellow-500" : "text-muted-foreground")} />
                     </div>
-                    <h2 className="font-bold">{dailyRank > 0 ? `Position: #${dailyRank}` : `${user.orders.length} Orders`}</h2>
+                    <h2 className="font-bold">{dailyRank > 0 ? `Position: #${dailyRank}` : `${totalOrdersCount} Orders`}</h2>
                     <p className="text-sm text-muted-foreground">
                         {dailyRank > 0 ? `Out of ${totalPerformers} active users today` : "Total orders placed so far"}
                     </p>
@@ -395,7 +411,7 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {user.orders.map((order) => {
+                {recentOrders.map((order) => {
                   const StatusIcon = statusIcons[order.status]?.icon || Clock;
                   return (
                     <tr key={order.id} className="hover:bg-muted/30 transition-colors">
@@ -422,14 +438,19 @@ export default async function DashboardPage() {
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        {(order.status === "PROCESSING" || order.status === "PENDING") && (
-                          <RefreshOrderButton orderId={order.id} />
-                        )}
+                        <div className="flex items-center justify-end space-x-2">
+                          {(order.status === "PROCESSING" || order.status === "PENDING") && (
+                            <RefreshOrderButton orderId={order.id} />
+                          )}
+                          {adminWhatsApp && (
+                            <ReportIssueButton order={order as any} adminWhatsApp={adminWhatsApp} />
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )
                 })}
-                {user.orders.length === 0 && (
+                {recentOrders.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-6 py-10 text-center text-muted-foreground">
                       No orders found yet.
