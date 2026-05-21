@@ -7,7 +7,7 @@ const rateLimit = new Map<string, { count: number; timestamp: number }>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const MAX_REQUESTS = 20; // Max requests per minute per IP for sensitive routes
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // 1. Pass path to headers
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
   // 2. Simple Rate Limiting for auth and order routes
   const path = request.nextUrl.pathname;
   if (path.startsWith('/api/auth') || path.startsWith('/api/register') || path.startsWith('/api/orders')) {
-    const ip = request.ip || request.headers.get('x-forwarded-for') || '127.0.0.1';
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
     const now = Date.now();
     
     const record = rateLimit.get(ip);
