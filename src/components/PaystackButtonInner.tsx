@@ -1,7 +1,7 @@
 "use client";
 
 import { usePaystackPayment } from "react-paystack";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 interface PaystackButtonInnerProps {
     email: string;
@@ -27,13 +27,19 @@ export default function PaystackButtonInner({
     metadata
 }: PaystackButtonInnerProps) {
     const [mounted, setMounted] = useState(false);
+    
+    const reference = useMemo(() => {
+        // eslint-disable-next-line react-hooks/purity
+        return `JL-${(new Date()).getTime()}-${Math.floor(Math.random() * 1000)}`;
+    }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 
     const config = {
-        reference: `JL-${(new Date()).getTime()}-${Math.floor(Math.random() * 1000)}`,
+        reference,
         email,
         amount: Math.round(amount * 100), // convert to pesewas
         publicKey: publicKey || process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",

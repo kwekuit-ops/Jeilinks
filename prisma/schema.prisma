@@ -145,3 +145,11 @@ model AgentBundlePrice {
 
   @@unique([agentId, bundleId])
 }
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
