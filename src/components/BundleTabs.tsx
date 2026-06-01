@@ -14,13 +14,16 @@ interface Bundle {
 }
 
 export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: string }) {
+  const networkOrder = ["MTN", "AirtelTigo", "Telecel", "Glo"];
   const networks = Array.from(new Set(bundles.map(b => b.network)))
     .filter(n => n !== "OTHER" && n !== "Glo")
     .sort((a, b) => {
-        const order = ["MTN", "Telecel", "AirtelTigo", "Glo"];
-        return order.indexOf(a) - order.indexOf(b);
+        const aIdx = networkOrder.indexOf(a) === -1 ? 999 : networkOrder.indexOf(a);
+        const bIdx = networkOrder.indexOf(b) === -1 ? 999 : networkOrder.indexOf(b);
+        return aIdx - bIdx;
     });
-  const [activeTab, setActiveTab] = useState(networks[0]);
+  const defaultTab = networks.includes("MTN") ? "MTN" : networks[0];
+  const [activeTab, setActiveTab] = useState(defaultTab);
 
   const filteredBundles = bundles.filter((b) => b.network.toLowerCase() === activeTab.toLowerCase());
 
