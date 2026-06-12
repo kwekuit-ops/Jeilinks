@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { getActiveSupplier } from "@/lib/suppliers";
+import { trackOrderOnSupplier } from "@/lib/supplierBridge";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
@@ -17,6 +17,14 @@ export async function changePassword(formData: any) {
     if (!session) return { success: false, error: "Unauthorized" };
 
     const { currentPassword, newPassword } = formData;
+
+    // MED-7: Validate new password strength before doing any DB work
+    if (typeof newPassword !== "string" || newPassword.length < 8) {
+      return { success: false, error: "New password must be at least 8 characters." };
+    }
+    if (newPassword === currentPassword) {
+      return { success: false, error: "New password must be different from your current password." };
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: (session.user as any).id }
@@ -47,9 +55,13 @@ export async function changePassword(formData: any) {
 }
 
 export async function refreshOrderStatus(orderId: string) {
-
-
   try {
+    // HIGH-6: Authenticate FIRST before any DB queries to prevent IDOR probing
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return { success: false, error: "Unauthorized to refresh this order." };
+    }
+
     const order = await prisma.order.findUnique({
       where: { id: orderId }
     });
@@ -57,9 +69,10 @@ export async function refreshOrderStatus(orderId: string) {
     if (!order) {
       return { success: false, error: "Order not found." };
     }
-    
-    const session = await getServerSession(authOptions);
-    if (!session || (order.userId !== (session.user as any).id && (session.user as any).role !== "ADMIN")) {
+
+    if (order.userId !== (session.user as any).id &&
+        order.agentId !== (session.user as any).id &&
+        (session.user as any).role !== "ADMIN") {
       return { success: false, error: "Unauthorized to refresh this order." };
     }
 
@@ -73,8 +86,8 @@ export async function refreshOrderStatus(orderId: string) {
       return { success: false, error: "Supplier has not acknowledged this order yet. Please contact support if it persists." };
     }
 
-    const supplier = await getActiveSupplier();
-    const result = await supplier.trackOrder(order.supplierOrderId);
+    const supplierType = (order as any).supplierType || process.env.SUPPLIER_TYPE || "FUZESERVE";
+    const result = await trackOrderOnSupplier(order.supplierOrderId, supplierType);
 
     if (result.success && result.status) {
       const rawStatus = result.status || "";

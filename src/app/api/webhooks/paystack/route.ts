@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
 import { sendPushNotification } from "@/lib/notifications";
+import { sendAgentWelcomeEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -55,31 +56,60 @@ export async function POST(req: Request) {
           where: { email: customerEmail }
         });
 
-        if (user) {
-          await prisma.$transaction([
-            prisma.user.update({
-              where: { id: user.id },
-              data: { balance: { increment: amountGHS } }
-            }),
-            prisma.walletTransaction.create({
-              data: {
-                userId: user.id,
-                amount: amountGHS,
-                type: "TOPUP",
-                reference: reference,
-                description: `Wallet top-up via Paystack (Webhook)`
-              }
-            })
-          ]);
-
-          await sendPushNotification({
-            userId: user.id,
-            title: "Top-up Confirmed! 💰",
-            message: `Your wallet has been credited with GHS ${amountGHS.toFixed(2)}.`,
-            url: "/dashboard"
+        if (!user) {
+          // User not found — log for admin manual review
+          console.warn(`⚠️ Webhook: No user found for email ${customerEmail}. Logging as failed top-up.`);
+          await prisma.failedTopup.upsert({
+            where: { reference },
+            create: {
+              reference,
+              amount: amountGHS,
+              email: customerEmail,
+              reason: `No user account found for email: ${customerEmail}`
+            },
+            update: {} // already exists, don't overwrite
           });
+        } else {
+          try {
+            await prisma.$transaction([
+              prisma.user.update({
+                where: { id: user.id },
+                data: { balance: { increment: amountGHS } }
+              }),
+              prisma.walletTransaction.create({
+                data: {
+                  userId: user.id,
+                  amount: amountGHS,
+                  type: "TOPUP",
+                  reference: reference,
+                  description: `Wallet top-up via Paystack (Webhook)`
+                }
+              })
+            ]);
 
-          console.log(`💰 Webhook: Credited GHS ${amountGHS} to ${customerEmail}`);
+            await sendPushNotification({
+              userId: user.id,
+              title: "Top-up Confirmed! 💰",
+              message: `Your wallet has been credited with GHS ${amountGHS.toFixed(2)}.`,
+              url: "/dashboard"
+            });
+
+            console.log(`💰 Webhook: Credited GHS ${amountGHS} to ${customerEmail}`);
+          } catch (creditError: any) {
+            // Credit transaction failed — log for admin manual review
+            console.error(`❌ Webhook: Failed to credit ${customerEmail} for ref ${reference}:`, creditError);
+            await prisma.failedTopup.upsert({
+              where: { reference },
+              create: {
+                reference,
+                amount: amountGHS,
+                email: customerEmail,
+                userId: user.id,
+                reason: `DB transaction failed: ${creditError?.message || String(creditError)}`
+              },
+              update: {}
+            });
+          }
         }
       } else if (metadata?.type === "UPGRADE") {
         const userId = metadata.userId;
@@ -117,6 +147,23 @@ export async function POST(req: Request) {
                 }
               })
             ]);
+
+            // Send welcome email with WhatsApp group link
+            try {
+              const communitySettings = await prisma.systemSetting.findMany({
+                where: { key: { in: ["WHATSAPP_CHANNEL_URL"] } }
+              });
+              const whatsappGroupUrl = communitySettings.find(s => s.key === "WHATSAPP_CHANNEL_URL")?.value || "";
+
+              await sendAgentWelcomeEmail({
+                to: user.email!,
+                name: user.name || "Agent",
+                storeSlug: storeSlug,
+                whatsappGroupUrl,
+              });
+            } catch (emailErr) {
+              console.warn("⚠️ Webhook: Failed to send agent welcome email:", emailErr);
+            }
             
             console.log(`🎖️ Webhook: Upgraded user ${customerEmail} to AGENT`);
           }

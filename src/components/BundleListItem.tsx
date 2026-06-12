@@ -62,6 +62,19 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
     return () => window.removeEventListener('focus', handleFocus);
   }, [session]);
 
+  // Prefill phone and open drawer if matching bundleId in URL search params
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const phoneParam = params.get("prefillPhone");
+      const bundleParam = params.get("prefillBundleId");
+      if (bundleParam === bundle.id && phoneParam) {
+        setPhoneNumber(phoneParam);
+        setIsExpanding(true);
+      }
+    }
+  }, [bundle.id]);
+
   const role = (session?.user as { role?: string })?.role || "USER";
   
   // If we are logged in as an agent, we should always get the agent price 

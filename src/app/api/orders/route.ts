@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { placeOrderOnSupplier } from "@/lib/supplierBridge";
+import { placeOrderOnSupplier, getSupplierForBundle } from "@/lib/supplierBridge";
 import { OrderResponse } from "@/lib/suppliers/types";
 import { normalizeOrderStatus } from "@/lib/utils";
 import { processOrderCommission } from "@/lib/commissions";
@@ -17,9 +17,6 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    console.log("Order Request Body:", JSON.stringify(body));
-    console.log("Session detected:", !!session, session?.user?.email);
-
     const { bundleId, phone, paystackRef, amount, agentId, paymentMethod = "PAYSTACK" } = body;
     
     const sanitizedPhone = phone.replace(/\D/g, "");
@@ -28,6 +25,8 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: "Invalid Ghanaian phone number" }, { status: 400 });
     }
     
+    let verifyData: any = null;
+
     if (paymentMethod === "PAYSTACK") {
         const setting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
         const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
@@ -37,9 +36,6 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Payment setup incomplete" }, { status: 500 });
         }
 
-        console.log(`Verifying Paystack Ref: ${paystackRef}`);
-        
-        let verifyData: any = null;
         let attempts = 0;
         const maxAttempts = 3;
 
@@ -52,21 +48,18 @@ export async function POST(req: Request) {
             });
 
             verifyData = await verifyRes.json();
-            console.log(`Attempt ${attempts}: Paystack Verify Status:`, verifyRes.status);
             
             if (verifyRes.ok && verifyData.data?.status === "success") {
                 break; 
             }
             
             if (attempts < maxAttempts) {
-                console.log("Retrying Paystack verification in 2s...");
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }
         }
 
         if (!verifyData || verifyData.data?.status !== "success") {
             const errorMsg = verifyData?.message || "Payment verification failed after retries";
-            console.error(`Paystack Error: ${errorMsg}`);
             return NextResponse.json({ message: errorMsg }, { status: 400 });
         }
     }
@@ -79,18 +72,42 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Bundle not found" }, { status: 404 });
     }
 
-    // Server-side Price Verification: Always use the correct price for the user role
-    // If agentId is set, the buyer is on an agent's store page and should pay the store price (userPrice),
-    // even if the buyer is also an agent. Agents only get agentPrice when buying directly (no agentId).
-    const userRole = session ? (session.user as any).role : "USER";
+    // HIGH-2 + MED-2: Always re-fetch role from DB — JWT can be stale after demotion or expiry.
+    // This also enforces agent subscription expiry at purchase time, not just at dashboard login.
+    let liveRole = "USER";
+    if (session) {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: (session.user as any).id },
+        select: { role: true, agentExpiry: true }
+      });
+      if (dbUser) {
+        // Auto-expire agents whose subscription has lapsed
+        if (dbUser.role === "AGENT" && dbUser.agentExpiry && new Date() > new Date(dbUser.agentExpiry)) {
+          await prisma.user.update({ where: { id: (session.user as any).id }, data: { role: "USER" } });
+          liveRole = "USER";
+        } else {
+          liveRole = dbUser.role;
+        }
+      }
+    }
+
     const isOnAgentStore = !!agentId && agentId !== (session?.user as any)?.id;
-    const basePrice = (!isOnAgentStore && (userRole === "AGENT" || userRole === "ADMIN")) 
-        ? Number(bundle.agentPrice) 
+    const basePrice = (!isOnAgentStore && (liveRole === "AGENT" || liveRole === "ADMIN"))
+        ? Number(bundle.agentPrice)
         : Number(bundle.userPrice);
-    
-    // Use the price from DB if not provided or if we want to be strict
-    // For WALLET payments, we MUST use the DB price to prevent client-side manipulation
-    const finalAmount = paymentMethod === "WALLET" ? basePrice : Number(amount);
+
+    // CRIT-6: For Paystack payments, verify the paid amount matches the bundle price from the DB.
+    // This prevents clients from paying less than the required amount.
+    if (paymentMethod === "PAYSTACK" && verifyData) {
+        const paidAmountGHS = verifyData.data.amount / 100;
+        if (Math.abs(paidAmountGHS - basePrice) > 0.01) {
+            console.error(`Amount mismatch: paid=${paidAmountGHS} expected=${basePrice} for bundle=${bundleId}`);
+            return NextResponse.json({ message: "Payment amount does not match the bundle price" }, { status: 400 });
+        }
+    }
+
+    // Always use the DB price — never the client-supplied amount
+    const finalAmount = basePrice;
 
     const order = await prisma.$transaction(async (tx) => {
         if (paymentMethod === "WALLET") {
@@ -154,24 +171,25 @@ export async function POST(req: Request) {
     }
 
 
-    if (!bundle.supplierProductId) {
+    // Resolve which supplier handles this bundle (multi-supplier routing)
+    const { supplierProductId: resolvedProductId, supplierType } = await getSupplierForBundle(bundle.id);
+    const effectiveProductId = resolvedProductId || bundle.supplierProductId;
+
+    if (!effectiveProductId) {
         console.error("Order error: Bundle missing supplierProductId", bundle.id);
         return NextResponse.json({ message: "This bundle is not correctly configured for automated delivery." }, { status: 400 });
     }
 
-    console.log(`Placing order on supplier for bundle ${bundle.id}, phone ${sanitizedPhone}, productID ${bundle.supplierProductId}`);
-    
     const supplierRes = await placeOrderOnSupplier({
-      supplierProductId: bundle.supplierProductId,
+      bundleId: bundle.id,
+      supplierProductId: effectiveProductId,
       phone: sanitizedPhone,
-      reference: order.id, 
+      reference: order.id,
     });
-
-    console.log("Supplier Response:", JSON.stringify(supplierRes));
 
     if (supplierRes.success) {
       const res = supplierRes as OrderResponse;
-      const supplierOrderId = res.supplierOrderId || res.supplier_order_id;
+      const supplierOrderId = res.supplierOrderId || (res as any).supplier_order_id;
       
       if (supplierOrderId) {
         const rawStatus = res.status || "PROCESSING";
@@ -182,11 +200,12 @@ export async function POST(req: Request) {
           data: { 
             status: normalizedStatus,
             supplierStatus: rawStatus,
-            supplierOrderId: supplierOrderId
+            supplierOrderId: supplierOrderId,
+            supplierType: supplierType, // Store which supplier handled this order
           },
         });
 
-        if (normalizedStatus === "COMPLETED" || normalizedStatus === "PROCESSING") {
+        if (normalizedStatus === "COMPLETED") {
           await processOrderCommission(order.id);
         }
       }

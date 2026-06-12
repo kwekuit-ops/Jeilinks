@@ -1,18 +1,21 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { getActiveSupplier } from "@/lib/suppliers";
 import { formatCurrency } from "@/lib/utils";
-import { Wallet, Zap, Users, Search, DollarSign } from "lucide-react";
+import { Zap, Users, DollarSign } from "lucide-react";
 import WalletManagementClient from "./WalletManagementClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminWalletPage() {
   const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") redirect("/");
+
   const supplier = await getActiveSupplier();
-  
-  const [supplierBalance, adminUser, totalUserBalance, users] = await Promise.all([
+
+  const [supplierBalance, adminUser, totalUserBalance, users, failedTopups] = await Promise.all([
     supplier.fetchBalance().catch(() => 0),
     prisma.user.findUnique({ where: { id: (session?.user as any)?.id } }),
     prisma.user.aggregate({ _sum: { balance: true } }),
@@ -26,28 +29,32 @@ export default async function AdminWalletPage() {
         role: true,
         image: true
       }
+    }),
+    prisma.failedTopup.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: "desc" }
     })
   ]);
 
   const stats = [
-    { 
-      name: "Supplier Wallet", 
-      value: formatCurrency(supplierBalance.toString()), 
-      icon: Zap, 
+    {
+      name: "Supplier Wallet",
+      value: formatCurrency(supplierBalance.toString()),
+      icon: Zap,
       color: "text-purple-500 bg-purple-100",
       description: "Balance available for automated orders"
     },
-    { 
-      name: "Admin Wallet", 
-      value: formatCurrency((adminUser?.balance || 0).toString()), 
-      icon: DollarSign, 
+    {
+      name: "Admin Wallet",
+      value: formatCurrency((adminUser?.balance || 0).toString()),
+      icon: DollarSign,
       color: "text-emerald-500 bg-emerald-100",
       description: "Your current personal balance"
     },
-    { 
-      name: "Total Users Wallet", 
-      value: formatCurrency((totalUserBalance._sum.balance || 0).toString()), 
-      icon: Users, 
+    {
+      name: "Total Users Wallet",
+      value: formatCurrency((totalUserBalance._sum.balance || 0).toString()),
+      icon: Users,
       color: "text-blue-500 bg-blue-100",
       description: "Sum of all user balances combined"
     }
@@ -73,7 +80,10 @@ export default async function AdminWalletPage() {
         ))}
       </div>
 
-      <WalletManagementClient initialUsers={JSON.parse(JSON.stringify(users))} />
+      <WalletManagementClient
+        initialUsers={JSON.parse(JSON.stringify(users))}
+        initialFailedTopups={JSON.parse(JSON.stringify(failedTopups))}
+      />
     </div>
   );
 }

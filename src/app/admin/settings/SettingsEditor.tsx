@@ -170,6 +170,20 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
             />
             <p className="text-[10px] text-muted-foreground">Only shown to agents after they upgrade.</p>
           </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Agent Subscription Fee (GHS)</label>
+            <input 
+              type="number"
+              min="0"
+              step="0.01"
+              value={settings["AGENT_UPGRADE_FEE"] || ""}
+              onChange={(e) => setSettings({...settings, AGENT_UPGRADE_FEE: e.target.value})}
+              className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
+              placeholder="10"
+            />
+            <p className="text-[10px] text-muted-foreground">Minimum payment required to upgrade or renew as an agent (in GHS).</p>
+          </div>
         </div>
       </div>
 

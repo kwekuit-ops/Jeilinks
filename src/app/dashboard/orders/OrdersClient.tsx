@@ -6,6 +6,7 @@ import { CheckCircle2, Clock, RotateCcw, AlertCircle, Search, ClipboardList } fr
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { AutoRefreshToggle } from "@/components/AutoRefreshToggle";
 import { ReportIssueButton } from "@/components/ReportIssueButton";
+import Link from "next/link";
 
 
 export default function UserOrdersClient({ initialOrders, currentUserId, adminWhatsApp }: { initialOrders: any[], currentUserId: string, adminWhatsApp: string }) {
@@ -103,12 +104,21 @@ export default function UserOrdersClient({ initialOrders, currentUserId, adminWh
                 <span className="text-[10px] text-muted-foreground">
                     {new Date(order.createdAt).toLocaleString()}
                 </span>
-                <div className="flex items-center space-x-2">
+                 <div className="flex items-center space-x-2">
                     {(order.status === "PROCESSING" || order.status === "PENDING") && (
                         <div className="flex items-center space-x-1 text-primary text-[10px] font-bold">
                             <RefreshOrderButton orderId={order.id} />
                             <span>Refresh</span>
                         </div>
+                    )}
+                    {order.status === "FAILED" && (
+                        <Link
+                          href={`/shop?prefillPhone=${order.phone}&prefillBundleId=${order.bundleId}`}
+                          className="flex items-center space-x-1 px-3 py-1.5 bg-primary text-white rounded-xl text-[10px] font-bold hover:brightness-110 active:scale-95 transition-all shadow-sm"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          <span>Replace</span>
+                        </Link>
                     )}
                     {adminWhatsApp && (
                       <ReportIssueButton order={order} adminWhatsApp={adminWhatsApp} />
@@ -187,16 +197,24 @@ export default function UserOrdersClient({ initialOrders, currentUserId, adminWh
                             <span className="text-[10px]">{new Date(order.createdAt).toLocaleTimeString()}</span>
                         </div>
                     </td>
-                    <td className="px-6 py-5 text-right">
+                     <td className="px-6 py-5 text-right">
                         <div className="flex items-center justify-end space-x-2">
                             {(order.status === "PROCESSING" || order.status === "PENDING") && (
                                 <RefreshOrderButton orderId={order.id} />
+                            )}
+                            {order.status === "FAILED" && (
+                                <Link
+                                  href={`/shop?prefillPhone=${order.phone}&prefillBundleId=${order.bundleId}`}
+                                  className="flex items-center space-x-1 px-3 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-sm"
+                                >
+                                  <RotateCcw className="h-3.5 w-3.5" />
+                                  <span>Replace Order</span>
+                                </Link>
                             )}
                             {adminWhatsApp && (
                               <ReportIssueButton order={order} adminWhatsApp={adminWhatsApp} />
                             )}
                         </div>
-
                     </td>
                   </tr>
                 )

@@ -5,6 +5,8 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { CheckCircle, XCircle, Clock, Search, RefreshCcw, User, Package, Phone, Hash, ShoppingBag } from "lucide-react";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import Link from "next/link";
+import { retryOrder } from "../users/actions";
+import { toast } from "react-hot-toast";
 
 interface Order {
   id: string;
@@ -28,6 +30,26 @@ interface Order {
 export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
   const [activeTab, setActiveTab] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
+
+  const handleRetry = async (orderId: string) => {
+    if (confirm("Are you sure you want to replace/retry this failed order with the supplier?")) {
+      setIsProcessing(orderId);
+      try {
+        const res = await retryOrder(orderId);
+        if (res.success) {
+          toast.success(res.message || "Order replaced successfully!");
+          window.location.reload();
+        } else {
+          toast.error(res.error || "Failed to replace order");
+        }
+      } catch (err: any) {
+        toast.error(err.message || "An error occurred");
+      } finally {
+        setIsProcessing(null);
+      }
+    }
+  };
 
   const statusIcons: Record<string, any> = {
     PENDING: { color: "text-yellow-600 bg-yellow-100 border-yellow-200", icon: Clock },
@@ -155,6 +177,17 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
                              <RefreshOrderButton orderId={order.id} />
                              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[8px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap font-black">TRACK LIVE</span>
                         </div>
+                     )}
+                     {order.status === "FAILED" && (
+                        <button
+                          onClick={() => handleRetry(order.id)}
+                          disabled={isProcessing === order.id}
+                          className="flex items-center space-x-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm disabled:opacity-50"
+                          title="Retry/replace order with supplier"
+                        >
+                          <RefreshCcw className={cn("h-3.5 w-3.5", isProcessing === order.id && "animate-spin")} />
+                          <span>Replace</span>
+                        </button>
                      )}
                      <Link 
                         href={`/admin/orders/${order.id}`}

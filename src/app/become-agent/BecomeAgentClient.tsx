@@ -108,23 +108,30 @@ export default function BecomeAgentPage() {
                <p className="text-lg text-muted-foreground">Welcome to the JEILINKS Agent Team. Your wholesale pricing and branded store are now active.</p>
            </div>
 
-           <div className="bg-whatsapp/10 p-6 rounded-3xl border border-whatsapp/20 space-y-4">
-              <div className="flex items-center justify-center space-x-2 text-whatsapp">
+           <div className="bg-[#0d1f17] p-6 rounded-3xl border border-[#1a3a25] space-y-4">
+              <div className="flex items-center justify-center space-x-2 text-[#25D366]">
                   <TrendingUp className="h-5 w-5" />
                   <span className="font-bold uppercase tracking-widest text-xs">Essential Next Step</span>
               </div>
-              <h3 className="text-xl font-bold">Join the Agents WhatsApp Community</h3>
-              <p className="text-sm text-muted-foreground">Get instant updates, network with other agents, and get priority support in our exclusive group.</p>
+              <h3 className="text-xl font-bold text-white">Join the Agents WhatsApp Community</h3>
+              <p className="text-sm text-gray-400">Get instant updates, network with other agents, and get priority support in our exclusive group.</p>
               
-              <a 
-                href={whatsappUrl || "#"} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center space-x-3 w-full bg-whatsapp text-white py-5 rounded-2xl font-black text-xl shadow-xl shadow-whatsapp/20 hover:brightness-110 active:scale-95 transition-all"
-              >
+              {whatsappUrl ? (
+                <a 
+                  href={whatsappUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center space-x-3 w-full bg-[#25D366] text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:brightness-110 active:scale-95 transition-all"
+                >
                   <span>Join WhatsApp Group</span>
                   <ArrowRight className="h-6 w-6" />
-              </a>
+                </a>
+              ) : (
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-4 text-center">
+                  <p className="text-sm text-yellow-300 font-medium">Group link will be sent to your email shortly.</p>
+                  <p className="text-xs text-gray-500 mt-1">Can't find it? Contact support to get the link.</p>
+                </div>
+              )}
            </div>
 
            <div className="flex flex-col space-y-4">

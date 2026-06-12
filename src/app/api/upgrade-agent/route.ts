@@ -23,7 +23,11 @@ export async function POST(req: Request) {
 
     const verifyData = await verifyRes.json();
 
-    if (!verifyRes.ok || verifyData.data.status !== "success" || verifyData.data.amount < 1000) {
+    // HIGH-5: Verify amount against the real subscription price from settings
+    const agentFeeSetting = await prisma.systemSetting.findUnique({ where: { key: "AGENT_UPGRADE_FEE" } });
+    const expectedPesewas = agentFeeSetting ? Number(agentFeeSetting.value) * 100 : 1000; // fallback to GHS 10
+
+    if (!verifyRes.ok || verifyData.data.status !== "success" || verifyData.data.amount < expectedPesewas) {
       return NextResponse.json({ message: "Payment verification failed" }, { status: 400 });
     }
 
@@ -39,10 +43,22 @@ export async function POST(req: Request) {
     // 3. Update User Role
     const userId = (session.user as any).id;
     const existingUser = await prisma.user.findUnique({ where: { id: userId } });
-    
+
+    // Compute new expiry (stack on top of existing if not yet expired)
+    let newExpiry = new Date();
+    if (existingUser?.agentExpiry && new Date(existingUser.agentExpiry) > new Date()) {
+      newExpiry = new Date(existingUser.agentExpiry);
+    }
+    newExpiry.setDate(newExpiry.getDate() + 14);
+
     if (existingUser?.role === "AGENT" && existingUser.storeSlug) {
-        // Just extend expiry or record payment
-        await prisma.walletTransaction.create({
+        // MED-6: Extend expiry on renewal (was missing before)
+        await prisma.$transaction([
+          prisma.user.update({
+            where: { id: userId },
+            data: { agentExpiry: newExpiry }
+          }),
+          prisma.walletTransaction.create({
             data: {
                 userId,
                 amount: verifyData.data.amount / 100,
@@ -50,8 +66,9 @@ export async function POST(req: Request) {
                 reference: reference,
                 description: "Agent Subscription Renewal"
             }
-        });
-        return NextResponse.json({ message: "Subscription renewed", user: existingUser }, { status: 200 });
+          })
+        ]);
+        return NextResponse.json({ message: "Subscription renewed", expiresAt: newExpiry }, { status: 200 });
     }
 
     const userName = session.user?.name || "agent";
@@ -63,6 +80,7 @@ export async function POST(req: Request) {
             data: {
                 role: "AGENT",
                 storeSlug: storeSlug,
+                agentExpiry: newExpiry,
             },
         });
 

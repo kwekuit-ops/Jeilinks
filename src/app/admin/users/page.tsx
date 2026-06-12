@@ -1,10 +1,15 @@
 import prisma from "@/lib/prisma";
-export const dynamic = "force-dynamic";
-
-import { Plus } from "lucide-react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import UserManagementClient from "./UserManagementClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminUsersPage() {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") redirect("/");
+
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
@@ -20,7 +25,8 @@ export default async function AdminUsersPage() {
         },
         select: { id: true }
       }
-    }
+    },
+    take: 200,
   });
 
   const users = rawUsers.map(u => ({

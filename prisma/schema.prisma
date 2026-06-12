@@ -97,6 +97,7 @@ model Order {
   paymentMethod   String   @default("PAYSTACK")
   supplierOrderId String?
   supplierStatus  String?
+  supplierType    String?  // "FUZESERVE" | "MYSOCIALBOOSTER" — which supplier handled this order
   agentId         String?
   commissionEarned Decimal @default(0)
   failureReason    String?
@@ -152,4 +153,17 @@ model PasswordResetToken {
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model FailedTopup {
+  id         String    @id @default(cuid())
+  reference  String    @unique  // Paystack payment reference
+  amount     Decimal
+  email      String              // customer email from Paystack payload
+  userId     String?             // resolved userId (if user was found)
+  reason     String?             // why the credit failed
+  status     String    @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+  resolvedBy String?             // admin userId who actioned it
 }
