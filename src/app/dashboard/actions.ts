@@ -86,7 +86,14 @@ export async function refreshOrderStatus(orderId: string) {
       return { success: false, error: "Supplier has not acknowledged this order yet. Please contact support if it persists." };
     }
 
-    const supplierType = (order as any).supplierType || process.env.SUPPLIER_TYPE || "FUZESERVE";
+    let supplierType = order.supplierType;
+    if (!supplierType) {
+      const setting = await prisma.systemSetting.findUnique({
+        where: { key: "SUPPLIER_TYPE" }
+      });
+      supplierType = setting?.value || process.env.SUPPLIER_TYPE || "FUZESERVE";
+    }
+
     const result = await trackOrderOnSupplier(order.supplierOrderId, supplierType);
 
     if (result.success && result.status) {

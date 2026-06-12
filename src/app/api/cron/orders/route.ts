@@ -25,13 +25,18 @@ export async function GET(req: Request) {
       return NextResponse.json({ message: "No pending orders to track." });
     }
 
+    const supplierTypeSetting = await prisma.systemSetting.findUnique({
+      where: { key: "SUPPLIER_TYPE" }
+    });
+    const defaultSupplierType = supplierTypeSetting?.value || process.env.SUPPLIER_TYPE || "FUZESERVE";
+
     let updatedCount = 0;
     let failedCount = 0;
 
     for (const order of pendingOrders) {
       const supplierRef = order.supplierOrderId!;
       // Use supplierType stored on the order — routes to the right supplier
-      const supplierType = (order as any).supplierType || process.env.SUPPLIER_TYPE || "FUZESERVE";
+      const supplierType = order.supplierType || defaultSupplierType;
 
       const result = await trackOrderOnSupplier(supplierRef, supplierType);
 
