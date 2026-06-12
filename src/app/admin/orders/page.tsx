@@ -33,6 +33,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     where,
     select: {
       id: true,
+      userId: true,
       status: true,
       phone: true,
       amount: true,
