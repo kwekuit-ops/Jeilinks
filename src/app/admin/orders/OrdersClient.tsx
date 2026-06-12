@@ -64,10 +64,19 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
     { label: "Processing", value: "PROCESSING" },
     { label: "Completed", value: "COMPLETED" },
     { label: "Failed", value: "FAILED" },
+    { label: "Failed Guests", value: "FAILED_GUEST" },
   ];
 
   const filteredOrders = initialOrders.filter(order => {
-    const matchesTab = activeTab === "ALL" || order.status === activeTab;
+    let matchesTab = false;
+    if (activeTab === "ALL") {
+      matchesTab = true;
+    } else if (activeTab === "FAILED_GUEST") {
+      matchesTab = order.status === "FAILED" && !order.userId;
+    } else {
+      matchesTab = order.status === activeTab;
+    }
+
     const matchesSearch = 
       order.phone.includes(searchTerm) || 
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -132,6 +141,11 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
                     <div className="flex items-center space-x-2">
                         <User className="h-4 w-4 text-primary" />
                         <p className="font-bold text-sm truncate">{order.user?.name || "Guest Checkout"}</p>
+                        {!order.userId && (
+                            <span className="bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest border border-red-100 dark:border-red-900/30">
+                              Guest
+                            </span>
+                        )}
                     </div>
                     <p className="text-xs text-muted-foreground pl-6 truncate">{order.user?.email || order.paystackRef || "No Email"}</p>
                   </div>
