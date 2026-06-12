@@ -210,6 +210,12 @@ export async function POST(req: Request) {
         }
       }
     } else {
+      // Save the supplierType on the order first so the failure is properly associated with the supplier
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { supplierType }
+      });
+
       // Use the refund utility to mark as failed and refund if necessary
       await processOrderRefund(
         order.id, 

@@ -22,10 +22,21 @@ export async function getSupplierForBundle(bundleId: string): Promise<{
   const settings: Record<string, string> = {};
   settingsList.forEach(s => settings[s.key] = s.value);
 
-  // 1. Check SupplierMapping table for an explicit per-bundle routing
-  const mapping = await prisma.supplierMapping.findFirst({
-    where: { bundleId },
+  const activeSupplierType = (settings["SUPPLIER_TYPE"] || process.env.SUPPLIER_TYPE || "FUZESERVE").toUpperCase();
+
+  // 1. Check SupplierMapping table for an explicit per-bundle routing matching the active supplier type
+  let mapping = await prisma.supplierMapping.findFirst({
+    where: { 
+      bundleId,
+      supplierType: activeSupplierType
+    },
   });
+
+  if (!mapping) {
+    mapping = await prisma.supplierMapping.findFirst({
+      where: { bundleId },
+    });
+  }
 
   if (mapping) {
     const supplier = buildSupplier(mapping.supplierType, settings);
