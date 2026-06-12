@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
-import { CheckCircle, XCircle, Clock, Search, RefreshCcw, User, Package, Phone, Hash, ShoppingBag } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Search, RefreshCcw, User, Package, Phone, Hash, ShoppingBag, Calendar } from "lucide-react";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import Link from "next/link";
 import { retryOrder } from "../users/actions";
@@ -148,6 +148,12 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
                         )}
                     </div>
                     <p className="text-xs text-muted-foreground pl-6 truncate">{order.user?.email || order.paystackRef || "No Email"}</p>
+                    <div className="flex items-center space-x-2 pl-6">
+                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground font-mono">
+                            {new Date(order.createdAt).toLocaleDateString('en-GB')} {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                        </span>
+                    </div>
                   </div>
 
                   {/* Bundle Column */}
