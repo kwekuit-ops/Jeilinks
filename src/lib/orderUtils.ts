@@ -9,12 +9,37 @@ export async function processOrderRefund(orderId: string, reason: string) {
     return { success: false, message: "Order not found or already marked as failed" };
   }
 
+  // If a commission was earned on this order, reverse it from the agent's balance
+  if (order.agentId && Number(order.commissionEarned) > 0) {
+    const commission = Number(order.commissionEarned);
+    try {
+      await prisma.$transaction([
+        prisma.user.update({
+          where: { id: order.agentId },
+          data: { commissionBalance: { decrement: commission } }
+        }),
+        prisma.walletTransaction.create({
+          data: {
+            userId: order.agentId,
+            amount: commission,
+            type: "DEBIT",
+            reference: `COMM-REV-${order.id}`,
+            description: `Commission reversal for failed order #${order.id.slice(-6)}`
+          }
+        })
+      ]);
+    } catch (revErr) {
+      console.error(`Failed to reverse commission for order ${order.id}:`, revErr);
+    }
+  }
+
   // Update order status first to prevent double refund
   await prisma.order.update({
     where: { id: order.id },
     data: { 
       status: "FAILED",
-      failureReason: reason 
+      failureReason: reason,
+      commissionEarned: 0 // Clear commission earned on the order
     }
   });
 

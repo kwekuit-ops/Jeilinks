@@ -57,8 +57,7 @@ export async function POST(req: Request) {
         },
       });
 
-      // MED-11: Commission only on COMPLETED, not PROCESSING
-      if (newStatus === "COMPLETED") {
+      if (newStatus === "COMPLETED" || newStatus === "PROCESSING") {
           await processOrderCommission(order.id);
       }
 

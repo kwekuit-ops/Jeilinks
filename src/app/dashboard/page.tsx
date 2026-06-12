@@ -47,7 +47,7 @@ export default async function DashboardPage() {
           { userId: (session.user as any).id },
           { agentId: (session.user as any).id }
         ],
-        status: "COMPLETED"
+        status: { in: ["PROCESSING", "COMPLETED"] }
       }
     }),
     prisma.withdrawal.aggregate({
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
       _sum: { amount: true }
     }),
     prisma.order.aggregate({
-      where: { agentId: (session.user as any).id, status: "COMPLETED" },
+      where: { agentId: (session.user as any).id, status: { in: ["PROCESSING", "COMPLETED"] } },
       _sum: { commissionEarned: true }
     }),
     prisma.order.findMany({
@@ -103,14 +103,14 @@ export default async function DashboardPage() {
           { agentId: (session.user as any).id }
         ],
         createdAt: { gte: startOfToday },
-        status: "COMPLETED"
+        status: { in: ["PROCESSING", "COMPLETED"] }
       }
     }),
     prisma.order.groupBy({
       by: ['userId'],
       where: {
         createdAt: { gte: startOfToday },
-        status: "COMPLETED"
+        status: { in: ["PROCESSING", "COMPLETED"] }
       },
       _count: { id: true },
       orderBy: { _count: { id: 'desc' } }

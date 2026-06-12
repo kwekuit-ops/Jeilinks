@@ -11,7 +11,7 @@ export async function getSalesReport(startDate?: Date, endDate?: Date) {
   }
 
   const where: any = {
-    status: "COMPLETED",
+    status: { in: ["PROCESSING", "COMPLETED"] },
   };
 
   if (startDate || endDate) {
