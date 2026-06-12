@@ -284,6 +284,7 @@ export async function retryOrder(orderId: string) {
     if (!session || (session.user as any).role !== "ADMIN") {
       return { success: false, error: "Unauthorized" };
     }
+    const adminId = (session.user as any).id;
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -295,13 +296,49 @@ export async function retryOrder(orderId: string) {
       return { success: false, error: "Only failed orders can be retried" };
     }
 
-    // Update order status back to PROCESSING to retry
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: "PROCESSING",
-        failureReason: null,
-        supplierStatus: "RETRYING"
+    const shouldDeductAdmin = !!order.userId;
+
+    if (shouldDeductAdmin) {
+      const admin = await prisma.user.findUnique({
+        where: { id: adminId },
+        select: { balance: true }
+      });
+      const adminBal = Number(admin?.balance ?? 0);
+      const orderAmount = Number(order.amount);
+      if (!admin || adminBal < orderAmount) {
+        return {
+          success: false,
+          error: `Insufficient admin wallet balance. You need GHS ${orderAmount.toFixed(2)} but have GHS ${adminBal.toFixed(2)} to replace this order.`
+        };
+      }
+    }
+
+    // Run order status update and admin wallet deduction in a transaction
+    await prisma.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: "PROCESSING",
+          failureReason: null,
+          supplierStatus: "RETRYING"
+        }
+      });
+
+      if (shouldDeductAdmin) {
+        await tx.user.update({
+          where: { id: adminId },
+          data: { balance: { decrement: order.amount } }
+        });
+
+        await tx.walletTransaction.create({
+          data: {
+            userId: adminId,
+            amount: order.amount,
+            type: "DEBIT",
+            reference: `RETRY-DEBIT-${order.id}`,
+            description: `Replace/retry failed order #${order.id.substring(0, 8)} for user`
+          }
+        });
       }
     });
 
