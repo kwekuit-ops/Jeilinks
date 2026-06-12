@@ -13,13 +13,22 @@ export async function getSupplierForBundle(bundleId: string): Promise<{
   supplierProductId: string;
   supplierType: string;
 }> {
+  // Fetch system settings from DB first so they are available for both mappings and fallbacks
+  const settingsList = await prisma.systemSetting.findMany({
+    where: { key: { in: ["SUPPLIER_TYPE", "SUPPLIER_API_KEY", "SUPPLIER_API_BASE",
+                          "FUZESERVE_API_KEY", "FUZESERVE_API_BASE",
+                          "MYSOCIALBOOSTER_API_KEY", "MYSOCIALBOOSTER_API_BASE"] } }
+  });
+  const settings: Record<string, string> = {};
+  settingsList.forEach(s => settings[s.key] = s.value);
+
   // 1. Check SupplierMapping table for an explicit per-bundle routing
   const mapping = await prisma.supplierMapping.findFirst({
     where: { bundleId },
   });
 
   if (mapping) {
-    const supplier = buildSupplier(mapping.supplierType);
+    const supplier = buildSupplier(mapping.supplierType, settings);
     return {
       supplier,
       supplierProductId: mapping.supplierProductId,
@@ -32,14 +41,6 @@ export async function getSupplierForBundle(bundleId: string): Promise<{
     where: { id: bundleId },
     select: { supplierProductId: true },
   });
-
-  const settingsList = await prisma.systemSetting.findMany({
-    where: { key: { in: ["SUPPLIER_TYPE", "SUPPLIER_API_KEY", "SUPPLIER_API_BASE",
-                          "FUZESERVE_API_KEY", "FUZESERVE_API_BASE",
-                          "MYSOCIALBOOSTER_API_KEY", "MYSOCIALBOOSTER_API_BASE"] } }
-  });
-  const settings: Record<string, string> = {};
-  settingsList.forEach(s => settings[s.key] = s.value);
 
   const type = (settings["SUPPLIER_TYPE"] || process.env.SUPPLIER_TYPE || "FUZESERVE").toUpperCase();
 
