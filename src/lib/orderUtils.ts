@@ -18,14 +18,35 @@ export async function processOrderRefund(orderId: string, reason: string) {
     }
   });
 
-  // Only refund if it was paid via WALLET and we have a user ID
-  if (order.paymentMethod === "WALLET" && order.userId) {
-    await prisma.user.update({
-      where: { id: order.userId },
-      data: { balance: { increment: order.amount } }
+  // Automatically credit wallet on failure if the user has an account (is registered),
+  // regardless of payment method (WALLET or PAYSTACK). This enables them to self-retry via wallet.
+  if (order.userId) {
+    const refundRef = `REFUND-${order.id}`;
+
+    // Guard against duplicate wallet refund transactions
+    const alreadyRefunded = await prisma.walletTransaction.findFirst({
+      where: { reference: refundRef }
     });
-    return { success: true, message: "Order failed and wallet refunded" };
+
+    if (!alreadyRefunded) {
+      await prisma.$transaction([
+        prisma.user.update({
+          where: { id: order.userId },
+          data: { balance: { increment: order.amount } }
+        }),
+        prisma.walletTransaction.create({
+          data: {
+            userId: order.userId,
+            amount: order.amount,
+            type: "CREDIT",
+            reference: refundRef,
+            description: `Auto-refund for failed order #${order.id.substring(0, 8)} (${order.paymentMethod})`
+          }
+        })
+      ]);
+    }
+    return { success: true, message: `Order failed. GHS ${Number(order.amount).toFixed(2)} refunded to user wallet.` };
   }
 
-  return { success: true, message: "Order marked as failed (Paystack payment requires manual refund)" };
+  return { success: true, message: "Order marked as failed (Guest checkout requires admin retry or manual refund)" };
 }
