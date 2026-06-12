@@ -32,22 +32,28 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
-  const handleRetry = async (orderId: string) => {
-    if (confirm("Are you sure you want to replace/retry this failed order with the supplier?")) {
-      setIsProcessing(orderId);
-      try {
-        const res = await retryOrder(orderId);
-        if (res.success) {
-          toast.success(res.message || "Order replaced successfully!");
-          window.location.reload();
-        } else {
-          toast.error(res.error || "Failed to replace order");
-        }
-      } catch (err: any) {
-        toast.error(err.message || "An error occurred");
-      } finally {
-        setIsProcessing(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [debitOption, setDebitOption] = useState<"CUSTOMER" | "ADMIN" | "NONE">("CUSTOMER");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const executeRetry = async () => {
+    if (!selectedOrder) return;
+    setIsSubmitting(true);
+    setIsProcessing(selectedOrder.id);
+    try {
+      const res = await retryOrder(selectedOrder.id, debitOption);
+      if (res.success) {
+        toast.success(res.message || "Order queued for resubmission!");
+        window.location.reload();
+      } else {
+        toast.error(res.error || "Failed to replace order");
       }
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+      setIsProcessing(null);
+      setSelectedOrder(null);
     }
   };
 
@@ -200,7 +206,10 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
                      )}
                      {order.status === "FAILED" && (
                         <button
-                          onClick={() => handleRetry(order.id)}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setDebitOption(order.userId ? "CUSTOMER" : "NONE");
+                          }}
                           disabled={isProcessing === order.id}
                           className="flex items-center space-x-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm disabled:opacity-50"
                           title="Retry/replace order with supplier"
@@ -227,6 +236,97 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
           </div>
         )}
       </div>
+
+      {/* Debit Option Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-background w-full max-w-md rounded-2xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <h2 className="text-xl font-bold font-outfit text-foreground">Replace/Retry Order</h2>
+              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-muted rounded-full transition-colors">
+                <XCircle className="h-5 w-5 text-muted-foreground" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="bg-muted/30 p-4 rounded-xl space-y-2 text-sm text-foreground">
+                <p><strong>Order ID:</strong> #{selectedOrder.id.substring(0, 8)}</p>
+                <p><strong>Bundle:</strong> {selectedOrder.bundle?.network} {selectedOrder.bundle?.size}</p>
+                <p><strong>Phone:</strong> {selectedOrder.phone}</p>
+                <p><strong>Amount:</strong> {formatCurrency(selectedOrder.amount)}</p>
+                <p><strong>Customer:</strong> {selectedOrder.user?.name || "Guest Checkout"}</p>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground block">Choose Account to Debit</label>
+                
+                {selectedOrder.userId && (
+                  <label className="flex items-start space-x-3 p-3 rounded-xl border hover:bg-muted/20 cursor-pointer transition-all">
+                    <input 
+                      type="radio" 
+                      name="debitOption" 
+                      value="CUSTOMER" 
+                      checked={debitOption === "CUSTOMER"}
+                      onChange={() => setDebitOption("CUSTOMER")}
+                      className="mt-1 h-4 w-4 text-primary focus:ring-primary"
+                    />
+                    <div className="text-sm">
+                      <p className="font-bold text-foreground">Debit Customer's Wallet</p>
+                      <p className="text-xs text-muted-foreground">User was refunded to wallet on failure. This charges them again.</p>
+                    </div>
+                  </label>
+                )}
+
+                <label className="flex items-start space-x-3 p-3 rounded-xl border hover:bg-muted/20 cursor-pointer transition-all">
+                  <input 
+                    type="radio" 
+                    name="debitOption" 
+                    value="ADMIN" 
+                    checked={debitOption === "ADMIN"}
+                    onChange={() => setDebitOption("ADMIN")}
+                    className="mt-1 h-4 w-4 text-primary focus:ring-primary"
+                  />
+                  <div className="text-sm">
+                    <p className="font-bold text-foreground">Debit Admin's Wallet</p>
+                    <p className="text-xs text-muted-foreground">Deducts the cost from your admin platform wallet balance.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start space-x-3 p-3 rounded-xl border hover:bg-muted/20 cursor-pointer transition-all">
+                  <input 
+                    type="radio" 
+                    name="debitOption" 
+                    value="NONE" 
+                    checked={debitOption === "NONE"}
+                    onChange={() => setDebitOption("NONE")}
+                    className="mt-1 h-4 w-4 text-primary focus:ring-primary"
+                  />
+                  <div className="text-sm">
+                    <p className="font-bold text-foreground">No Wallet Deduction</p>
+                    <p className="text-xs text-muted-foreground">Does not debit any wallet (suitable for guest checkouts or cash orders).</p>
+                  </div>
+                </label>
+              </div>
+
+              <div className="pt-4 flex space-x-3">
+                <button
+                  onClick={() => setSelectedOrder(null)}
+                  className="flex-1 py-3 border rounded-xl font-bold hover:bg-muted active:scale-95 transition-all text-sm text-foreground bg-transparent"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={isSubmitting}
+                  onClick={executeRetry}
+                  className="flex-1 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all text-sm flex items-center justify-center space-x-2"
+                >
+                  <span>{isSubmitting ? "Processing..." : "Confirm Replace"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

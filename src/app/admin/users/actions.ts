@@ -278,7 +278,7 @@ export async function rejectFailedTopup(id: string) {
   }
 }
 
-export async function retryOrder(orderId: string) {
+export async function retryOrder(orderId: string, debitOption: "CUSTOMER" | "ADMIN" | "NONE") {
   try {
     const session = await getServerSession(authOptions);
     if (!session || (session.user as any).role !== "ADMIN") {
@@ -296,24 +296,38 @@ export async function retryOrder(orderId: string) {
       return { success: false, error: "Only failed orders can be retried" };
     }
 
-    const shouldDeductAdmin = !!order.userId;
+    const orderAmount = Number(order.amount);
 
-    if (shouldDeductAdmin) {
+    if (debitOption === "ADMIN") {
       const admin = await prisma.user.findUnique({
         where: { id: adminId },
         select: { balance: true }
       });
       const adminBal = Number(admin?.balance ?? 0);
-      const orderAmount = Number(order.amount);
       if (!admin || adminBal < orderAmount) {
         return {
           success: false,
           error: `Insufficient admin wallet balance. You need GHS ${orderAmount.toFixed(2)} but have GHS ${adminBal.toFixed(2)} to replace this order.`
         };
       }
+    } else if (debitOption === "CUSTOMER") {
+      if (!order.userId) {
+        return { success: false, error: "Cannot debit customer for guest checkout order" };
+      }
+      const customer = await prisma.user.findUnique({
+        where: { id: order.userId },
+        select: { balance: true }
+      });
+      const customerBal = Number(customer?.balance ?? 0);
+      if (!customer || customerBal < orderAmount) {
+        return {
+          success: false,
+          error: `Insufficient customer wallet balance. Customer needs GHS ${orderAmount.toFixed(2)} but has GHS ${customerBal.toFixed(2)}.`
+        };
+      }
     }
 
-    // Run order status update and admin wallet deduction in a transaction
+    // Run order status update and wallet deduction in a transaction
     await prisma.$transaction(async (tx) => {
       await tx.order.update({
         where: { id: orderId },
@@ -324,7 +338,7 @@ export async function retryOrder(orderId: string) {
         }
       });
 
-      if (shouldDeductAdmin) {
+      if (debitOption === "ADMIN") {
         await tx.user.update({
           where: { id: adminId },
           data: { balance: { decrement: order.amount } }
@@ -336,7 +350,22 @@ export async function retryOrder(orderId: string) {
             amount: order.amount,
             type: "DEBIT",
             reference: `RETRY-DEBIT-${order.id}`,
-            description: `Replace/retry failed order #${order.id.substring(0, 8)} for user`
+            description: `Replace/retry failed order #${order.id.substring(0, 8)} (Admin funded)`
+          }
+        });
+      } else if (debitOption === "CUSTOMER" && order.userId) {
+        await tx.user.update({
+          where: { id: order.userId },
+          data: { balance: { decrement: order.amount } }
+        });
+
+        await tx.walletTransaction.create({
+          data: {
+            userId: order.userId,
+            amount: order.amount,
+            type: "DEBIT",
+            reference: `RETRY-DEBIT-${order.id}`,
+            description: `Re-debit for replaced order #${order.id.substring(0, 8)} after retry`
           }
         });
       }
