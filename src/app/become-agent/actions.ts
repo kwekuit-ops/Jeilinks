@@ -61,12 +61,6 @@ export async function upgradeToAgent(paystackRef: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return { success: false, error: "User not found" };
 
-    // Handle race condition: webhook may have already set role to AGENT
-    if (user.role === "AGENT") {
-      const whatsappGroupUrl = await getCommunityUrl();
-      revalidatePath("/dashboard");
-      return { success: true, whatsappGroupUrl };
-    }
 
     // 5. Set expiry to 14 days from now (stack on existing if not expired)
     let newExpiry = new Date();
