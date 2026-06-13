@@ -166,7 +166,8 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
                 type: "BUNDLE_PURCHASE",
                 bundleId: bundle.id,
                 phone: phoneNumber,
-                agentId: agentId || null
+                agentId: agentId || null,
+                userId: session?.user ? (session.user as any).id : null
               }}
             />
           </div>

@@ -19,6 +19,16 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { bundleId, phone, paystackRef, amount, agentId, paymentMethod = "PAYSTACK" } = body;
     
+    if (paymentMethod === "PAYSTACK" && paystackRef) {
+        const existingOrder = await prisma.order.findUnique({
+            where: { paystackRef },
+            include: { bundle: true }
+        });
+        if (existingOrder) {
+            return NextResponse.json(existingOrder, { status: 200 });
+        }
+    }
+    
     const sanitizedPhone = phone.replace(/\D/g, "");
     const ghPhoneRegex = /^(02|05)\d{8}$/;
     if (!ghPhoneRegex.test(sanitizedPhone)) {

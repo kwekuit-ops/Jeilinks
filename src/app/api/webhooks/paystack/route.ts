@@ -3,6 +3,11 @@ import prisma from "@/lib/prisma";
 import crypto from "crypto";
 import { sendPushNotification } from "@/lib/notifications";
 import { sendAgentWelcomeEmail } from "@/lib/email";
+import { placeOrderOnSupplier, getSupplierForBundle } from "@/lib/supplierBridge";
+import { normalizeOrderStatus } from "@/lib/utils";
+import { processOrderCommission } from "@/lib/commissions";
+import { processOrderRefund } from "@/lib/orderUtils";
+
 
 export async function POST(req: Request) {
   try {
@@ -175,9 +180,99 @@ export async function POST(req: Request) {
           });
 
           if (!existingOrder) {
-              console.log(`📦 Webhook: Order for ${reference} not found in DB. Should be created by client-side or manual intervention needed.`);
-              // We could potentially call the /api/orders logic here, but it's safer to let the client try first
-              // or handle it via a background job if it stays missing for too long.
+              console.log(`📦 Webhook: Order for ${reference} not found in DB. Creating via webhook fallback.`);
+              
+              const bundleId = metadata.bundleId;
+              const phone = metadata.phone;
+              const agentId = metadata.agentId;
+              const userId = metadata.userId;
+
+              if (bundleId && phone) {
+                const bundle = await prisma.bundle.findUnique({
+                  where: { id: bundleId }
+                });
+
+                if (bundle) {
+                  const sanitizedPhone = phone.replace(/\D/g, "");
+                  
+                  // Create the order in PENDING status
+                  const order = await prisma.order.create({
+                    data: {
+                      userId: userId || null,
+                      bundleId: bundleId,
+                      phone: sanitizedPhone,
+                      amount: amountGHS,
+                      paystackRef: reference,
+                      paymentMethod: "PAYSTACK",
+                      agentId: agentId || null,
+                      status: "PENDING",
+                    },
+                    include: {
+                      bundle: true
+                    }
+                  });
+
+                  if (order.userId) {
+                    await sendPushNotification({
+                      userId: order.userId,
+                      title: "Order Placed 🚀",
+                      message: `Your order for ${bundle.size} ${bundle.network} data to ${sanitizedPhone} has been received.`,
+                      url: "/dashboard/orders"
+                    });
+                  }
+
+                  // Resolve which supplier handles this bundle (multi-supplier routing)
+                  const { supplierProductId: resolvedProductId, supplierType } = await getSupplierForBundle(bundleId);
+                  const effectiveProductId = resolvedProductId || bundle.supplierProductId;
+
+                  if (effectiveProductId) {
+                    const supplierRes = await placeOrderOnSupplier({
+                      bundleId: bundleId,
+                      supplierProductId: effectiveProductId,
+                      phone: sanitizedPhone,
+                      reference: order.id,
+                    });
+
+                    if (supplierRes.success) {
+                      const res = supplierRes as any;
+                      const supplierOrderId = res.supplierOrderId || res.supplier_order_id;
+                      
+                      if (supplierOrderId) {
+                        const rawStatus = res.status || "PROCESSING";
+                        const normalizedStatus = normalizeOrderStatus(rawStatus);
+                        
+                        await prisma.order.update({
+                          where: { id: order.id },
+                          data: { 
+                            status: normalizedStatus,
+                            supplierStatus: rawStatus,
+                            supplierOrderId: supplierOrderId,
+                            supplierType: supplierType,
+                          },
+                        });
+
+                        if (normalizedStatus === "COMPLETED" || normalizedStatus === "PROCESSING") {
+                          await processOrderCommission(order.id);
+                        }
+                      }
+                    } else {
+                      // Save the supplierType on the order first
+                      await prisma.order.update({
+                        where: { id: order.id },
+                        data: { supplierType }
+                      });
+
+                      // Refund registered users' wallets if payment fails
+                      await processOrderRefund(
+                        order.id, 
+                        supplierRes.error || "Supplier rejection"
+                      );
+                    }
+                  } else {
+                    console.error(`Order error: Bundle ${bundleId} missing supplierProductId`);
+                  }
+                }
+              }
           }
       }
     }
