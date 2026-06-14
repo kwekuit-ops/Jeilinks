@@ -47,7 +47,7 @@ export async function POST(req: Request) {
         }
 
         let attempts = 0;
-        const maxAttempts = 3;
+        const maxAttempts = 2;
 
         while (attempts < maxAttempts) {
             attempts++;
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
             }
             
             if (attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
 
@@ -74,9 +74,16 @@ export async function POST(req: Request) {
         }
     }
 
-    const bundle = await prisma.bundle.findUnique({
-      where: { id: bundleId },
-    });
+    // Parallelize independent DB lookups — bundle + user role fetched simultaneously
+    const [bundle, dbUser] = await Promise.all([
+      prisma.bundle.findUnique({ where: { id: bundleId } }),
+      session
+        ? prisma.user.findUnique({
+            where: { id: (session.user as any).id },
+            select: { role: true, agentExpiry: true }
+          })
+        : Promise.resolve(null),
+    ]);
 
     if (!bundle) {
       return NextResponse.json({ message: "Bundle not found" }, { status: 404 });
@@ -85,19 +92,13 @@ export async function POST(req: Request) {
     // HIGH-2 + MED-2: Always re-fetch role from DB — JWT can be stale after demotion or expiry.
     // This also enforces agent subscription expiry at purchase time, not just at dashboard login.
     let liveRole = "USER";
-    if (session) {
-      const dbUser = await prisma.user.findUnique({
-        where: { id: (session.user as any).id },
-        select: { role: true, agentExpiry: true }
-      });
-      if (dbUser) {
-        // Auto-expire agents whose subscription has lapsed
-        if (dbUser.role === "AGENT" && dbUser.agentExpiry && new Date() > new Date(dbUser.agentExpiry)) {
-          await prisma.user.update({ where: { id: (session.user as any).id }, data: { role: "USER" } });
-          liveRole = "USER";
-        } else {
-          liveRole = dbUser.role;
-        }
+    if (session && dbUser) {
+      // Auto-expire agents whose subscription has lapsed
+      if (dbUser.role === "AGENT" && dbUser.agentExpiry && new Date() > new Date(dbUser.agentExpiry)) {
+        await prisma.user.update({ where: { id: (session.user as any).id }, data: { role: "USER" } });
+        liveRole = "USER";
+      } else {
+        liveRole = dbUser.role;
       }
     }
 
