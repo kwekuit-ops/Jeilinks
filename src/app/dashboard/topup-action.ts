@@ -39,7 +39,7 @@ export async function topUpWallet(paystackRef: string) {
     });
 
     if (existingTx) {
-      return { success: false, error: "This payment has already been processed" };
+      return { success: true, amount: Number(existingTx.amount), alreadyProcessed: true };
     }
 
     const amountGHS = verifyData.data.amount / 100;

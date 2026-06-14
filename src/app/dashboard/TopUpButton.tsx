@@ -6,7 +6,7 @@ import { topUpWallet } from "./topup-action";
 
 import PaystackButton from "@/components/PaystackButton";
 
-export function TopUpButton({ email }: { email: string }) {
+export function TopUpButton({ email, userId }: { email: string; userId: string }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [amount, setAmount] = useState("10"); // Default 10 GHS
   const [showInput, setShowInput] = useState(false);
@@ -58,7 +58,8 @@ export function TopUpButton({ email }: { email: string }) {
         onClose={() => toast.error("Payment cancelled")}
         metadata={{
           type: "TOPUP",
-          amount: parseFloat(amount)
+          amount: parseFloat(amount),
+          userId: userId
         }}
       />
     </div>

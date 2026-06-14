@@ -57,20 +57,31 @@ export async function POST(req: Request) {
 
       // Handle based on type
       if (metadata?.type === "TOPUP") {
-        const user = await prisma.user.findUnique({
-          where: { email: customerEmail }
-        });
+        const userId = metadata.userId;
+        let user = null;
+
+        if (userId) {
+          user = await prisma.user.findUnique({
+            where: { id: userId }
+          });
+        }
+
+        if (!user) {
+          user = await prisma.user.findUnique({
+            where: { email: customerEmail.toLowerCase() }
+          });
+        }
 
         if (!user) {
           // User not found — log for admin manual review
-          console.warn(`⚠️ Webhook: No user found for email ${customerEmail}. Logging as failed top-up.`);
+          console.warn(`⚠️ Webhook: No user found for email ${customerEmail} (userId: ${userId}). Logging as failed top-up.`);
           await prisma.failedTopup.upsert({
             where: { reference },
             create: {
               reference,
               amount: amountGHS,
               email: customerEmail,
-              reason: `No user account found for email: ${customerEmail}`
+              reason: `No user account found for email: ${customerEmail} (userId: ${userId || 'N/A'})`
             },
             update: {} // already exists, don't overwrite
           });

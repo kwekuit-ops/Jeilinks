@@ -216,7 +216,7 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          <TopUpButton email={user.email || ""} />
+          <TopUpButton email={user.email || ""} userId={user.id} />
         </div>
 
         {/* Store Earnings Card (AGENT ONLY) */}

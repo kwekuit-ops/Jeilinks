@@ -173,7 +173,7 @@ export default async function Home() {
                                 Buy Data
                             </Link>
                             <div className="flex-1">
-                                <TopUpButton email={user.email || ""} />
+                                <TopUpButton email={user.email || ""} userId={user.id} />
                             </div>
                         </div>
                     </div>
