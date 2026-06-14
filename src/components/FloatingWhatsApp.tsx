@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 
 export function FloatingWhatsApp({ number, channelUrl }: { number: string; channelUrl?: string }) {
   const { data: session } = useSession();
   const [showTooltip, setShowTooltip] = useState(false);
   const userRole = (session?.user as any)?.role;
+  const isKeyboardVisible = useKeyboardVisible();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -25,6 +27,8 @@ export function FloatingWhatsApp({ number, channelUrl }: { number: string; chann
 
   const finalUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(message)}`;
   const label = "Chat Support";
+
+  if (isKeyboardVisible) return null;
 
   return (
     <div className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 flex items-center justify-center">

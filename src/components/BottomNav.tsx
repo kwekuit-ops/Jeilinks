@@ -38,7 +38,7 @@ export function BottomNav() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[999] bg-white dark:bg-slate-950 border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-[999] bg-white dark:bg-slate-950 border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
       <div className="w-full px-2 pt-3 pb-safe flex items-center justify-around overflow-hidden">
         {navItems.map((item) => {
           // Fix: Ensure /dashboard only highlights for the exact path, 

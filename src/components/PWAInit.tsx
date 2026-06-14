@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { X, Download, Smartphone, Share, PlusSquare } from "lucide-react";
+import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 
 export default function PWAInit() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showBanner, setShowBanner] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const isKeyboardVisible = useKeyboardVisible();
 
   useEffect(() => {
     // 1. Check if already installed
@@ -68,7 +70,7 @@ export default function PWAInit() {
     }
   };
 
-  if (!showBanner || isStandalone) return null;
+  if (!showBanner || isStandalone || isKeyboardVisible) return null;
 
   return (
     <div className="fixed bottom-24 left-4 right-4 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-700">
