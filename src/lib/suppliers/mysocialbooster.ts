@@ -106,7 +106,9 @@ export class MySocialBoosterProvider implements SupplierProvider {
     const n = name.toUpperCase();
     if (n.includes("MTN")) return "MTN";
     if (n.includes("VODA") || n.includes("TELECEL")) return "Telecel";
-    if (n.includes("AIRTEL") || n.includes("TIGO") || n.includes("AT")) return "AirtelTigo";
+    // "NX AT 2GB", "AIRTELTIGO", "AIRTEL", "TIGO" all map to AirtelTigo
+    // Use word-boundary check so standalone "AT" is matched correctly
+    if (n.includes("AIRTEL") || n.includes("TIGO") || /\bAT\b/.test(n)) return "AirtelTigo";
     if (n.includes("GLO")) return "Glo";
     return "OTHER";
   }
