@@ -44,6 +44,12 @@ export async function POST(req: NextRequest) {
 
     await sendPasswordResetEmail(normalizedEmail, token);
 
+    // M5 FIX: Clean up any expired tokens (fire-and-forget — does not block the response).
+    // Without this, the PasswordResetToken table grows indefinitely with stale entries.
+    prisma.passwordResetToken.deleteMany({
+      where: { expiresAt: { lt: new Date() } }
+    }).catch(() => {}); // Intentionally non-blocking
+
     return genericResponse;
   } catch (error) {
     console.error("[forgot-password]", error);

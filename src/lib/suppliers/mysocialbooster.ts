@@ -12,21 +12,35 @@ export class MySocialBoosterProvider implements SupplierProvider {
 
   private async request(endpoint: string, options: RequestInit = {}) {
     const url = `${this.baseUrl}${endpoint}`;
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        "X-API-Key": this.apiKey,
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
+    // M3 FIX: 15-second timeout prevents hanging supplier API calls.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `MySocialBooster API error: ${response.statusText}`);
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          "X-API-Key": this.apiKey,
+          "Content-Type": "application/json",
+          ...options.headers,
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `MySocialBooster API error: ${response.statusText}`);
+      }
+
+      return response.json();
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        throw new Error("MySocialBooster API request timed out");
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    return response.json();
   }
 
   async fetchProducts(): Promise<StandardProduct[]> {
@@ -79,10 +93,26 @@ export class MySocialBoosterProvider implements SupplierProvider {
     try {
       const data = await this.request(`/orders/${supplierOrderId}`);
       const order = data.response;
+      // M7 FIX: Normalize the status so the cron job can correctly identify
+      // 'completed' and 'failed' states from this supplier.
+      // Without normalization, non-standard statuses like 'DONE' or 'SUCCESS' would
+      // never match the cron's 'completed' check, leaving orders stuck in PROCESSING.
+      const rawStatus = (order.status || "").toUpperCase();
+      let normalizedStatus: string;
+      if (["SUCCESS", "COMPLETED", "DELIVERED", "DONE"].includes(rawStatus)) {
+        normalizedStatus = "completed";
+      } else if (["FAILED", "REJECTED", "CANCELLED", "DECLINED"].includes(rawStatus)) {
+        normalizedStatus = "failed";
+      } else if (["PROCESSING", "IN_PROGRESS", "SENT"].includes(rawStatus)) {
+        normalizedStatus = "processing";
+      } else {
+        normalizedStatus = rawStatus.toLowerCase();
+      }
+
       return {
         success: true,
         supplierOrderId: order.id,
-        status: order.status,
+        status: normalizedStatus,
       };
     } catch (error: any) {
       return {

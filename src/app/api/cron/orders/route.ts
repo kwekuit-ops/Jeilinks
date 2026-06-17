@@ -18,7 +18,10 @@ export async function GET(req: Request) {
         status: "PROCESSING",
         supplierOrderId: { not: null },
       },
-      take: 20,
+      // L3 FIX: Increased from 20 to 50 to prevent backlog at high order volume.
+      // FIFO ordering ensures oldest orders are resolved first.
+      orderBy: { createdAt: "asc" },
+      take: 50,
     });
 
     if (pendingOrders.length === 0) {

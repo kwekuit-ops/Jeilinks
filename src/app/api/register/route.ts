@@ -5,12 +5,34 @@ import bcrypt from "bcryptjs";
 export async function POST(req: Request) {
   try {
     const { name, email, password } = await req.json();
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanName = name.trim();
+    const cleanEmail = email?.trim().toLowerCase();
+    const cleanName = name?.trim();
 
-    if (!cleanName || !cleanEmail || !password) {
+    // H6 FIX: Enforce input validation — prevents weak passwords, oversized inputs, and invalid emails.
+    if (!cleanName || cleanName.length < 2 || cleanName.length > 100) {
       return NextResponse.json(
-        { message: "Missing required fields" },
+        { message: "Name must be between 2 and 100 characters" },
+        { status: 400 }
+      );
+    }
+
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || cleanEmail.length > 254) {
+      return NextResponse.json(
+        { message: "Please provide a valid email address" },
+        { status: 400 }
+      );
+    }
+
+    if (!password || password.length < 8) {
+      return NextResponse.json(
+        { message: "Password must be at least 8 characters" },
+        { status: 400 }
+      );
+    }
+
+    if (password.length > 128) {
+      return NextResponse.json(
+        { message: "Password is too long" },
         { status: 400 }
       );
     }

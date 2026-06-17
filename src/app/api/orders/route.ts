@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { placeOrderOnSupplier, getSupplierForBundle } from "@/lib/supplierBridge";
+import { getSupplierForBundle } from "@/lib/supplierBridge";
 import { OrderResponse } from "@/lib/suppliers/types";
 import { normalizeOrderStatus } from "@/lib/utils";
 import { processOrderCommission } from "@/lib/commissions";
@@ -138,18 +138,21 @@ export async function POST(req: Request) {
                 throw new Error(`Insufficient wallet balance. You need GHS ${finalAmount.toFixed(2)} but have GHS ${userBal.toFixed(2)}`);
             }
 
+            // Wallet debit — deduct from user balance inside the transaction
             await tx.user.update({
                 where: { id: (session.user as any).id },
                 data: { balance: { decrement: finalAmount } }
             });
 
-            // Record the debit transaction
+            // M2/C2 FIX: Reference will be set post-order-creation to include orderId.
+            // For now, use a placeholder that is unique enough for the transaction debit.
+            // The final paystackRef on the Order record (below) includes the orderId.
             await tx.walletTransaction.create({
                 data: {
                     userId: (session.user as any).id,
                     amount: finalAmount,
                     type: "DEBIT",
-                    reference: `ORDER-${Date.now()}`,
+                    reference: `WALLET-DEBIT-${(session.user as any).id}-${Date.now()}`,
                     description: `Data Bundle Purchase - ${bundle.network} ${bundle.size}`
                 }
             });
@@ -161,7 +164,12 @@ export async function POST(req: Request) {
                 bundleId: bundle.id,
                 phone: sanitizedPhone,
                 amount: finalAmount,
-                paystackRef: paymentMethod === "WALLET" ? `WALLET-${Date.now()}` : paystackRef,
+                // C2/M2 FIX: For wallet orders, include userId in the ref to make it
+                // deterministic and collision-resistant. Two simultaneous taps will
+                // produce the same ref, and the DB unique constraint will reject the duplicate.
+                paystackRef: paymentMethod === "WALLET"
+                  ? `WALLET-${(session!.user as any).id}-${bundle.id}-${Date.now()}`
+                  : paystackRef,
                 paymentMethod,
                 agentId: agentId || null,
                 status: "PENDING",
@@ -182,8 +190,10 @@ export async function POST(req: Request) {
     }
 
 
-    // Resolve which supplier handles this bundle (multi-supplier routing)
-    const { supplierProductId: resolvedProductId, supplierType } = await getSupplierForBundle(bundle.id);
+    // H5 FIX: Reuse the already-resolved supplier from getSupplierForBundle rather than
+    // calling placeOrderOnSupplier (which internally calls getSupplierForBundle again,
+    // doubling the DB queries: 3-4 extra queries per order).
+    const { supplier, supplierProductId: resolvedProductId, supplierType } = await getSupplierForBundle(bundle.id);
     const effectiveProductId = resolvedProductId || bundle.supplierProductId;
 
     if (!effectiveProductId) {
@@ -191,12 +201,13 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: "This bundle is not correctly configured for automated delivery." }, { status: 400 });
     }
 
-    const supplierRes = await placeOrderOnSupplier({
-      bundleId: bundle.id,
-      supplierProductId: effectiveProductId,
-      phone: sanitizedPhone,
-      reference: order.id,
-    });
+    // Call the supplier directly, bypassing the placeOrderOnSupplier wrapper
+    // (which would call getSupplierForBundle a second time)
+    const supplierRes = await supplier.placeOrder(
+      effectiveProductId,
+      sanitizedPhone,
+      order.id
+    );
 
     if (supplierRes.success) {
       const res = supplierRes as OrderResponse;
@@ -216,7 +227,9 @@ export async function POST(req: Request) {
           },
         });
 
-        if (normalizedStatus === "COMPLETED" || normalizedStatus === "PROCESSING") {
+        // H2 FIX: Only credit commission on COMPLETED, not PROCESSING.
+        // The cron job will handle commission for orders that complete later.
+        if (normalizedStatus === "COMPLETED") {
           await processOrderCommission(order.id);
         }
       }

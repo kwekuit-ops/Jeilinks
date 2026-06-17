@@ -6,7 +6,10 @@ export async function processOrderCommission(orderId: string) {
     include: { bundle: true },
   });
 
-  const allowedStatuses = ["PROCESSING", "COMPLETED"];
+  // H2 FIX: Only credit commission when order is COMPLETED, not at PROCESSING.
+  // Crediting at PROCESSING created a race condition where agents could keep commission
+  // for orders that later failed, requiring a reversal that could itself fail.
+  const allowedStatuses = ["COMPLETED"];
   if (!order || !order.agentId || !allowedStatuses.includes(order.status) || Number(order.commissionEarned) > 0) {
     return;
   }

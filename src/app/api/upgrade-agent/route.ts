@@ -14,7 +14,16 @@ export async function POST(req: Request) {
     const { reference } = await req.json();
 
     // 1. Verify Paystack Payment
-    const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
+    // C3 FIX: Read from DB setting first (same as orders route), then env fallback.
+    // This ensures Paystack key rotations via the Admin Settings UI take effect immediately.
+    const paystackSetting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
+    const paystackSecret = paystackSetting?.value || process.env.PAYSTACK_SECRET_KEY;
+
+    if (!paystackSecret) {
+      console.error("upgrade-agent: PAYSTACK_SECRET_KEY not configured");
+      return NextResponse.json({ message: "Payment configuration error" }, { status: 500 });
+    }
+
     const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
       headers: {
         Authorization: `Bearer ${paystackSecret}`,
@@ -72,7 +81,8 @@ export async function POST(req: Request) {
     }
 
     const userName = session.user?.name || "agent";
-    const storeSlug = userName.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Math.floor(Math.random() * 1000);
+    // L2 FIX: 9000-range suffix significantly reduces slug collision probability.
+    const storeSlug = userName.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") + "-" + Math.floor(1000 + Math.random() * 9000);
 
     const user = await prisma.$transaction(async (tx) => {
         const u = await tx.user.update({

@@ -54,7 +54,19 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
+        // M8 FIX: Always pull the live role from DB so:
+        // (a) newly upgraded agents see agent pricing without re-logging in, and
+        // (b) demoted users lose privileges on the next request.
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { role: true }
+          });
+          (session.user as any).role = dbUser?.role ?? token.role;
+        } catch {
+          // Fallback to token role if DB is unavailable
+          (session.user as any).role = token.role;
+        }
       }
       return session
     }

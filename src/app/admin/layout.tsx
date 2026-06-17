@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Users, LayoutDashboard, DollarSign, Settings, ShoppingBag, TrendingUp, Wallet, Store } from "lucide-react";
+import prisma from "@/lib/prisma";
 
 export default async function AdminLayout({
   children,
@@ -11,7 +12,14 @@ export default async function AdminLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-  if (!session || (session.user as any).role !== "ADMIN") {
+  // H3 FIX: Always re-fetch role from DB, never trust the JWT token for admin access.
+  // A demoted admin would retain admin access for the full JWT lifetime without this check.
+  const dbUser = await prisma.user.findUnique({
+    where: { id: (session?.user as any)?.id },
+    select: { role: true }
+  });
+
+  if (!session || dbUser?.role !== "ADMIN") {
     redirect("/");
   }
 

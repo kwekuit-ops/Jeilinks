@@ -13,25 +13,34 @@ export class FuzeServeProvider implements SupplierProvider {
   async fetchProducts(): Promise<StandardProduct[]> {
     if (!this.apiKey) throw new Error("FuzeServe API Key missing");
 
-    const response = await fetch(`${this.baseUrl}/v1/products`, {
-      method: "GET",
-      headers: {
-        "X-API-Key": this.apiKey,
-        "Accept": "application/json"
-      }
-    });
+    // M3 FIX: Add timeout to prevent hanging supplier calls from blocking the function.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
-    if (!response.ok) throw new Error("FuzeServe fetch failed");
-    
-    const data = await response.json();
-    return data.map((p: any) => ({
-      id: p.id,
-      name: p.name,
-      network: p.network,
-      size: p.dataAmount,
-      price: p.price,
-      resellerPrice: p.resellerPrice || p.price
-    }));
+    try {
+      const response = await fetch(`${this.baseUrl}/v1/products`, {
+        method: "GET",
+        headers: {
+          "X-API-Key": this.apiKey,
+          "Accept": "application/json"
+        },
+        signal: controller.signal
+      });
+
+      if (!response.ok) throw new Error("FuzeServe fetch failed");
+      
+      const data = await response.json();
+      return data.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        network: p.network,
+        size: p.dataAmount,
+        price: p.price,
+        resellerPrice: p.resellerPrice || p.price
+      }));
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   async placeOrder(productId: number | string, phone: string, reference: string): Promise<OrderResponse> {
@@ -47,10 +56,14 @@ export class FuzeServeProvider implements SupplierProvider {
     const body = {
       productId: Number(productId),
       phone: formattedPhone,
-      externalReference: reference, // Some suppliers use this
+      externalReference: reference,
     };
 
-    console.log(`FuzeServe Request: POST ${url}`, JSON.stringify(body));
+    console.log(`FuzeServe Request: POST ${url} phone=${formattedPhone} productId=${productId}`);
+
+    // M3 FIX: 15-second timeout prevents hanging supplier calls from exhausting Vercel function time.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
       const response = await fetch(url, {
@@ -60,10 +73,11 @@ export class FuzeServeProvider implements SupplierProvider {
           "X-API-Key": this.apiKey,
         },
         body: JSON.stringify(body),
+        signal: controller.signal
       });
 
       const data = await response.json().catch(() => ({ error: "Invalid JSON response" }));
-      console.log(`FuzeServe Response (${response.status}):`, JSON.stringify(data));
+      console.log(`FuzeServe Response (${response.status}): status=${data?.status}`);
 
       if (!response.ok) {
         return { 
@@ -78,44 +92,73 @@ export class FuzeServeProvider implements SupplierProvider {
         status: data.status || "PROCESSING"
       };
     } catch (err: any) {
+      if (err.name === "AbortError") {
+        console.error("FuzeServe request timed out after 15s");
+        return { success: false, error: "Supplier request timed out" };
+      }
       console.error("FuzeServe fetch error:", err);
       return { success: false, error: `Connection error: ${err.message}` };
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
   async trackOrder(supplierOrderId: string): Promise<OrderResponse> {
-    const response = await fetch(`${this.baseUrl}/v1/orders/${supplierOrderId}`, {
-      method: "GET",
-      headers: {
-        "X-API-Key": this.apiKey,
-        "Accept": "application/json"
-      }
-    });
+    // M3 FIX: Timeout prevents slow tracking calls from blocking the cron job.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return { success: false, error: errorData.message || "Tracking failed" };
+    try {
+      const response = await fetch(`${this.baseUrl}/v1/orders/${supplierOrderId}`, {
+        method: "GET",
+        headers: {
+          "X-API-Key": this.apiKey,
+          "Accept": "application/json"
+        },
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return { success: false, error: errorData.message || "Tracking failed" };
+      }
+      
+      const data = await response.json();
+      return {
+        success: true,
+        status: data.status?.toUpperCase(),
+        error: data.status?.toUpperCase() === "FAILED" ? (data.message || data.reason) : undefined
+      };
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        return { success: false, error: "Supplier tracking request timed out" };
+      }
+      return { success: false, error: err.message || "Tracking failed" };
+    } finally {
+      clearTimeout(timeout);
     }
-    
-    const data = await response.json();
-    return {
-      success: true,
-      status: data.status?.toUpperCase(),
-      error: data.status?.toUpperCase() === "FAILED" ? (data.message || data.reason) : undefined
-    };
   }
 
   async fetchBalance(): Promise<number> {
-    const response = await fetch(`${this.baseUrl}/v1/balance`, {
-      method: "GET",
-      headers: {
-        "X-API-Key": this.apiKey,
-        "Accept": "application/json"
-      }
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await fetch(`${this.baseUrl}/v1/balance`, {
+        method: "GET",
+        headers: {
+          "X-API-Key": this.apiKey,
+          "Accept": "application/json"
+        },
+        signal: controller.signal
+      });
 
-    if (!response.ok) return 0;
-    const data = await response.json();
-    return data.balance || 0;
+      if (!response.ok) return 0;
+      const data = await response.json();
+      return data.balance || 0;
+    } catch {
+      return 0;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 }

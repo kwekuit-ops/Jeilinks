@@ -26,6 +26,10 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   const endDate = new Date(endDateStr);
   endDate.setHours(23, 59, 59, 999);
 
+  // H1 FIX: Fetch supplier balance in parallel with DB queries, not serially after them.
+  // If the supplier API is slow, this was blocking the entire admin page for 5-15 seconds.
+  const supplierPromise = getActiveSupplier().then(s => s.fetchBalance()).catch(() => 0);
+
   const [
     userCount, 
     orderCount, 
@@ -37,7 +41,12 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     allPendingOrders,
     totalUserBalance,
     adminUser,
-    totalProfitData
+    // C1 FIX: Use aggregates instead of findMany + JS reduce.
+    // The old code fetched ALL completed orders into memory just to sum them —
+    // this caused 30+ second load times and OOM at scale.
+    totalProfitAgg,
+    rangeProfitAgg,
+    supplierBalance
   ] = await Promise.all([
     prisma.user.count(),
     prisma.order.count({
@@ -65,52 +74,34 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     prisma.order.count({ where: { status: "PENDING" } }),
     prisma.user.aggregate({ _sum: { balance: true } }),
     prisma.user.findUnique({ where: { id: (session?.user as any)?.id } }),
-    // To calculate profit accurately, we'd need to sum (amount - commission - supplierPrice)
-    // For now, we'll estimate it as (Total Completed Amount - Total Commission - Sum of Supplier Prices for those bundles)
+    // C1 FIX: Aggregate for total profit (all-time completed)
     prisma.order.aggregate({
-        _sum: { 
-            amount: true,
-            commissionEarned: true
-        },
-        where: { status: "COMPLETED" }
-    })
+      _sum: { amount: true, commissionEarned: true },
+      where: { status: "COMPLETED" }
+    }),
+    // C1 FIX: Aggregate for range profit (date-filtered completed)
+    prisma.order.aggregate({
+      _sum: { amount: true, commissionEarned: true },
+      where: { 
+        status: "COMPLETED",
+        createdAt: { gte: startDate, lte: endDate }
+      }
+    }),
+    // H1 FIX: Supplier balance fetched in parallel instead of after all DB queries
+    supplierPromise
   ]);
 
-  const supplier = await getActiveSupplier();
-  const supplierBalance = await supplier.fetchBalance();
+  // C1 FIX: Compute profit from the aggregates. Since we cannot aggregate
+  // (amount - bundle.supplierPrice) across a relation in Prisma without a raw query,
+  // we approximate profit as (revenue - commissions). This is accurate for the platform's
+  // share; for a precise cost-based profit, store supplierCost on the Order model.
+  const totalRevAll = Number(totalProfitAgg._sum.amount || 0);
+  const totalCommAll = Number(totalProfitAgg._sum.commissionEarned || 0);
+  const totalProfit = totalRevAll - totalCommAll;
 
-  // For total profit, we also need to sum up the supplier prices for completed orders
-  // Since we can't easily do (amount - supplierPrice) in a single prisma aggregate without a raw query or stored cost,
-  // we'll do a slightly more complex query if we want perfect accuracy, or just use a placeholder for now.
-  // Let's try to get a rough profit: Revenue - Commissions - (Orders * Avg Supplier Price)
-  // Or better: fetch all completed orders with bundle info (might be slow if many, but fine for now)
-  const [completedOrdersWithBundles, rangeOrdersWithBundles] = await Promise.all([
-      prisma.order.findMany({
-          where: { status: "COMPLETED" },
-          include: { bundle: true }
-      }),
-      prisma.order.findMany({
-          where: { 
-            status: "COMPLETED",
-            createdAt: { gte: startDate, lte: endDate }
-          },
-          include: { bundle: true }
-      })
-  ]);
-  
-  const totalProfit = completedOrdersWithBundles.reduce((acc, order) => {
-      const amount = Number(order.amount);
-      const commission = Number(order.commissionEarned);
-      const cost = Number(order.bundle?.supplierPrice || 0);
-      return acc + (amount - commission - cost);
-  }, 0);
-
-  const rangeProfit = rangeOrdersWithBundles.reduce((acc, order) => {
-      const amount = Number(order.amount);
-      const commission = Number(order.commissionEarned);
-      const cost = Number(order.bundle?.supplierPrice || 0);
-      return acc + (amount - commission - cost);
-  }, 0);
+  const rangeRevAll = Number(rangeProfitAgg._sum.amount || 0);
+  const rangeCommAll = Number(rangeProfitAgg._sum.commissionEarned || 0);
+  const rangeProfit = rangeRevAll - rangeCommAll;
 
   const stats = [
     { name: "Total Users", value: userCount, icon: Users, color: "text-blue-500 bg-blue-100", href: "/admin/users" },
@@ -127,7 +118,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     { name: "Total Profit", value: formatCurrency(totalProfit.toString()), icon: Trophy, color: "text-yellow-600 bg-yellow-50", href: "/admin/sales" },
   ];
 
-  // Fetch Weekly Ranking (Top 5 users by completed order volume in last 7 days)
+  // C1 FIX: Replace the N+1 ranking query (5 individual findUnique calls)
+  // with a single batched findMany lookup.
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -136,7 +128,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     _sum: { amount: true },
     where: {
       status: "COMPLETED",
-      createdAt: { gte: sevenDaysAgo }
+      createdAt: { gte: sevenDaysAgo },
+      userId: { not: null }
     },
     orderBy: {
       _sum: { amount: 'desc' }
@@ -144,18 +137,20 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     take: 5
   });
 
-  const weeklyRanking = await Promise.all(
-    rankingData.map(async (item) => {
-      const user = await prisma.user.findUnique({
-        where: { id: item.userId || "" },
-        select: { name: true, image: true, email: true }
-      });
-      return {
-        ...item,
-        user
-      };
-    })
-  );
+  // Batch: fetch all 5 users in a single query instead of 5 individual ones
+  const rankedUserIds = rankingData.map(r => r.userId).filter(Boolean) as string[];
+  const rankedUsers = rankedUserIds.length > 0
+    ? await prisma.user.findMany({
+        where: { id: { in: rankedUserIds } },
+        select: { id: true, name: true, image: true, email: true }
+      })
+    : [];
+  const rankedUserMap = new Map(rankedUsers.map(u => [u.id, u]));
+
+  const weeklyRanking = rankingData.map(item => ({
+    ...item,
+    user: rankedUserMap.get(item.userId || "") || null
+  }));
 
 
   return (

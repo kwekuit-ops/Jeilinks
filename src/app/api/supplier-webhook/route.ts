@@ -57,7 +57,8 @@ export async function POST(req: Request) {
         },
       });
 
-      if (newStatus === "COMPLETED" || newStatus === "PROCESSING") {
+      // H2 FIX: Only credit commission on COMPLETED, not PROCESSING.
+      if (newStatus === "COMPLETED") {
           await processOrderCommission(order.id);
       }
 

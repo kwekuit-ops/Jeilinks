@@ -205,8 +205,15 @@ export async function POST(req: Request) {
 
                 if (bundle) {
                   const sanitizedPhone = phone.replace(/\D/g, "");
-                  
-                  // Create the order in PENDING status
+
+                  // C4 FIX: Validate Ghanaian phone format — same check as the primary orders route.
+                  // Without this, a malformed phone from Paystack metadata goes directly to the
+                  // supplier and causes a guaranteed delivery failure with no useful error.
+                  const ghPhoneRegex = /^(02|05)\d{8}$/;
+                  if (!ghPhoneRegex.test(sanitizedPhone)) {
+                    console.error(`⚠️ Webhook: Invalid phone ${sanitizedPhone} in BUNDLE_PURCHASE for ref ${reference}. Skipping order creation.`);
+                    return NextResponse.json({ received: true }, { status: 200 });
+                  }
                   const order = await prisma.order.create({
                     data: {
                       userId: userId || null,
@@ -262,7 +269,8 @@ export async function POST(req: Request) {
                           },
                         });
 
-                        if (normalizedStatus === "COMPLETED" || normalizedStatus === "PROCESSING") {
+                        // H2 FIX: Only credit commission on COMPLETED, not PROCESSING.
+                        if (normalizedStatus === "COMPLETED") {
                           await processOrderCommission(order.id);
                         }
                       }
