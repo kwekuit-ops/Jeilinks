@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { topUpWallet } from "./topup-action";
 
 import PaystackButton from "@/components/PaystackButton";
 
 export function TopUpButton({ email, userId }: { email: string; userId: string }) {
+  const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [amount, setAmount] = useState("10"); // Default 10 GHS
   const [showInput, setShowInput] = useState(false);
@@ -17,11 +19,14 @@ export function TopUpButton({ email, userId }: { email: string; userId: string }
     if (result.success) {
       toast.success(`Wallet topped up by GHS ${result.amount}!`);
       setShowInput(false);
+      // Force the dashboard to re-fetch server data so the balance updates immediately
+      router.refresh();
     } else {
       toast.error(result.error || "Failed to top up wallet");
     }
     setIsProcessing(false);
   };
+
 
   if (!showInput) {
     return (

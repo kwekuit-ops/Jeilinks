@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { saveSystemSettings } from "./actions";
 import { toast } from "react-hot-toast";
-import { Save, Globe, ShieldCheck, Zap, MessageCircle, Settings2, AlertTriangle, Bell } from "lucide-react";
+import { Save, Globe, ShieldCheck, Zap, MessageCircle, Settings2, AlertTriangle, Bell, Network, Megaphone } from "lucide-react";
 
 
 
@@ -47,6 +47,48 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
             <p className="text-xs text-orange-700 leading-relaxed">
               <strong>Active:</strong> The site is currently in maintenance mode. Only administrators can access the full site. Regular users will see the maintenance page.
             </p>
+          </div>
+        )}
+      </div>
+
+      <div className="glass p-8 rounded-3xl border border-border/50 shadow-sm space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3 text-red-500">
+              <Megaphone className="h-5 w-5" />
+              <h2 className="text-xl font-bold font-outfit">Global Announcement Popup</h2>
+          </div>
+          <div className="flex items-center space-x-3 bg-red-50 px-4 py-2 rounded-2xl border border-red-100">
+            <span className="text-sm font-semibold text-red-700">Enable Popup</span>
+            <button 
+              onClick={() => setSettings({...settings, POPUP_ENABLED: settings["POPUP_ENABLED"] === "true" ? "false" : "true"})}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${settings["POPUP_ENABLED"] === "true" ? "bg-red-500" : "bg-gray-200"}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings["POPUP_ENABLED"] === "true" ? "translate-x-6" : "translate-x-1"}`} />
+            </button>
+          </div>
+        </div>
+        
+        {settings["POPUP_ENABLED"] === "true" && (
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Popup Title</label>
+              <input 
+                type="text"
+                value={settings["POPUP_TITLE"] || ""}
+                onChange={(e) => setSettings({...settings, POPUP_TITLE: e.target.value})}
+                className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
+                placeholder="e.g. Important Update!"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Popup Message</label>
+              <textarea 
+                value={settings["POPUP_MESSAGE"] || ""}
+                onChange={(e) => setSettings({...settings, POPUP_MESSAGE: e.target.value})}
+                className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none min-h-[100px]"
+                placeholder="Enter the announcement message to display to all users..."
+              />
+            </div>
           </div>
         )}
       </div>
@@ -184,6 +226,56 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
             />
             <p className="text-[10px] text-muted-foreground">Minimum payment required to upgrade or renew as an agent (in GHS).</p>
           </div>
+        </div>
+      </div>
+
+      {/* Network Toggles */}
+      <div className="glass p-8 rounded-3xl border border-border/50 shadow-sm space-y-6">
+        <div className="flex items-center space-x-3 text-purple-500 mb-2">
+            <Network className="h-5 w-5" />
+            <h2 className="text-xl font-bold font-outfit">Network Configuration</h2>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between bg-background border rounded-xl px-4 py-3">
+              <span className="text-sm font-semibold text-muted-foreground">MTN</span>
+              <button 
+                onClick={() => setSettings({...settings, NETWORK_MTN_ENABLED: settings["NETWORK_MTN_ENABLED"] === "false" ? "true" : "false"})}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${settings["NETWORK_MTN_ENABLED"] !== "false" ? "bg-mtn" : "bg-gray-200"}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings["NETWORK_MTN_ENABLED"] !== "false" ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between bg-background border rounded-xl px-4 py-3">
+              <span className="text-sm font-semibold text-muted-foreground">AirtelTigo</span>
+              <button 
+                onClick={() => setSettings({...settings, NETWORK_AIRTELTIGO_ENABLED: settings["NETWORK_AIRTELTIGO_ENABLED"] === "false" ? "true" : "false"})}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${settings["NETWORK_AIRTELTIGO_ENABLED"] !== "false" ? "bg-airteltigo" : "bg-gray-200"}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings["NETWORK_AIRTELTIGO_ENABLED"] !== "false" ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between bg-background border rounded-xl px-4 py-3">
+              <span className="text-sm font-semibold text-muted-foreground">Telecel</span>
+              <button 
+                onClick={() => setSettings({...settings, NETWORK_TELECEL_ENABLED: settings["NETWORK_TELECEL_ENABLED"] === "false" ? "true" : "false"})}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${settings["NETWORK_TELECEL_ENABLED"] !== "false" ? "bg-telecel" : "bg-gray-200"}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings["NETWORK_TELECEL_ENABLED"] !== "false" ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between bg-background border rounded-xl px-4 py-3">
+              <span className="text-sm font-semibold text-muted-foreground">Glo</span>
+              <button 
+                onClick={() => setSettings({...settings, NETWORK_GLO_ENABLED: settings["NETWORK_GLO_ENABLED"] === "false" ? "true" : "false"})}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${settings["NETWORK_GLO_ENABLED"] !== "false" ? "bg-glo" : "bg-gray-200"}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings["NETWORK_GLO_ENABLED"] !== "false" ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+            </div>
+          </div>
+          <p className="text-[10px] text-muted-foreground">Toggle to hide or show specific network bundles globally across the platform.</p>
         </div>
       </div>
 

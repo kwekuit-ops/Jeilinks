@@ -15,6 +15,7 @@ import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { getActiveSupplier } from "@/lib/suppliers";
 import { AdminSupplierBalance } from "@/components/AdminStatsLoader";
 import { DollarSign } from "lucide-react";
+import { getNetworkSettings, filterBundlesByNetwork } from "@/lib/networkSettings";
 
 
 export const metadata: Metadata = {
@@ -255,7 +256,7 @@ export default async function Home() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [bundleData, ordersCount] = await Promise.all([
+    const [bundleData, ordersCount, networkSettings] = await Promise.all([
       prisma.bundle.findMany({
         where: { isActive: true },
         select: {
@@ -268,10 +269,11 @@ export default async function Home() {
         },
         orderBy: [{ network: 'asc' }, { userPrice: 'asc' }]
       }),
-      prisma.order.count()
+      prisma.order.count(),
+      getNetworkSettings()
     ]);
 
-    bundles = bundleData as any[];
+    bundles = filterBundlesByNetwork(bundleData as any[], networkSettings);
     totalOrdersCount = ordersCount;
     
 

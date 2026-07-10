@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { ShieldCheck, MessageCircle, Zap, Lock, Headphones } from "lucide-react";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { StoreActions } from "@/components/StoreActions";
+import { getNetworkSettings, filterBundlesByNetwork } from "@/lib/networkSettings";
 
 export default async function AgentStorePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -37,7 +38,8 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
     }),
     prisma.agentBundlePrice.findMany({
       where: { agentId: agent.id }
-    })
+    }),
+    getNetworkSettings()
   ]);
 
   const parseSize = (size: string) => {
@@ -52,8 +54,10 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
     return parseSize(a.size) - parseSize(b.size);
   });
 
+  const filteredBundles = filterBundlesByNetwork(bundles, networkSettings);
+
   // Apply custom prices and hidden fee, and sanitize for client component
-  const customizedBundles = bundles.map(bundle => {
+  const customizedBundles = filteredBundles.map(bundle => {
       // Add hidden 0.1 service fee to base prices
       const baseUserPrice = Number(bundle.userPrice) + 0.1;
       const baseAgentPrice = Number(bundle.agentPrice) + 0.1;

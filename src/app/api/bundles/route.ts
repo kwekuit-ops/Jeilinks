@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getNetworkSettings, filterBundlesByNetwork } from "@/lib/networkSettings";
 
 export async function GET() {
   try {
@@ -25,7 +26,11 @@ export async function GET() {
         }),
       },
     });
-    return NextResponse.json(bundles);
+
+    const networkSettings = await getNetworkSettings();
+    const filteredBundles = filterBundlesByNetwork(bundles, networkSettings);
+
+    return NextResponse.json(filteredBundles);
   } catch (error) {
     return NextResponse.json({ message: "Error fetching bundles" }, { status: 500 });
   }

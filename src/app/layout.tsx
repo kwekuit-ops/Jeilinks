@@ -15,6 +15,7 @@ import { authOptions } from "@/lib/auth";
 import { Maintenance } from "@/components/Maintenance";
 import OneSignalInit from "@/components/OneSignalInit";
 import PWAInit from "@/components/PWAInit";
+import { AnnouncementPopup } from "@/components/AnnouncementPopup";
 
 export const metadata: Metadata = {
   title: "JEILINKS - Mobile Data Reseller",
@@ -74,6 +75,11 @@ export default async function RootLayout({
           <Toaster position="top-center" />
           <OneSignalInit appId={settings["NEXT_PUBLIC_ONESIGNAL_APP_ID"] || ""} />
           <PWAInit />
+          <AnnouncementPopup 
+            enabled={settings["POPUP_ENABLED"] || "false"} 
+            title={settings["POPUP_TITLE"] || "Announcement"} 
+            message={settings["POPUP_MESSAGE"] || ""} 
+          />
         </Providers>
 
 

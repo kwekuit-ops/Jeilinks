@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 import { BundleTabs } from "@/components/BundleTabs";
 import { Metadata } from "next";
+import { getNetworkSettings, filterBundlesByNetwork } from "@/lib/networkSettings";
 
 export const metadata: Metadata = {
   title: "Shop Data Bundles - JEILINKS",
@@ -26,10 +27,11 @@ export default async function ShopPage() {
       ]
     });
 
-    const [customPrices] = await Promise.all([
+    const [customPrices, networkSettings] = await Promise.all([
       session?.user ? prisma.agentBundlePrice.findMany({
         where: { agentId: (session.user as { id: string }).id }
-      }) : Promise.resolve([])
+      }) : Promise.resolve([]),
+      getNetworkSettings()
     ]);
 
     // Helper to sort by data size numerically
@@ -62,6 +64,8 @@ export default async function ShopPage() {
         agentPrice: baseAgentPrice
       };
     });
+    
+    bundles = filterBundlesByNetwork(bundles, networkSettings);
 
   } catch (error) {
     console.error("Shop page bundle fetch error:", error);
