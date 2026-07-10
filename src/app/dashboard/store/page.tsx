@@ -16,7 +16,7 @@ export default async function StoreManagementPage() {
 
   const userId = (session.user as { id: string }).id;
 
-  const [bundles, customPrices, user] = await Promise.all([
+  const [bundles, customPrices, user, networkSettings] = await Promise.all([
     prisma.bundle.findMany({
       where: { isActive: true },
       orderBy: [

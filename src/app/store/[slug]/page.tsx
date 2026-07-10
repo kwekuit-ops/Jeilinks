@@ -26,7 +26,7 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
     notFound();
   }
 
-  const [rawBundles, customPrices] = await Promise.all([
+  const [rawBundles, customPrices, networkSettings] = await Promise.all([
     prisma.bundle.findMany({
       where: { 
         isActive: true,
