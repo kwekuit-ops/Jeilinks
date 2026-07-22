@@ -52,6 +52,7 @@ export default function MoolreButtonInner({
                     externalRef: reference,
                     currency: "GHS",
                     metadata,
+                    redirectUrl: window.location.href, // Tell Moolre to redirect back here
                 }),
             });
 
@@ -66,29 +67,14 @@ export default function MoolreButtonInner({
 
             console.log("[Moolre] Got payment URL, opening widget...");
 
-            // Step 2: Open the Moolre widget with the pre-created payment URL (no CORS needed)
-            const popup = new MoolrePay();
-            await popup.checkout({
-                paymentUrl: data.paymentUrl,
-                onSuccess: (transaction: any) => {
-                    console.log("[Moolre] Payment success:", transaction);
-                    onSuccess({ reference, transaction });
-                },
-                onCancel: () => {
-                    console.log("[Moolre] Payment cancelled by user");
-                    onClose();
-                },
-                onError: (error: any) => {
-                    console.error("[Moolre] Widget error:", error);
-                    const msg = error?.message || error?.error || JSON.stringify(error);
-                    alert(`Payment failed: ${msg}`);
-                    onClose();
-                }
-            });
+            // Step 2: Redirect the user directly to Moolre's secure payment page.
+            // This avoids blank screen issues with cross-origin iframes on iOS/Safari.
+            // Moolre will automatically redirect back to the site after payment.
+            window.location.href = data.paymentUrl;
+            
         } catch (error: any) {
             console.error("[Moolre] Unexpected error:", error);
             alert(`Payment error: ${error?.message || error}`);
-        } finally {
             setIsLoading(false);
         }
     };
