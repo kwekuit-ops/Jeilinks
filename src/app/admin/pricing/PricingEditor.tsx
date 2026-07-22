@@ -17,7 +17,7 @@ interface Bundle {
   isActive: boolean;
 }
 
-const NETWORKS = ["MTN", "AirtelTigo", "Telecel", "Glo", "Special Offers"];
+const NETWORKS = ["Special Offers", "MTN", "AirtelTigo", "Telecel", "Glo"];
 
 export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) {
   const [activeTab, setActiveTab] = useState(NETWORKS[0]);

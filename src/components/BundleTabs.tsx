@@ -14,7 +14,7 @@ interface Bundle {
 }
 
 export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: string }) {
-  const networkOrder = ["MTN", "AirtelTigo", "Telecel", "Glo", "Special Offers"];
+  const networkOrder = ["Special Offers", "MTN", "AirtelTigo", "Telecel", "Glo"];
   const networks = Array.from(new Set(bundles.map(b => b.network)))
     .filter(n => n !== "OTHER")
     .sort((a, b) => {
@@ -22,7 +22,7 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
         const bIdx = networkOrder.indexOf(b) === -1 ? 999 : networkOrder.indexOf(b);
         return aIdx - bIdx;
     });
-  const defaultTab = networks.includes("MTN") ? "MTN" : networks[0];
+  const defaultTab = networks.includes("Special Offers") ? "Special Offers" : networks.includes("MTN") ? "MTN" : networks[0];
   const [activeTab, setActiveTab] = useState(defaultTab);
 
   useEffect(() => {
