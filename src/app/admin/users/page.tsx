@@ -14,6 +14,7 @@ export default async function AdminUsersPage() {
   startOfToday.setHours(0, 0, 0, 0);
 
   const rawUsers = await prisma.user.findMany({
+    orderBy: { createdAt: "desc" },
     include: {
       _count: {
         select: { orders: true }
@@ -26,13 +27,19 @@ export default async function AdminUsersPage() {
         select: { id: true }
       }
     },
-    take: 200,
+    take: 500,
   });
 
   const users = rawUsers.map(u => ({
     ...u,
     todayOrderCount: u.orders.length
-  })).sort((a, b) => b.todayOrderCount - a.todayOrderCount);
+  })).sort((a, b) => {
+    // Sort by today's orders first, then by join date (newest first)
+    if (b.todayOrderCount !== a.todayOrderCount) {
+      return b.todayOrderCount - a.todayOrderCount;
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   return (
     <div className="space-y-8 animate-in">
