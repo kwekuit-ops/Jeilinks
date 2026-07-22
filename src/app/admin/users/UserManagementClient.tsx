@@ -25,11 +25,31 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("most_orders_today");
 
-  const filteredUsers = users.filter(u =>
-    (u.name || "").toLowerCase().includes(search.toLowerCase()) ||
-    (u.email || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = users
+    .filter(u =>
+      (u.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (u.email || "").toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "newest":
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case "oldest":
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case "total_orders":
+          return b._count.orders - a._count.orders;
+        case "balance":
+          return Number(b.balance) - Number(a.balance);
+        case "most_orders_today":
+        default:
+          if (b.todayOrderCount !== a.todayOrderCount) {
+            return b.todayOrderCount - a.todayOrderCount;
+          }
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
 
   const handleDelete = async (userId: string, name: string) => {
     if (!confirm(`Are you sure you want to delete user ${name}? This action cannot be undone.`)) return;
@@ -82,6 +102,19 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
               </button>
             )}
           </div>
+          
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="px-4 py-2.5 rounded-xl border border-border bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/30 text-muted-foreground cursor-pointer"
+          >
+            <option value="most_orders_today">Most Orders Today</option>
+            <option value="newest">Newest Joined First</option>
+            <option value="oldest">Oldest Joined First</option>
+            <option value="total_orders">Highest Total Orders</option>
+            <option value="balance">Highest Wallet Balance</option>
+          </select>
+
           <button 
             onClick={() => setIsModalOpen(true)}
             className="flex items-center space-x-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20 active:scale-95"
