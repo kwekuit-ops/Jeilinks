@@ -6,7 +6,7 @@ import { Smartphone, Zap, ArrowRight, X, ShieldCheck, CheckCircle2 } from "lucid
 import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import PaystackButton from "./PaystackButton";
+import MoolreButton from "./MoolreButton";
 import { getSystemSettings } from "@/app/admin/settings/actions";
 
 interface Bundle {
@@ -28,7 +28,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanding, setIsExpanding] = useState(false);
   const [userBalance, setUserBalance] = useState<{ wallet: number, commission: number } | null>(null);
-  const [paystackKey, setPaystackKey] = useState("");
+  const [moolreSettings, setMoolreSettings] = useState({ username: "", publicKey: "", accountNumber: "" });
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderRef, setOrderRef] = useState("");
 
@@ -49,7 +49,11 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   useEffect(() => {
     async function loadData() {
       const settings = await getSystemSettings();
-      setPaystackKey(settings["NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY"] || process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "");
+      setMoolreSettings({
+        username: settings["NEXT_PUBLIC_MOOLRE_USERNAME"] || process.env.NEXT_PUBLIC_MOOLRE_USERNAME || "",
+        publicKey: settings["NEXT_PUBLIC_MOOLRE_PUBLIC_KEY"] || process.env.NEXT_PUBLIC_MOOLRE_PUBLIC_KEY || "",
+        accountNumber: settings["NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER"] || process.env.NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER || ""
+      });
       fetchBalance();
     }
     loadData();
@@ -142,7 +146,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
         body: JSON.stringify({
           bundleId: bundle.id,
           phone: phoneNumber,
-          paystackRef: reference.reference,
+          paymentRef: reference.reference,
           amount: price,
           agentId: agentId || null,
         }),
@@ -348,10 +352,12 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <PaystackButton
+                            <MoolreButton
                                 email={session?.user?.email || `${phoneNumber}@jeilinks.com`}
                                 amount={price}
-                                publicKey={paystackKey}
+                                username={moolreSettings.username}
+                                publicKey={moolreSettings.publicKey}
+                                accountNumber={moolreSettings.accountNumber}
                                 onSuccess={handleSuccess}
                                 onClose={() => setIsLoading(false)}
                                 label={isLoading ? "PREPARING..." : `PAY ${formatCurrency(price)} NOW`}

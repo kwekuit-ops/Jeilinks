@@ -141,29 +141,49 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
       <div className="glass p-8 rounded-3xl border border-border/50 shadow-sm space-y-6">
         <div className="flex items-center space-x-3 text-green-600 mb-2">
             <ShieldCheck className="h-5 w-5" />
-            <h2 className="text-xl font-bold font-outfit">Payment Gateway (Paystack)</h2>
+            <h2 className="text-xl font-bold font-outfit">Payment Gateway (Moolre)</h2>
         </div>
         
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Public Key</label>
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Moolre Username</label>
                 <input 
                     type="text"
-                    value={settings["NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY"] || ""}
-                    onChange={(e) => setSettings({...settings, NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: e.target.value})}
+                    value={settings["NEXT_PUBLIC_MOOLRE_USERNAME"] || ""}
+                    onChange={(e) => setSettings({...settings, NEXT_PUBLIC_MOOLRE_USERNAME: e.target.value})}
                     className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
-                    placeholder="pk_live_..."
+                    placeholder="e.g. jeilinks"
                 />
             </div>
             <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Secret Key</label>
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Public Key</label>
+                <input 
+                    type="text"
+                    value={settings["NEXT_PUBLIC_MOOLRE_PUBLIC_KEY"] || ""}
+                    onChange={(e) => setSettings({...settings, NEXT_PUBLIC_MOOLRE_PUBLIC_KEY: e.target.value})}
+                    className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
+                    placeholder="pub_live_..."
+                />
+            </div>
+            <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Account Number</label>
+                <input 
+                    type="text"
+                    value={settings["NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER"] || ""}
+                    onChange={(e) => setSettings({...settings, NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER: e.target.value})}
+                    className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
+                    placeholder="e.g. 123456789"
+                />
+            </div>
+            <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Secret Key (Webhooks)</label>
                 <input 
                     type="password"
-                    value={settings["PAYSTACK_SECRET_KEY"] || ""}
-                    onChange={(e) => setSettings({...settings, PAYSTACK_SECRET_KEY: e.target.value})}
+                    value={settings["MOOLRE_SECRET_KEY"] || ""}
+                    onChange={(e) => setSettings({...settings, MOOLRE_SECRET_KEY: e.target.value})}
                     className="w-full bg-background border rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
-                    placeholder="sk_live_..."
+                    placeholder="sec_live_..."
                 />
             </div>
           </div>

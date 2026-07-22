@@ -167,7 +167,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                         </div>
                         <div>
                             <p className="text-[10px] uppercase font-bold text-muted-foreground">Payment Reference</p>
-                            <p className="text-xs font-mono break-all">{order.paystackRef || "DIRECT_DEBIT"}</p>
+                            <p className="text-xs font-mono break-all">{order.paymentRef || "DIRECT_DEBIT"}</p>
                         </div>
                     </div>
 

@@ -93,8 +93,8 @@ model Order {
   phone           String
   amount          Decimal
   status          String   @default("PENDING")
-  paystackRef     String?  @unique
-  paymentMethod   String   @default("PAYSTACK")
+  paymentRef      String?  @map("paystackRef") @unique
+  paymentMethod   String   @default("MOOLRE")
   supplierOrderId String?
   supplierStatus  String?
   supplierType    String?  // "FUZESERVE" | "MYSOCIALBOOSTER" — which supplier handled this order

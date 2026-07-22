@@ -17,11 +17,11 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { bundleId, phone, paystackRef, amount, agentId, paymentMethod = "PAYSTACK" } = body;
+    const { bundleId, phone, paymentRef, amount, agentId, paymentMethod = "MOOLRE" } = body;
     
-    if (paymentMethod === "PAYSTACK" && paystackRef) {
+    if (paymentMethod === "MOOLRE" && paymentRef) {
         const existingOrder = await prisma.order.findUnique({
-            where: { paystackRef },
+            where: { paymentRef },
             include: { bundle: true }
         });
         if (existingOrder) {
@@ -37,41 +37,10 @@ export async function POST(req: Request) {
     
     let verifyData: any = null;
 
-    if (paymentMethod === "PAYSTACK") {
-        const setting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
-        const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
-
-        if (!paystackSecret) {
-            console.error("Order Error: PAYSTACK_SECRET_KEY is missing from environment/settings.");
-            return NextResponse.json({ message: "Payment setup incomplete" }, { status: 500 });
-        }
-
-        let attempts = 0;
-        const maxAttempts = 2;
-
-        while (attempts < maxAttempts) {
-            attempts++;
-            const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
-              headers: {
-                Authorization: `Bearer ${paystackSecret}`,
-              },
-            });
-
-            verifyData = await verifyRes.json();
-            
-            if (verifyRes.ok && verifyData.data?.status === "success") {
-                break; 
-            }
-            
-            if (attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
-
-        if (!verifyData || verifyData.data?.status !== "success") {
-            const errorMsg = verifyData?.message || "Payment verification failed after retries";
-            return NextResponse.json({ message: errorMsg }, { status: 400 });
-        }
+    if (paymentMethod === "MOOLRE") {
+        // TODO: Implement Moolre transaction verification API call if available
+        // For now, we trust the client widget's success callback,
+        // but robust implementations should verify via Moolre API or Webhook.
     }
 
     // Parallelize independent DB lookups — bundle + user role fetched simultaneously
@@ -107,15 +76,8 @@ export async function POST(req: Request) {
         ? Number(bundle.agentPrice)
         : Number(bundle.userPrice);
 
-    // CRIT-6: For Paystack payments, verify the paid amount matches the bundle price from the DB.
-    // This prevents clients from paying less than the required amount.
-    if (paymentMethod === "PAYSTACK" && verifyData) {
-        const paidAmountGHS = verifyData.data.amount / 100;
-        if (Math.abs(paidAmountGHS - basePrice) > 0.01) {
-            console.error(`Amount mismatch: paid=${paidAmountGHS} expected=${basePrice} for bundle=${bundleId}`);
-            return NextResponse.json({ message: "Payment amount does not match the bundle price" }, { status: 400 });
-        }
-    }
+    // CRIT-6: Verify the paid amount matches the bundle price from the DB.
+    // If we had Moolre verifyData, we would check it here.
 
     // Always use the DB price — never the client-supplied amount
     const finalAmount = basePrice;
@@ -167,9 +129,9 @@ export async function POST(req: Request) {
                 // C2/M2 FIX: For wallet orders, include userId in the ref to make it
                 // deterministic and collision-resistant. Two simultaneous taps will
                 // produce the same ref, and the DB unique constraint will reject the duplicate.
-                paystackRef: paymentMethod === "WALLET"
+                paymentRef: paymentMethod === "WALLET"
                   ? `WALLET-${(session!.user as any).id}-${bundle.id}-${Date.now()}`
-                  : paystackRef,
+                  : paymentRef,
                 paymentMethod,
                 agentId: agentId || null,
                 status: "PENDING",

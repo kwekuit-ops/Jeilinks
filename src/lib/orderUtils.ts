@@ -44,7 +44,7 @@ export async function processOrderRefund(orderId: string, reason: string) {
   });
 
   // Automatically credit wallet on failure if the user has an account (is registered),
-  // regardless of payment method (WALLET or PAYSTACK). This enables them to self-retry via wallet.
+  // regardless of payment method (WALLET or MOOLRE). This enables them to self-retry via wallet.
   if (order.userId) {
     const refundRef = `REFUND-${order.id}`;
 

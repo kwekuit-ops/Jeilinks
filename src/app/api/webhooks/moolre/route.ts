@@ -13,24 +13,24 @@ export async function POST(req: Request) {
   try {
     const body = await req.text();
     
-    // 1. Get Paystack Secret Key from Settings
-    const setting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
-    const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
+    // 1. Get Moolre Secret Key from Settings
+    const setting = await prisma.systemSetting.findUnique({ where: { key: "MOOLRE_SECRET_KEY" } });
+    const moolreSecret = setting?.value || process.env.MOOLRE_SECRET_KEY;
 
-    if (!paystackSecret) {
-      console.error("❌ Webhook Error: PAYSTACK_SECRET_KEY not configured");
+    if (!moolreSecret) {
+      console.error("❌ Webhook Error: MOOLRE_SECRET_KEY not configured");
       return NextResponse.json({ error: "Configuration error" }, { status: 500 });
     }
 
     // 2. Verify Signature
-    const signature = req.headers.get("x-paystack-signature");
+    const signature = req.headers.get("x-moolre-signature") || req.headers.get("moolre-signature");
     const hash = crypto
-      .createHmac("sha512", paystackSecret)
+      .createHmac("sha512", moolreSecret)
       .update(body)
       .digest("hex");
 
     if (hash !== signature) {
-      console.warn("⚠️ Webhook Warning: Invalid Paystack signature");
+      console.warn("⚠️ Webhook Warning: Invalid Moolre signature");
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
@@ -40,8 +40,8 @@ export async function POST(req: Request) {
     if (event.event === "charge.success") {
       const data = event.data;
       const reference = data.reference;
-      const amountGHS = data.amount / 100;
-      const customerEmail = data.customer.email;
+      const amountGHS = data.amount / 100; // Assuming Moolre amounts are also in pesewas
+      const customerEmail = data.customer?.email || "guest@jeilinks.com";
       const metadata = data.metadata;
 
       console.log(`✅ Webhook: Received successful payment ${reference} for ${customerEmail}`);
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
                   amount: amountGHS,
                   type: "TOPUP",
                   reference: reference,
-                  description: `Wallet top-up via Paystack (Webhook)`
+                  description: `Wallet top-up via Moolre (Webhook)`
                 }
               })
             ]);
@@ -187,7 +187,7 @@ export async function POST(req: Request) {
       } else if (metadata?.type === "BUNDLE_PURCHASE") {
           // Check if order already exists for this reference
           const existingOrder = await prisma.order.findUnique({
-              where: { paystackRef: reference }
+              where: { paymentRef: reference }
           });
 
           if (!existingOrder) {
@@ -206,9 +206,6 @@ export async function POST(req: Request) {
                 if (bundle) {
                   const sanitizedPhone = phone.replace(/\D/g, "");
 
-                  // C4 FIX: Validate Ghanaian phone format — same check as the primary orders route.
-                  // Without this, a malformed phone from Paystack metadata goes directly to the
-                  // supplier and causes a guaranteed delivery failure with no useful error.
                   const ghPhoneRegex = /^(02|05)\d{8}$/;
                   if (!ghPhoneRegex.test(sanitizedPhone)) {
                     console.error(`⚠️ Webhook: Invalid phone ${sanitizedPhone} in BUNDLE_PURCHASE for ref ${reference}. Skipping order creation.`);
@@ -220,8 +217,8 @@ export async function POST(req: Request) {
                       bundleId: bundleId,
                       phone: sanitizedPhone,
                       amount: amountGHS,
-                      paystackRef: reference,
-                      paymentMethod: "PAYSTACK",
+                      paymentRef: reference,
+                      paymentMethod: "MOOLRE",
                       agentId: agentId || null,
                       status: "PENDING",
                     },
@@ -269,13 +266,11 @@ export async function POST(req: Request) {
                           },
                         });
 
-                        // H2 FIX: Only credit commission on COMPLETED, not PROCESSING.
                         if (normalizedStatus === "COMPLETED") {
                           await processOrderCommission(order.id);
                         }
                       }
                     } else {
-                      // Save the supplierType on the order first
                       await prisma.order.update({
                         where: { id: order.id },
                         data: { supplierType }

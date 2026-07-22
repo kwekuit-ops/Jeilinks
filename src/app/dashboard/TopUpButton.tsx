@@ -5,13 +5,27 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { topUpWallet } from "./topup-action";
 
-import PaystackButton from "@/components/PaystackButton";
+import MoolreButton from "@/components/MoolreButton";
+import { getSystemSettings } from "@/app/admin/settings/actions";
 
 export function TopUpButton({ email, userId }: { email: string; userId: string }) {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [amount, setAmount] = useState("10"); // Default 10 GHS
   const [showInput, setShowInput] = useState(false);
+  const [moolreSettings, setMoolreSettings] = useState({ username: "", publicKey: "", accountNumber: "" });
+
+  useEffect(() => {
+    async function loadSettings() {
+      const settings = await getSystemSettings();
+      setMoolreSettings({
+        username: settings["NEXT_PUBLIC_MOOLRE_USERNAME"] || process.env.NEXT_PUBLIC_MOOLRE_USERNAME || "",
+        publicKey: settings["NEXT_PUBLIC_MOOLRE_PUBLIC_KEY"] || process.env.NEXT_PUBLIC_MOOLRE_PUBLIC_KEY || "",
+        accountNumber: settings["NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER"] || process.env.NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER || ""
+      });
+    }
+    loadSettings();
+  }, []);
 
   const handleSuccess = async (reference: any) => {
     setIsProcessing(true);
@@ -52,10 +66,12 @@ export function TopUpButton({ email, userId }: { email: string; userId: string }
         className="w-full bg-background border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
         placeholder="Enter amount"
       />
-      <PaystackButton
+      <MoolreButton
         email={email}
         amount={parseFloat(amount)}
-        publicKey=""
+        username={moolreSettings.username}
+        publicKey={moolreSettings.publicKey}
+        accountNumber={moolreSettings.accountNumber}
         label={isProcessing ? "Processing..." : `Pay GHS ${amount}`}
         className="w-full py-2 bg-green-600 text-white rounded-xl text-sm font-bold hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
         disabled={isProcessing || !amount || parseFloat(amount) <= 0}

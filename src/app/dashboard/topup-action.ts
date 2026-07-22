@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { sendPushNotification } from "@/lib/notifications";
 
-export async function topUpWallet(paystackRef: string) {
+export async function topUpWallet(paymentRef: string) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -14,66 +14,33 @@ export async function topUpWallet(paystackRef: string) {
   }
 
   try {
-    const setting = await prisma.systemSetting.findUnique({ where: { key: "PAYSTACK_SECRET_KEY" } });
-    const paystackSecret = setting?.value || process.env.PAYSTACK_SECRET_KEY;
+    // Moolre processes the actual credit via Webhook securely.
+    // We poll the DB briefly to see if the webhook already fired, 
+    // to give the user immediate feedback if possible.
+    
+    let attempts = 0;
+    let existingTx = null;
 
-    if (!paystackSecret) {
-      return { success: false, error: "Payment gateway not configured" };
+    while (attempts < 3) {
+      existingTx = await prisma.walletTransaction.findUnique({
+        where: { reference: paymentRef }
+      });
+
+      if (existingTx) break;
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      attempts++;
     }
-
-    const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
-      headers: {
-        Authorization: `Bearer ${paystackSecret}`,
-      },
-    });
-
-    const verifyData = await verifyRes.json();
-
-    if (!verifyRes.ok || verifyData.data.status !== "success") {
-      return { success: false, error: "Payment verification failed" };
-    }
-
-    // Check if reference has already been used
-    const existingTx = await prisma.walletTransaction.findUnique({
-      where: { reference: paystackRef }
-    });
 
     if (existingTx) {
       return { success: true, amount: Number(existingTx.amount), alreadyProcessed: true };
     }
 
-    const amountGHS = verifyData.data.amount / 100;
-
-    // Use a transaction to ensure both user balance and transaction record are updated
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: (session.user as any).id },
-        data: {
-          balance: {
-            increment: amountGHS,
-          },
-        },
-      }),
-      prisma.walletTransaction.create({
-        data: {
-          userId: (session.user as any).id,
-          amount: amountGHS,
-          type: "TOPUP",
-          reference: paystackRef,
-          description: `Wallet top-up via Paystack`
-        }
-      })
-    ]);
-
-    await sendPushNotification({
-      userId: (session.user as any).id,
-      title: "Top-up Successful! 💰",
-      message: `Your wallet has been credited with GHS ${amountGHS.toFixed(2)}.`,
-      url: "/dashboard"
-    });
+    // If webhook hasn't fired yet, still return success to the client
+    // so it can show a pending message or simply wait.
 
     revalidatePath("/dashboard");
-    return { success: true, amount: amountGHS };
+    return { success: true, amount: 0 };
 
   } catch (error) {
     console.error("Topup error:", error);

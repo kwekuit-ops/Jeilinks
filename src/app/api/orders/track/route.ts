@@ -16,7 +16,7 @@ export async function GET(req: Request) {
       where: {
         OR: [
           { phone: ref },
-          { paystackRef: ref },
+          { paymentRef: ref },
           { id: ref },
           { supplierOrderId: ref }
         ]

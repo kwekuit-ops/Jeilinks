@@ -15,7 +15,7 @@ interface Order {
   phone: string;
   amount: any;
   status: string;
-  paystackRef: string | null;
+  paymentRef: string | null;
   paymentMethod: string;
   supplierOrderId: string | null;
   supplierStatus: string | null;
@@ -86,7 +86,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
     const matchesSearch = 
       order.phone.includes(searchTerm) || 
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.paystackRef?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.paymentRef?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesTab && matchesSearch;
   });
@@ -153,7 +153,7 @@ export function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
                             </span>
                         )}
                     </div>
-                    <p className="text-xs text-muted-foreground pl-6 truncate">{order.user?.email || order.paystackRef || "No Email"}</p>
+                    <p className="text-xs text-muted-foreground pl-6 truncate">{order.user?.email || order.paymentRef || "No Email"}</p>
                     <div className="flex items-center space-x-2 pl-6">
                         <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-xs text-muted-foreground font-mono">
