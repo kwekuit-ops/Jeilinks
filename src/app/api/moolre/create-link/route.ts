@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
     // Get credentials from DB
     const settings = await prisma.systemSetting.findMany({
-      where: { key: { in: ["NEXT_PUBLIC_MOOLRE_USERNAME", "NEXT_PUBLIC_MOOLRE_PUBLIC_KEY", "NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER"] } }
+      where: { key: { in: ["NEXT_PUBLIC_MOOLRE_USERNAME", "NEXT_PUBLIC_MOOLRE_PUBLIC_KEY", "NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER", "MOOLRE_SANDBOX_MODE"] } }
     });
     const map: Record<string, string> = {};
     settings.forEach(s => map[s.key] = s.value);
@@ -20,47 +20,54 @@ export async function POST(req: NextRequest) {
     const username = map["NEXT_PUBLIC_MOOLRE_USERNAME"] || process.env.NEXT_PUBLIC_MOOLRE_USERNAME || "";
     const publicKey = map["NEXT_PUBLIC_MOOLRE_PUBLIC_KEY"] || process.env.NEXT_PUBLIC_MOOLRE_PUBLIC_KEY || "";
     const accountNumber = map["NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER"] || process.env.NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER || "";
+    const sandboxMode = map["MOOLRE_SANDBOX_MODE"] === "true" || process.env.MOOLRE_SANDBOX_MODE === "true";
 
-    if (!username || !publicKey || !accountNumber) {
+    if (!username || !accountNumber) {
       return NextResponse.json({ error: "Payment gateway not configured" }, { status: 500 });
     }
 
-    // Create the payment link server-side to avoid CORS issues
-    const res = await fetch("https://api.moolre.com/embed/link", {
+    // Sandbox: no public key required. Live: requires X-API-PUBKEY
+    const apiBase = sandboxMode ? "https://sandbox.moolre.com" : "https://api.moolre.com";
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-API-USER": username,
+    };
+    if (!sandboxMode && publicKey) {
+      headers["X-API-PUBKEY"] = publicKey;
+    }
+
+    console.log(`[Moolre] Using ${sandboxMode ? "SANDBOX" : "LIVE"} mode`);
+
+    const res = await fetch(`${apiBase}/embed/link`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-USER": username,
-        "X-Api-Pubkey": publicKey,
-      },
+      headers,
       body: JSON.stringify({
+        type: 1,
+        accountnumber: accountNumber,
         amount,
-        email,
-        externalRef,
         currency,
-        accountNumber,
-        metadata,
+        email,
+        description: "",
+        metadata: metadata || {},
+        externalref: externalRef,
+        mode: "payment",
+        reusable: false,
       }),
     });
 
     const data = await res.json();
+    console.log("[Moolre] API response:", JSON.stringify(data));
 
-    if (!res.ok) {
-      console.error("[Moolre] Create link failed:", data);
-      return NextResponse.json({ error: data?.message || "Failed to create payment link" }, { status: res.status });
+    // status=0 means error from Moolre even with HTTP 200
+    if (data?.status === 0) {
+      return NextResponse.json({ error: data?.message || "Moolre error" }, { status: 400 });
     }
 
-    // Return the payment URL to the client
-    // Moolre returns: json.data.authorization_url OR json.data.paymentUrl OR json.authorization_url
-    const paymentUrl = 
-      data?.data?.authorization_url || 
-      data?.data?.paymentUrl || 
-      data?.authorization_url || 
-      data?.paymentUrl || 
-      data?.url || 
-      data?.link;
-
-    console.log("[Moolre] Full API response:", JSON.stringify(data));
+    const paymentUrl =
+      data?.data?.authorization_url ||
+      data?.data?.paymentUrl ||
+      data?.authorization_url ||
+      data?.paymentUrl;
 
     if (!paymentUrl) {
       console.error("[Moolre] No payment URL in response:", data);
