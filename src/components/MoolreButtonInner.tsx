@@ -20,9 +20,6 @@ interface MoolreButtonInnerProps {
 export default function MoolreButtonInner({ 
     email, 
     amount, 
-    username,
-    publicKey,
-    accountNumber,
     onSuccess, 
     onClose, 
     label, 
@@ -31,50 +28,48 @@ export default function MoolreButtonInner({
     metadata
 }: MoolreButtonInnerProps) {
     const [mounted, setMounted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     
     const reference = useMemo(() => {
-        // eslint-disable-next-line react-hooks/purity
         return `JL-${(new Date()).getTime()}-${Math.floor(Math.random() * 1000)}`;
     }, []);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 
     const handlePayment = async () => {
+        if (isLoading) return;
+        setIsLoading(true);
         try {
-            const finalUsername = username || process.env.NEXT_PUBLIC_MOOLRE_USERNAME || "";
-            const finalPublicKey = publicKey || process.env.NEXT_PUBLIC_MOOLRE_PUBLIC_KEY || "";
-            const finalAccountNumber = accountNumber || process.env.NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER || "";
-
-            console.log("[Moolre] Initializing checkout with:", {
-                username: finalUsername,
-                publicKey: finalPublicKey ? finalPublicKey.substring(0, 20) + "..." : "(empty)",
-                accountNumber: finalAccountNumber,
-                amount,
-                email,
-                reference
+            // Step 1: Create payment link server-side (avoids CORS)
+            const res = await fetch("/api/moolre/create-link", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    amount,
+                    email,
+                    externalRef: reference,
+                    currency: "GHS",
+                    metadata,
+                }),
             });
 
-            if (!finalUsername || !finalPublicKey || !finalAccountNumber) {
-                alert("Payment configuration is incomplete. Please contact support.");
-                console.error("[Moolre] Missing keys:", { finalUsername, finalPublicKey: !!finalPublicKey, finalAccountNumber });
+            const data = await res.json();
+
+            if (!res.ok || !data.paymentUrl) {
+                const errMsg = data?.error || "Could not create payment link. Please try again.";
+                console.error("[Moolre] Server error:", data);
+                alert(`Payment Error: ${errMsg}`);
                 return;
             }
 
-            const popup = new MoolrePay({
-                username: finalUsername,
-                publicKey: finalPublicKey,
-                accountNumber: finalAccountNumber,
-            });
+            console.log("[Moolre] Got payment URL, opening widget...");
 
+            // Step 2: Open the Moolre widget with the pre-created payment URL (no CORS needed)
+            const popup = new MoolrePay();
             await popup.checkout({
-                amount: amount,
-                email: email,
-                externalRef: reference,
-                currency: "GHS",
-                metadata: metadata,
+                paymentUrl: data.paymentUrl,
                 onSuccess: (transaction: any) => {
                     console.log("[Moolre] Payment success:", transaction);
                     onSuccess({ reference, transaction });
@@ -84,15 +79,17 @@ export default function MoolreButtonInner({
                     onClose();
                 },
                 onError: (error: any) => {
-                    console.error("[Moolre] Payment error:", error);
+                    console.error("[Moolre] Widget error:", error);
                     const msg = error?.message || error?.error || JSON.stringify(error);
                     alert(`Payment failed: ${msg}`);
                     onClose();
                 }
             });
         } catch (error: any) {
-            console.error("[Moolre] Failed to initialize checkout:", error);
-            alert(`Could not open payment: ${error?.message || error}`);
+            console.error("[Moolre] Unexpected error:", error);
+            alert(`Payment error: ${error?.message || error}`);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -102,10 +99,10 @@ export default function MoolreButtonInner({
         <button
             type="button"
             className={className}
-            disabled={disabled}
+            disabled={disabled || isLoading}
             onClick={handlePayment}
         >
-            {label}
+            {isLoading ? "Connecting..." : label}
         </button>
     );
 }
