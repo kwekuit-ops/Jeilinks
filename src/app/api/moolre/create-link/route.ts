@@ -51,7 +51,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Return the payment URL to the client
-    const paymentUrl = data?.data?.paymentUrl || data?.paymentUrl || data?.url || data?.link;
+    // Moolre returns: json.data.authorization_url OR json.data.paymentUrl OR json.authorization_url
+    const paymentUrl = 
+      data?.data?.authorization_url || 
+      data?.data?.paymentUrl || 
+      data?.authorization_url || 
+      data?.paymentUrl || 
+      data?.url || 
+      data?.link;
+
+    console.log("[Moolre] Full API response:", JSON.stringify(data));
 
     if (!paymentUrl) {
       console.error("[Moolre] No payment URL in response:", data);
