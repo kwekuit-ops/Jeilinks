@@ -49,6 +49,8 @@ export async function saveSystemSettings(settings: Record<string, string>) {
 }
 
 export async function getSystemSettings() {
+  const { unstable_noStore } = await import("next/cache");
+  unstable_noStore();
   try {
     const settings = await prisma.systemSetting.findMany();
     const map: Record<string, string> = {};

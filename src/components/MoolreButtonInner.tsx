@@ -48,6 +48,21 @@ export default function MoolreButtonInner({
             const finalPublicKey = publicKey || process.env.NEXT_PUBLIC_MOOLRE_PUBLIC_KEY || "";
             const finalAccountNumber = accountNumber || process.env.NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER || "";
 
+            console.log("[Moolre] Initializing checkout with:", {
+                username: finalUsername,
+                publicKey: finalPublicKey ? finalPublicKey.substring(0, 20) + "..." : "(empty)",
+                accountNumber: finalAccountNumber,
+                amount,
+                email,
+                reference
+            });
+
+            if (!finalUsername || !finalPublicKey || !finalAccountNumber) {
+                alert("Payment configuration is incomplete. Please contact support.");
+                console.error("[Moolre] Missing keys:", { finalUsername, finalPublicKey: !!finalPublicKey, finalAccountNumber });
+                return;
+            }
+
             const popup = new MoolrePay({
                 username: finalUsername,
                 publicKey: finalPublicKey,
@@ -55,24 +70,29 @@ export default function MoolreButtonInner({
             });
 
             await popup.checkout({
-                amount: amount, // Moolre usually expects exact amount (not pesewas unless specified, standard is GHS format. Paystack uses pesewas but Moolre examples use "50" for 50 GHS)
+                amount: amount,
                 email: email,
                 externalRef: reference,
                 currency: "GHS",
                 metadata: metadata,
                 onSuccess: (transaction: any) => {
+                    console.log("[Moolre] Payment success:", transaction);
                     onSuccess({ reference, transaction });
                 },
                 onCancel: () => {
+                    console.log("[Moolre] Payment cancelled by user");
                     onClose();
                 },
                 onError: (error: any) => {
-                    console.error("Moolre Payment error", error);
+                    console.error("[Moolre] Payment error:", error);
+                    const msg = error?.message || error?.error || JSON.stringify(error);
+                    alert(`Payment failed: ${msg}`);
                     onClose();
                 }
             });
-        } catch (error) {
-            console.error("Failed to initialize Moolre checkout", error);
+        } catch (error: any) {
+            console.error("[Moolre] Failed to initialize checkout:", error);
+            alert(`Could not open payment: ${error?.message || error}`);
         }
     };
 
