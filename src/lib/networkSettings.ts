@@ -8,7 +8,8 @@ export async function getNetworkSettings() {
           'NETWORK_MTN_ENABLED',
           'NETWORK_AIRTELTIGO_ENABLED',
           'NETWORK_TELECEL_ENABLED',
-          'NETWORK_GLO_ENABLED'
+          'NETWORK_GLO_ENABLED',
+          'NETWORK_SPECIAL_OFFERS_ENABLED'
         ]
       }
     }
@@ -23,7 +24,8 @@ export async function getNetworkSettings() {
     "MTN": getSetting('NETWORK_MTN_ENABLED'),
     "AirtelTigo": getSetting('NETWORK_AIRTELTIGO_ENABLED'),
     "Telecel": getSetting('NETWORK_TELECEL_ENABLED'),
-    "Glo": getSetting('NETWORK_GLO_ENABLED')
+    "Glo": getSetting('NETWORK_GLO_ENABLED'),
+    "Special Offers": getSetting('NETWORK_SPECIAL_OFFERS_ENABLED')
   };
 
   return enabledNetworks;

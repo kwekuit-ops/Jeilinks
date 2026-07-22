@@ -14,9 +14,9 @@ interface Bundle {
 }
 
 export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: string }) {
-  const networkOrder = ["MTN", "AirtelTigo", "Telecel", "Glo"];
+  const networkOrder = ["MTN", "AirtelTigo", "Telecel", "Glo", "Special Offers"];
   const networks = Array.from(new Set(bundles.map(b => b.network)))
-    .filter(n => n !== "OTHER" && n !== "Glo")
+    .filter(n => n !== "OTHER")
     .sort((a, b) => {
         const aIdx = networkOrder.indexOf(a) === -1 ? 999 : networkOrder.indexOf(a);
         const bIdx = networkOrder.indexOf(b) === -1 ? 999 : networkOrder.indexOf(b);
@@ -56,6 +56,7 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
                 ? network === "MTN" ? "bg-mtn text-black border-mtn shadow-lg shadow-mtn/30"
                 : network === "AirtelTigo" ? "bg-airteltigo text-white border-airteltigo shadow-lg shadow-airteltigo/30"
                 : network === "Glo" ? "bg-glo text-white border-glo shadow-lg shadow-glo/30"
+                : network === "Special Offers" ? "bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/30"
                 : "bg-telecel text-white border-telecel shadow-lg shadow-telecel/30"
               : "bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}

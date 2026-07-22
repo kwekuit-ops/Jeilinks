@@ -274,6 +274,15 @@ export function SettingsEditor({ initialSettings }: { initialSettings: Record<st
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings["NETWORK_GLO_ENABLED"] !== "false" ? "translate-x-6" : "translate-x-1"}`} />
               </button>
             </div>
+            <div className="flex items-center justify-between bg-background border rounded-xl px-4 py-3">
+              <span className="text-sm font-semibold text-muted-foreground">Special Offers</span>
+              <button 
+                onClick={() => setSettings({...settings, NETWORK_SPECIAL_OFFERS_ENABLED: settings["NETWORK_SPECIAL_OFFERS_ENABLED"] === "false" ? "true" : "false"})}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${settings["NETWORK_SPECIAL_OFFERS_ENABLED"] !== "false" ? "bg-orange-500" : "bg-gray-200"}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings["NETWORK_SPECIAL_OFFERS_ENABLED"] !== "false" ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+            </div>
           </div>
           <p className="text-[10px] text-muted-foreground">Toggle to hide or show specific network bundles globally across the platform.</p>
         </div>

@@ -17,8 +17,7 @@ interface Bundle {
   isActive: boolean;
 }
 
-const TEMPLATE_SIZES = ["1GB", "2GB", "5GB", "10GB", "15GB", "20GB", "30GB", "50GB"];
-const NETWORKS = ["MTN", "AirtelTigo", "Telecel"];
+const NETWORKS = ["MTN", "AirtelTigo", "Telecel", "Glo", "Special Offers"];
 
 export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) {
   const [activeTab, setActiveTab] = useState(NETWORKS[0]);

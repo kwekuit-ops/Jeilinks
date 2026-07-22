@@ -134,6 +134,7 @@ export class MySocialBoosterProvider implements SupplierProvider {
 
   private inferNetwork(name: string): string {
     const n = name.toUpperCase();
+    if (n.includes("SPECIAL OFFER")) return "Special Offers";
     if (n.includes("MTN")) return "MTN";
     if (n.includes("VODA") || n.includes("TELECEL")) return "Telecel";
     // "NX AT 2GB", "AIRTELTIGO", "AIRTEL", "TIGO" all map to AirtelTigo
@@ -144,7 +145,8 @@ export class MySocialBoosterProvider implements SupplierProvider {
   }
 
   private inferSize(name: string): string {
-    const match = name.match(/(\d+(\.\d+)?\s*(GB|MB))/i);
-    return match ? match[0] : name;
+    // Also handle cases like "890. MB" by allowing optional dot before spaces
+    const match = name.match(/(\d+(\.\d*)?\s*(GB|MB))/i);
+    return match ? match[0].replace('. ', '') : name;
   }
 }

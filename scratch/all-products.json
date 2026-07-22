@@ -1,0 +1,362 @@
+[
+  {
+    "id": "f3f525ca-bd46-4621-a5d2-4853c4881ac5",
+    "name": "NX TELECEL 15GB",
+    "network": "Telecel",
+    "size": "15GB",
+    "price": 54.4,
+    "resellerPrice": 54.4
+  },
+  {
+    "id": "c78f7ea7-9446-4db2-8b22-8566c05e137a",
+    "name": "NX MTN 6GB",
+    "network": "MTN",
+    "size": "6GB",
+    "price": 25.7,
+    "resellerPrice": 25.7
+  },
+  {
+    "id": "228aba31-13ec-4def-85a2-03f130421493",
+    "name": "NX AT 2GB",
+    "network": "AirtelTigo",
+    "size": "2GB",
+    "price": 8.5,
+    "resellerPrice": 8.5
+  },
+  {
+    "id": "9628e8f5-f5d8-4e24-8b35-72d60e8fa66b",
+    "name": "NX MTN 10GB",
+    "network": "MTN",
+    "size": "10GB",
+    "price": 42,
+    "resellerPrice": 42
+  },
+  {
+    "id": "efc53203-bbf9-492c-9644-ca1eb9eb65c1",
+    "name": "NX AT 3GB",
+    "network": "AirtelTigo",
+    "size": "3GB",
+    "price": 12.5,
+    "resellerPrice": 12.5
+  },
+  {
+    "id": "fde2b106-41c2-4169-9769-573bf49c599e",
+    "name": "NX AT 4GB",
+    "network": "AirtelTigo",
+    "size": "4GB",
+    "price": 16.3,
+    "resellerPrice": 16.3
+  },
+  {
+    "id": "df201aa7-f33d-474e-b773-3fbb2c73dc97",
+    "name": "NX AT 5GB",
+    "network": "AirtelTigo",
+    "size": "5GB",
+    "price": 20.5,
+    "resellerPrice": 20.5
+  },
+  {
+    "id": "92e37734-84e0-4113-9602-2775443c75f5",
+    "name": "NX AT 6GB",
+    "network": "AirtelTigo",
+    "size": "6GB",
+    "price": 24,
+    "resellerPrice": 24
+  },
+  {
+    "id": "e265f571-fe5b-46c2-a95c-93aa54f0b659",
+    "name": "NX TELECEL 10GB",
+    "network": "Telecel",
+    "size": "10GB",
+    "price": 38,
+    "resellerPrice": 38
+  },
+  {
+    "id": "4f8569dd-709a-4ba3-8a96-def49c386d5f",
+    "name": "NX MTN 25GB",
+    "network": "MTN",
+    "size": "25GB",
+    "price": 102,
+    "resellerPrice": 102
+  },
+  {
+    "id": "ae804a5f-4eec-42dc-b5b5-44b71ba69ddf",
+    "name": "NX TELECEL 5GB",
+    "network": "Telecel",
+    "size": "5GB",
+    "price": 20.5,
+    "resellerPrice": 20.5
+  },
+  {
+    "id": "ac9d2edd-06b2-48eb-9702-2e98ffc26570",
+    "name": "NX MTN 40GB",
+    "network": "MTN",
+    "size": "40GB",
+    "price": 162,
+    "resellerPrice": 162
+  },
+  {
+    "id": "f94a8652-4e6e-4e70-b766-52cff13f4ef3",
+    "name": "NX MTN 8GB",
+    "network": "MTN",
+    "size": "8GB",
+    "price": 34,
+    "resellerPrice": 34
+  },
+  {
+    "id": "6131355a-86be-43f6-a05c-14c1c19fc8ff",
+    "name": "NX MTN 30GB",
+    "network": "MTN",
+    "size": "30GB",
+    "price": 122,
+    "resellerPrice": 122
+  },
+  {
+    "id": "68954118-387c-401a-b3f0-07cac3c3a1cf",
+    "name": "NX TELECEL 20GB",
+    "network": "Telecel",
+    "size": "20GB",
+    "price": 75,
+    "resellerPrice": 75
+  },
+  {
+    "id": "7c325664-3556-47a2-8ffe-d77fcb04d580",
+    "name": "NX TELECEL 30GB",
+    "network": "Telecel",
+    "size": "30GB",
+    "price": 105.22,
+    "resellerPrice": 105.22
+  },
+  {
+    "id": "78d6f6d7-e71a-4f92-9072-0f1182590115",
+    "name": "NX TELECEL 25GB",
+    "network": "Telecel",
+    "size": "25GB",
+    "price": 90.1,
+    "resellerPrice": 90.1
+  },
+  {
+    "id": "372f6ffb-ac79-43b4-8c1d-bfedb24a47bd",
+    "name": "NX AT 8GB",
+    "network": "AirtelTigo",
+    "size": "8GB",
+    "price": 32,
+    "resellerPrice": 32
+  },
+  {
+    "id": "362a2389-82ec-40b5-b0c7-6f489aeb87ce",
+    "name": "NX MTN 20GB",
+    "network": "MTN",
+    "size": "20GB",
+    "price": 82,
+    "resellerPrice": 82
+  },
+  {
+    "id": "84e2fd1a-2ff0-4ff2-8dad-ad09bf7b7ccf",
+    "name": "NX AT 10GB",
+    "network": "AirtelTigo",
+    "size": "10GB",
+    "price": 39,
+    "resellerPrice": 39
+  },
+  {
+    "id": "cc9578a0-8313-4270-991c-38a77f01a9cd",
+    "name": "NX MTN 15GB",
+    "network": "MTN",
+    "size": "15GB",
+    "price": 62,
+    "resellerPrice": 62
+  },
+  {
+    "id": "2d9fd516-9b66-4c06-8579-19beae681a85",
+    "name": "NX AT 60GB",
+    "network": "AirtelTigo",
+    "size": "60GB",
+    "price": 140,
+    "resellerPrice": 140
+  },
+  {
+    "id": "2c54abe2-279f-4d24-9268-2ea420dbc15c",
+    "name": "NX AT 80GB",
+    "network": "AirtelTigo",
+    "size": "80GB",
+    "price": 173,
+    "resellerPrice": 173
+  },
+  {
+    "id": "a9fc4f2c-165c-4f4e-8bdf-4ec5b6f55a71",
+    "name": "NX AT 100GB",
+    "network": "AirtelTigo",
+    "size": "100GB",
+    "price": 202,
+    "resellerPrice": 202
+  },
+  {
+    "id": "42282012-d7d9-4679-acfe-5875a8db9fc2",
+    "name": "NX AT 200GB",
+    "network": "AirtelTigo",
+    "size": "200GB",
+    "price": 373,
+    "resellerPrice": 373
+  },
+  {
+    "id": "d7ecb406-89bf-40fa-9f39-6715b5445b56",
+    "name": "NX AT 15GB",
+    "network": "AirtelTigo",
+    "size": "15GB",
+    "price": 56,
+    "resellerPrice": 56
+  },
+  {
+    "id": "96390a25-9aaa-4229-98b4-0b0dea06334f",
+    "name": "NX TELECEL 50GB",
+    "network": "Telecel",
+    "size": "50GB",
+    "price": 177.07,
+    "resellerPrice": 177.07
+  },
+  {
+    "id": "745b009a-c95b-49e2-ac87-cce09320b2c0",
+    "name": "NX MTN 50GB",
+    "network": "MTN",
+    "size": "50GB",
+    "price": 202,
+    "resellerPrice": 202
+  },
+  {
+    "id": "8b045e58-0d30-407f-961b-e60d8619c2b6",
+    "name": "NX TELECEL 40GB",
+    "network": "Telecel",
+    "size": "40GB",
+    "price": 150,
+    "resellerPrice": 150
+  },
+  {
+    "id": "2266e3ab-6c33-432e-913f-4ea75518c39a",
+    "name": "NX MTN 1GB",
+    "network": "MTN",
+    "size": "1GB",
+    "price": 4.35,
+    "resellerPrice": 4.35
+  },
+  {
+    "id": "5e555e5e-45a5-48c5-abc8-70afd0350209",
+    "name": "NX MTN 4GB",
+    "network": "MTN",
+    "size": "4GB",
+    "price": 16.8,
+    "resellerPrice": 16.8
+  },
+  {
+    "id": "0bfeb286-2e27-4767-a384-a98c09460d3f",
+    "name": "NX AT 20GB",
+    "network": "AirtelTigo",
+    "size": "20GB",
+    "price": 74,
+    "resellerPrice": 74
+  },
+  {
+    "id": "966438c9-8d89-4e19-b40c-b2db802e431f",
+    "name": "NX AT 30GB",
+    "network": "AirtelTigo",
+    "size": "30GB",
+    "price": 75,
+    "resellerPrice": 75
+  },
+  {
+    "id": "96ba5493-6a9b-4748-9ee2-c7eed0ef720b",
+    "name": "NX AT 40GB",
+    "network": "AirtelTigo",
+    "size": "40GB",
+    "price": 90,
+    "resellerPrice": 90
+  },
+  {
+    "id": "e70f9fc3-69e0-461a-82dd-84fa2b660de9",
+    "name": "NX AT 50GB",
+    "network": "AirtelTigo",
+    "size": "50GB",
+    "price": 100,
+    "resellerPrice": 100
+  },
+  {
+    "id": "fc39347a-8c3e-41d0-afdd-205920c1da76",
+    "name": "NX MTN 2GB",
+    "network": "MTN",
+    "size": "2GB",
+    "price": 8.7,
+    "resellerPrice": 8.7
+  },
+  {
+    "id": "d2d0360f-aa89-448a-bb6d-814d9d791846",
+    "name": "Special Offer: 2.67GB",
+    "network": "OTHER",
+    "size": "2.67GB",
+    "price": 15.4,
+    "resellerPrice": 15.4
+  },
+  {
+    "id": "67c04e34-1e94-4316-935e-9e75d09b5b70",
+    "name": "Special Offer: 8.9GB",
+    "network": "OTHER",
+    "size": "8.9GB",
+    "price": 51,
+    "resellerPrice": 51
+  },
+  {
+    "id": "11dbb814-029b-4ca2-8083-e9e22def484f",
+    "name": "Special Offer: 3.56GB",
+    "network": "OTHER",
+    "size": "3.56GB",
+    "price": 20.4,
+    "resellerPrice": 20.4
+  },
+  {
+    "id": "edef9315-1447-4a33-9574-d945a1734d5e",
+    "name": "NX MTN 3GB",
+    "network": "MTN",
+    "size": "3GB",
+    "price": 12.7,
+    "resellerPrice": 12.7
+  },
+  {
+    "id": "999fb146-ef5c-4d47-96d8-ceb151a38019",
+    "name": "Special Offer: 890. MB",
+    "network": "OTHER",
+    "size": "Special Offer: 890. MB",
+    "price": 5.4,
+    "resellerPrice": 5.4
+  },
+  {
+    "id": "a856072c-e963-41a6-84b6-fb1b178fb96b",
+    "name": "Special Offer: 6.23GB",
+    "network": "OTHER",
+    "size": "6.23GB",
+    "price": 35.5,
+    "resellerPrice": 35.5
+  },
+  {
+    "id": "9cd5b2e4-c0cc-424d-82d2-84cda3230d29",
+    "name": "Special Offer: 1.78GB",
+    "network": "OTHER",
+    "size": "1.78GB",
+    "price": 10.5,
+    "resellerPrice": 10.5
+  },
+  {
+    "id": "13311b49-862b-42ee-a9f5-b56cee25b4cd",
+    "name": "NX MTN 5GB",
+    "network": "MTN",
+    "size": "5GB",
+    "price": 21.3,
+    "resellerPrice": 21.3
+  },
+  {
+    "id": "66e4b9a3-a2da-4987-8806-c4f29c2de2a0",
+    "name": "Special Offer: 4.45GB",
+    "network": "OTHER",
+    "size": "4.45GB",
+    "price": 25.5,
+    "resellerPrice": 25.5
+  }
+]
