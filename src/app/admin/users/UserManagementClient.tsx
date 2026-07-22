@@ -154,7 +154,8 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
                     {formatCurrency(user.balance.toString())}
                 </td>
                 <td className="px-6 py-4 text-muted-foreground text-sm">
-                  {new Date(user.createdAt).toLocaleDateString()}
+                  {new Date(user.createdAt).toLocaleDateString()} <br />
+                  <span className="text-xs opacity-75">{new Date(user.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </td>
                 <td className="px-6 py-4 text-right space-x-1">
                   <button 
