@@ -15,7 +15,11 @@ interface Bundle {
 
 export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: string }) {
   const networkOrder = ["Special Offers", "MTN", "AirtelTigo", "Telecel", "Glo"];
-  const networks = Array.from(new Set(bundles.map(b => b.network)))
+  const networks = Array.from(new Set(bundles.map(b => {
+      const lower = b.network.toLowerCase();
+      const match = networkOrder.find(n => n.toLowerCase() === lower);
+      return match || b.network;
+  })))
     .filter(n => n !== "OTHER")
     .sort((a, b) => {
         const aIdx = networkOrder.indexOf(a) === -1 ? 999 : networkOrder.indexOf(a);
