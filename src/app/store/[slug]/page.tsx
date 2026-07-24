@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-export const dynamic = "force-dynamic";
+// Cache agent store pages for 30 seconds
+export const revalidate = 30;
 
 import { BundleTabs } from "@/components/BundleTabs";
 import { notFound } from "next/navigation";

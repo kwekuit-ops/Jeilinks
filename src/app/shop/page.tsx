@@ -1,7 +1,8 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-export const dynamic = "force-dynamic";
+// Revalidate bundle list every 30 seconds — fast for users, fresh enough for admin changes
+export const revalidate = 30;
 
 import { BundleTabs } from "@/components/BundleTabs";
 import { Metadata } from "next";
