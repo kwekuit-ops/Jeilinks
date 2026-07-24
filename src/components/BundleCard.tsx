@@ -6,8 +6,7 @@ import { Smartphone, Zap } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import MoolreButton from "./MoolreButton";
-import { getSystemSettings } from "@/app/admin/settings/actions";
+import PaystackButton from "./PaystackButton";
 
 interface BundleCardProps {
   bundle: {
@@ -26,19 +25,6 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [moolreSettings, setMoolreSettings] = useState({ username: "", publicKey: "", accountNumber: "" });
-
-  useEffect(() => {
-    async function loadSettings() {
-      const settings = await getSystemSettings();
-      setMoolreSettings({
-        username: settings["NEXT_PUBLIC_MOOLRE_USERNAME"] || process.env.NEXT_PUBLIC_MOOLRE_USERNAME || "",
-        publicKey: settings["NEXT_PUBLIC_MOOLRE_PUBLIC_KEY"] || process.env.NEXT_PUBLIC_MOOLRE_PUBLIC_KEY || "",
-        accountNumber: settings["NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER"] || process.env.NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER || ""
-      });
-    }
-    loadSettings();
-  }, []);
 
   const role = (session?.user as any)?.role || "USER";
   const price = (role === "AGENT" || role === "ADMIN") ? bundle.agentPrice : bundle.userPrice;
@@ -157,12 +143,9 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
 
         {showPrompt ? (
           <div className="pt-2">
-            <MoolreButton
+            <PaystackButton
               email={session?.user?.email || "guest@jeilinks.com"}
               amount={price}
-              username={moolreSettings.username}
-              publicKey={moolreSettings.publicKey}
-              accountNumber={moolreSettings.accountNumber}
               label={isLoading ? "Processing..." : "Confirm & Pay"}
               className="w-full bg-primary text-primary-foreground py-3 rounded-2xl font-bold font-outfit shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
               disabled={!phoneNumber || isLoading}

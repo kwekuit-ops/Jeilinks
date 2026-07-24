@@ -6,27 +6,12 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { upgradeToAgent } from "./actions";
 import { ShieldCheck, Zap, TrendingUp, Store, ArrowRight } from "lucide-react";
-import MoolreButton from "@/components/MoolreButton";
-import { getSystemSettings } from "@/app/admin/settings/actions";
-import { useEffect } from "react";
+import PaystackButton from "@/components/PaystackButton";
 
 export default function BecomeAgentPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [moolreSettings, setMoolreSettings] = useState({ username: "", publicKey: "", accountNumber: "" });
-
-  useEffect(() => {
-    async function loadSettings() {
-      const settings = await getSystemSettings();
-      setMoolreSettings({
-        username: settings["NEXT_PUBLIC_MOOLRE_USERNAME"] || process.env.NEXT_PUBLIC_MOOLRE_USERNAME || "",
-        publicKey: settings["NEXT_PUBLIC_MOOLRE_PUBLIC_KEY"] || process.env.NEXT_PUBLIC_MOOLRE_PUBLIC_KEY || "",
-        accountNumber: settings["NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER"] || process.env.NEXT_PUBLIC_MOOLRE_ACCOUNT_NUMBER || ""
-      });
-    }
-    loadSettings();
-  }, []);
 
   const [whatsappUrl, setWhatsappUrl] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -158,12 +143,9 @@ export default function BecomeAgentPage() {
                 <p className="text-sm text-muted-foreground">Every 2 weeks (Subscription)</p>
             </div>
 
-            <MoolreButton
+            <PaystackButton
               email={session?.user?.email || ""}
               amount={10}
-              username={moolreSettings.username}
-              publicKey={moolreSettings.publicKey}
-              accountNumber={moolreSettings.accountNumber}
               onSuccess={handleSuccess}
               onClose={() => toast.error("Payment cancelled")}
               disabled={isProcessing}
@@ -175,7 +157,7 @@ export default function BecomeAgentPage() {
               }}
             />
             
-            <p className="text-[10px] text-muted-foreground mt-4 uppercase font-bold tracking-tighter">Secure Payment via Moolre</p>
+            <p className="text-[10px] text-muted-foreground mt-4 uppercase font-bold tracking-tighter">Secure Payment via Paystack</p>
         </div>
       )}
     </div>
