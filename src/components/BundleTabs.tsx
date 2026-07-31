@@ -26,7 +26,7 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
         const bIdx = networkOrder.indexOf(b) === -1 ? 999 : networkOrder.indexOf(b);
         return aIdx - bIdx;
     });
-  const defaultTab = networks.includes("Special Offers") ? "Special Offers" : networks.includes("MTN") ? "MTN" : networks[0];
+  const defaultTab = networks.includes("Special Offers") ? "Special Offers" : networks.includes("MTN") ? "MTN" : (networks[0] || "");
   const [activeTab, setActiveTab] = useState(defaultTab);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
     }
   }, [bundles, networks]);
 
-  const filteredBundles = bundles.filter((b) => b.network.toLowerCase() === activeTab.toLowerCase());
+  const filteredBundles = bundles.filter((b) => activeTab && b.network.toLowerCase() === activeTab.toLowerCase());
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -87,7 +87,7 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
           ))}
         {filteredBundles.length === 0 && (
           <div className="py-16 text-center text-muted-foreground glass rounded-3xl border border-dashed">
-            <p>No bundles available for {activeTab} at the moment.</p>
+            <p>{activeTab ? `No bundles available for ${activeTab} at the moment.` : "No bundles available at the moment."}</p>
           </div>
         )}
       </div>
