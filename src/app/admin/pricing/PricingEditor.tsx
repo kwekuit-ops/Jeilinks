@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { savePricing } from "./actions";
 import { toast } from "react-hot-toast";
 import { cn } from "@/lib/utils";
@@ -49,12 +49,13 @@ export function PricingEditor({ initialBundles }: { initialBundles: Bundle[] }) 
     return state;
   };
 
+  const [prevBundles, setPrevBundles] = useState(initialBundles);
   const [formData, setFormData] = useState<Record<string, Record<string, any>>>(() => prepareFormData(initialBundles));
 
-  // Sync internal state if initialBundles changes (e.g. after a sync)
-  useEffect(() => {
+  if (prevBundles !== initialBundles) {
+    setPrevBundles(initialBundles);
     setFormData(prepareFormData(initialBundles));
-  }, [initialBundles]);
+  }
 
   const handleInputChange = (network: string, size: string, field: string, value: any) => {
     setFormData(prev => ({

@@ -29,7 +29,7 @@ export async function generateAdminStoreSlug() {
     revalidatePath("/admin");
     revalidatePath("/admin/store");
     return { success: true, slug };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Failed to generate slug" };
   }
 }
@@ -49,7 +49,7 @@ export async function deleteAdminStore() {
     revalidatePath("/admin");
     revalidatePath("/admin/store");
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Failed to delete store" };
   }
 }
@@ -77,7 +77,7 @@ export async function updateStoreSlug(newSlug: string) {
     revalidatePath("/admin/store");
     revalidatePath("/admin");
     return { success: true, slug: sanitized };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Failed to update slug" };
   }
 }

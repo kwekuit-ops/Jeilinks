@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useSyncExternalStore, useRef } from "react";
 
 interface PaystackButtonInnerProps {
   email: string;
@@ -13,26 +13,27 @@ interface PaystackButtonInnerProps {
   metadata?: any;
 }
 
+const emptySubscribe = () => () => {};
+
 export default function PaystackButtonInner({
   email,
   amount,
   onSuccess,
-  onClose,
+  onClose: _onClose,
   label,
   className,
   disabled,
   metadata
 }: PaystackButtonInnerProps) {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const reference = useMemo(() => {
-    return `JL-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-  }, []);
+  const [reference] = useState(() => `JL-${Date.now()}-${Math.floor(Math.random() * 10000)}`);
 
+  const onSuccessRef = useRef(onSuccess);
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
 
   // When user returns to the tab after redirect, check if payment was successful
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function PaystackButtonInner({
       window.history.replaceState({}, "", url.toString());
 
       // Fire success callback so the parent can handle it
-      onSuccess({ reference: trxref });
+      onSuccessRef.current({ reference: trxref });
     }
   }, []);
 

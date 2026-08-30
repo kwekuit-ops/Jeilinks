@@ -10,7 +10,7 @@ interface AdminStoreCardProps {
   adminName: string;
 }
 
-export default function AdminStoreCard({ initialSlug, adminName }: AdminStoreCardProps) {
+export default function AdminStoreCard({ initialSlug, _adminName }: AdminStoreCardProps) {
   const [slug, setSlug] = useState(initialSlug);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -27,7 +27,7 @@ export default function AdminStoreCard({ initialSlug, adminName }: AdminStoreCar
       } else {
         toast.error(res.error || "Failed to generate slug");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Something went wrong");
     } finally {
       setIsGenerating(false);

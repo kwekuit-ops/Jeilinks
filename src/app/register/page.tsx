@@ -33,7 +33,7 @@ export default function RegisterPage() {
         const data = await res.json();
         toast.error(data.details ? `${data.message}: ${data.details}` : (data.message || "Something went wrong"));
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An error occurred");
     } finally {
       setLoading(false);

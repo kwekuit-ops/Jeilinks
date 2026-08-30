@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { getSalesReport } from "./actions";
 import { formatCurrency } from "@/lib/utils";
 import { 
   Calendar, 
   TrendingUp, 
   ArrowDownRight, 
-  ArrowUpRight, 
+  _ArrowUpRight, 
   DollarSign, 
   ShoppingCart,
-  Download,
+  _Download,
   Filter
 } from "lucide-react";
 

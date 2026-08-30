@@ -13,7 +13,7 @@ export async function upgradeToAgent(paymentRef: string) {
   }
 
   try {
-    const userId = (session.user as any).id;
+    const _userId = (session.user as any).id;
 
     // Helper: fetch WhatsApp group URL from settings
     const getCommunityUrl = async () => {

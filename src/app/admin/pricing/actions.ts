@@ -34,7 +34,7 @@ export async function savePricing(network: string, bundles: any[]) {
     }
     revalidatePath("/admin/pricing");
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Failed to save pricing setup." };
   }
 }

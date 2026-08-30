@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageCircle, X } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { X } from "lucide-react";
 import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 
-export function FloatingWhatsApp({ number, channelUrl }: { number: string; channelUrl?: string }) {
-  const { data: session } = useSession();
+export function FloatingWhatsApp({ number, channelUrl: _channelUrl }: { number: string; channelUrl?: string }) {
   const [showTooltip, setShowTooltip] = useState(false);
-  const userRole = (session?.user as any)?.role;
   const isKeyboardVisible = useKeyboardVisible();
 
   useEffect(() => {

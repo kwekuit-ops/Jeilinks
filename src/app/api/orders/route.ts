@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { bundleId, phone, paymentRef, amount, agentId, paymentMethod = "MOOLRE" } = body;
+    const { bundleId, phone, paymentRef, _amount, agentId, paymentMethod = "MOOLRE" } = body;
     
     if (paymentMethod === "MOOLRE" && paymentRef) {
         const existingOrder = await prisma.order.findUnique({
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: "Invalid Ghanaian phone number" }, { status: 400 });
     }
     
-    let verifyData: any = null;
+    const _verifyData: any = null;
 
     if (paymentMethod === "MOOLRE") {
         // TODO: Implement Moolre transaction verification API call if available

@@ -57,7 +57,7 @@ export class MySocialBoosterProvider implements SupplierProvider {
     }));
   }
 
-  async placeOrder(productId: string | number, phone: string, reference: string): Promise<OrderResponse> {
+  async placeOrder(productId: string | number, phone: string, _reference: string): Promise<OrderResponse> {
     try {
       const data = await this.request("/orders", {
         method: "POST",

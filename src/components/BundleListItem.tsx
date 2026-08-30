@@ -7,7 +7,6 @@ import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import PaystackButton from "./PaystackButton";
-import { getSystemSettings } from "@/app/admin/settings/actions";
 
 interface Bundle {
   id: string;
@@ -24,9 +23,29 @@ interface BundleListItemProps {
 
 export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   const { data: session } = useSession();
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const phoneParam = params.get("prefillPhone");
+      const bundleParam = params.get("prefillBundleId");
+      if (bundleParam === bundle.id && phoneParam) {
+        return phoneParam;
+      }
+    }
+    return "";
+  });
   const [isLoading, setIsLoading] = useState(false);
-  const [isExpanding, setIsExpanding] = useState(false);
+  const [isExpanding, setIsExpanding] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const phoneParam = params.get("prefillPhone");
+      const bundleParam = params.get("prefillBundleId");
+      if (bundleParam === bundle.id && phoneParam) {
+        return true;
+      }
+    }
+    return false;
+  });
   const [userBalance, setUserBalance] = useState<{ wallet: number, commission: number } | null>(null);
 
   const [isSuccess, setIsSuccess] = useState(false);
@@ -35,40 +54,36 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
   // Determine if we are on another agent's store page
   const isStorePage = !!agentId;
 
-  const fetchBalance = async () => {
-    if (!session) return;
-    try {
-      const res = await fetch('/api/user/balance');
-      const data = await res.json();
-      if (res.ok) setUserBalance({ wallet: data.balance, commission: data.commissionBalance || 0 });
-    } catch (e) {
-      console.error("Balance fetch error:", e);
-    }
-  };
-
   useEffect(() => {
-    fetchBalance();
+    let isSubscribed = true;
+    if (!session) return;
+    fetch('/api/user/balance')
+      .then(res => res.json())
+      .then(data => {
+        if (isSubscribed && data && typeof data.balance === 'number') {
+          setUserBalance({ wallet: data.balance, commission: data.commissionBalance || 0 });
+        }
+      })
+      .catch(e => console.error("Balance fetch error:", e));
+    return () => { isSubscribed = false; };
   }, [session]);
 
   // Re-fetch balance when the user returns to the tab to prevent stale data
   useEffect(() => {
-    const handleFocus = () => fetchBalance();
+    if (!session) return;
+    const handleFocus = () => {
+      fetch('/api/user/balance')
+        .then(res => res.json())
+        .then(data => {
+          if (data && typeof data.balance === 'number') {
+            setUserBalance({ wallet: data.balance, commission: data.commissionBalance || 0 });
+          }
+        })
+        .catch(e => console.error("Balance fetch error:", e));
+    };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, [session]);
-
-  // Prefill phone and open drawer if matching bundleId in URL search params
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const phoneParam = params.get("prefillPhone");
-      const bundleParam = params.get("prefillBundleId");
-      if (bundleParam === bundle.id && phoneParam) {
-        setPhoneNumber(phoneParam);
-        setIsExpanding(true);
-      }
-    }
-  }, [bundle.id]);
 
   const role = (session?.user as { role?: string })?.role || "USER";
   
@@ -107,11 +122,18 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
         setOrderRef(data.id || phoneNumber);
         toast.success("Order placed successfully via Wallet!");
         // Re-fetch balance immediately after successful wallet payment
-        fetchBalance();
+        fetch('/api/user/balance')
+          .then(res => res.json())
+          .then(data => {
+            if (data && typeof data.balance === 'number') {
+              setUserBalance({ wallet: data.balance, commission: data.commissionBalance || 0 });
+            }
+          })
+          .catch(() => {});
       } else {
         toast.error(data.message || "Wallet payment failed");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An error occurred during wallet payment");
     } finally {
       setIsLoading(false);
@@ -152,7 +174,7 @@ export function BundleListItem({ bundle, agentId }: BundleListItemProps) {
         const data = await res.json();
         toast.error(data.message || "Failed to create order.");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An error occurred");
     } finally {
       setIsLoading(false);

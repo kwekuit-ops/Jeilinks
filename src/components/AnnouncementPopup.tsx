@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import { AlertTriangle, X } from "lucide-react";
 
 interface AnnouncementPopupProps {
@@ -9,21 +9,21 @@ interface AnnouncementPopupProps {
   message: string;
 }
 
-export function AnnouncementPopup({ enabled, title, message }: AnnouncementPopupProps) {
-  const [isVisible, setIsVisible] = useState(false);
+const emptySubscribe = (onStoreChange: () => void) => {
+  window.addEventListener("storage", onStoreChange);
+  return () => window.removeEventListener("storage", onStoreChange);
+};
 
-  useEffect(() => {
-    if (enabled === "true") {
-      const dismissed = sessionStorage.getItem("announcement_dismissed");
-      if (!dismissed) {
-        setIsVisible(true);
-      }
-    }
-  }, [enabled]);
+export function AnnouncementPopup({ enabled, title, message }: AnnouncementPopupProps) {
+  const isVisible = useSyncExternalStore(
+    emptySubscribe,
+    () => enabled === "true" && !sessionStorage.getItem("announcement_dismissed"),
+    () => false
+  );
 
   const handleDismiss = () => {
-    setIsVisible(false);
     sessionStorage.setItem("announcement_dismissed", "true");
+    window.dispatchEvent(new Event("storage"));
   };
 
   if (!isVisible) return null;

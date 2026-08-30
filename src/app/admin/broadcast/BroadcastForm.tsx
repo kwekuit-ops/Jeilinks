@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { sendBroadcast } from "./actions";
 import { toast } from "react-hot-toast";
-import { Megaphone, Send, Link as LinkIcon, AlertCircle } from "lucide-react";
+import {  Send, Link as LinkIcon, AlertCircle } from "lucide-react";
 
 export function BroadcastForm() {
     const [formData, setFormData] = useState({ title: "", message: "", url: "" });

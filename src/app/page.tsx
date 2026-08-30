@@ -5,14 +5,13 @@ import { authOptions } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 import { BundleTabs } from "@/components/BundleTabs";
-import { Zap, ShieldCheck, Clock, Wallet, ArrowRight, History, CheckCircle2, RotateCcw, AlertCircle, Users, Package } from "lucide-react";
+import { Zap,  Clock, Wallet, ArrowRight, History, CheckCircle2, RotateCcw, AlertCircle,  Package } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { formatCurrency, cn } from "@/lib/utils";
 import { TopUpButton } from "./dashboard/TopUpButton";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
-import { getActiveSupplier } from "@/lib/suppliers";
 import { AdminSupplierBalance } from "@/components/AdminStatsLoader";
 import { DollarSign } from "lucide-react";
 import { getNetworkSettings, filterBundlesByNetwork } from "@/lib/networkSettings";
@@ -246,9 +245,8 @@ export default async function Home() {
   }
 
   let bundles: Bundle[] = [];
-  let totalOrdersCount = 0;
-  let adminBalance = 0;
-  let dailyStats = { ordersCount: 0, dailyProfit: 0 };
+  const adminBalance = 0;
+  const dailyStats = { ordersCount: 0, dailyProfit: 0 };
 
   const isAdmin = false; // Logged out view
 
@@ -256,7 +254,7 @@ export default async function Home() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [bundleData, ordersCount, networkSettings] = await Promise.all([
+    const [bundleData, _ordersCount, networkSettings] = await Promise.all([
       prisma.bundle.findMany({
         where: { isActive: true },
         select: {
@@ -274,7 +272,6 @@ export default async function Home() {
     ]);
 
     bundles = filterBundlesByNetwork(bundleData as any[], networkSettings);
-    totalOrdersCount = ordersCount;
     
 
   } catch (error) {

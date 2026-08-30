@@ -34,7 +34,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
     userCount, 
     orderCount, 
     totalRevenue, 
-    pendingPayouts, 
+    _pendingPayouts, 
     allOrdersCount,
     completedOrders,
     failedOrders,

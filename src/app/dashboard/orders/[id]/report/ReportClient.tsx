@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { MessageCircle, AlertTriangle, Calendar, Clock, Phone, ShoppingBag, BadgeHelp, CheckCircle2, ChevronLeft, Send } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { MessageCircle, AlertTriangle,      CheckCircle2, ChevronLeft } from "lucide-react";
 
 interface ReportClientProps {
   order: {

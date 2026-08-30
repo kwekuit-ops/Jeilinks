@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
-import { UserCog, Trash2, X, Shield, User, Star, Store, Plus, Search } from "lucide-react";
+import { UserCog, Trash2, X, Shield, User, Star, Store,  Search } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { deleteUser, updateUserRole } from "./actions";
 import CreateStoreModal from "./CreateStoreModal";

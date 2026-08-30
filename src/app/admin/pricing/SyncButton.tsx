@@ -21,7 +21,7 @@ export function SyncButton() {
       } else {
         toast.error(res.error || "Failed to sync products.");
       }
-    } catch (e) {
+    } catch (_e) {
       toast.dismiss();
       toast.error("Internal error occurred during sync.");
     } finally {

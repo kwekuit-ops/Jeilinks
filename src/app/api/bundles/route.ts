@@ -31,7 +31,7 @@ export async function GET() {
     const filteredBundles = filterBundlesByNetwork(bundles, networkSettings);
 
     return NextResponse.json(filteredBundles);
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ message: "Error fetching bundles" }, { status: 500 });
   }
 }

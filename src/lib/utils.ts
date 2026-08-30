@@ -15,7 +15,7 @@ export function formatCurrency(amount: number | string) {
 export function normalizeOrderStatus(status: string): string {
   const s = (status || "").toUpperCase();
   if (["SUCCESS", "COMPLETED", "DELIVERED", "DONE"].includes(s)) return "COMPLETED";
-  if (["FAILED", "REJECTED", "CANCELLED", "DECLINED"].includes(s)) return "FAILED";
+  if (["FAILED", "REJECTED", "CANCELLED", "CANCELED", "DECLINED", "REFUNDED", "REFUND"].includes(s)) return "FAILED";
   if (["PROCESSING", "IN_PROGRESS", "SENT"].includes(s)) return "PROCESSING";
   if (["PENDING", "AWAITING"].includes(s)) return "PENDING";
   return s;

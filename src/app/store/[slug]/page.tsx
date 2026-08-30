@@ -82,20 +82,6 @@ export default async function AgentStorePage({ params }: { params: Promise<{ slu
         {/* Animated background elements - Mesh Gradient */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
             <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[80%] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[80%] bg-indigo-600/20 rounded-full blur-[120px] animation-delay-2000" />
-            <div className="absolute top-[20%] right-[10%] w-[30%] h-[40%] bg-blue-400/10 rounded-full blur-[80px]" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto text-center z-10">
-            <div className="inline-flex p-2 bg-white/5 backdrop-blur-2xl rounded-[2.5rem] mb-6 md:mb-10 border border-white/10 shadow-[0_0_50px_-12px_rgba(255,255,255,0.1)]">
-                <div className="bg-white p-3 rounded-[2.2rem] shadow-2xl">
-                    <img src="/logo.png" alt="JEILINKS" className="h-16 w-16 md:h-24 md:w-24 object-contain" />
-                </div>
-            </div>
-          
-          <h1 className="text-4xl md:text-7xl font-black font-outfit tracking-tight mb-4 text-white">
-            {(agent.name || "Agent").split(' ')[0]}<span className="text-primary-foreground/60">&apos;s</span> Store
-          </h1>
           
           <div className="flex flex-col items-center space-y-6">
             <div className="flex flex-wrap justify-center gap-3">

@@ -5,7 +5,7 @@ import { ArrowUpRight, Loader2, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { requestWithdrawal } from "./withdraw-action";
 
-export function WithdrawButton({ variant = "WALLET", balance = "0" }: { variant?: "WALLET" | "COMMISSION", balance?: string }) {
+export function WithdrawButton({ variant = "WALLET", _balance = "0" }: { variant?: "WALLET" | "COMMISSION", balance?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [phone, setPhone] = useState("");
@@ -43,7 +43,7 @@ export function WithdrawButton({ variant = "WALLET", balance = "0" }: { variant?
       } else {
         toast.error(res.error || "Failed to request withdrawal");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An error occurred");
     } finally {
       setLoading(false);

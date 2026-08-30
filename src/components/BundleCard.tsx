@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { formatCurrency } from "@/lib/utils";
 import { Smartphone, Zap } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PaystackButton from "./PaystackButton";
 
@@ -74,7 +74,7 @@ export function BundleCard({ bundle, agentId }: BundleCardProps) {
       } else {
         toast.error("Failed to create order. Please contact support.");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An error occurred");
     } finally {
       setIsLoading(false);

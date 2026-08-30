@@ -9,25 +9,28 @@ export function AutoRefreshToggle() {
     const [timeLeft, setTimeLeft] = useState(60);
     const router = useRouter();
 
+    const handleToggle = () => {
+        setIsEnabled((prev) => {
+            if (!prev) setTimeLeft(60);
+            return !prev;
+        });
+    };
+
     useEffect(() => {
-        if (!isEnabled) {
-            setTimeLeft(60);
-            return;
-        }
+        if (!isEnabled) return;
 
         const interval = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    router.refresh();
+                    return 60;
+                }
+                return prev - 1;
+            });
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [isEnabled]);
-
-    useEffect(() => {
-        if (isEnabled && timeLeft <= 0) {
-            router.refresh();
-            setTimeLeft(60);
-        }
-    }, [isEnabled, timeLeft, router]);
+    }, [isEnabled, router]);
 
     const percentage = (timeLeft / 60) * 100;
 
@@ -60,7 +63,7 @@ export function AutoRefreshToggle() {
                     )}
                 </svg>
                 <button 
-                    onClick={() => setIsEnabled(!isEnabled)}
+                    onClick={handleToggle}
                     className={`absolute inset-0 flex items-center justify-center rounded-full transition-all ${isEnabled ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}
                 >
                     {isEnabled ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 ml-0.5 fill-current" />}

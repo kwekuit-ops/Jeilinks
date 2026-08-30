@@ -10,20 +10,19 @@ export default function WithdrawalsClient() {
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       const data = await getWithdrawals();
       setWithdrawals(data);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to load withdrawals");
     } finally {
       setLoading(false);
     }
   };
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { void loadData(); }, []);
 
   const handleUpdate = async (id: string, status: "COMPLETED" | "REJECTED") => {
     if (!confirm(`Are you sure you want to mark this as ${status.toLowerCase()}?`)) return;
@@ -34,7 +33,7 @@ export default function WithdrawalsClient() {
         toast.success(`Request marked as ${status.toLowerCase()}`);
         loadData();
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Action failed");
     }
   };

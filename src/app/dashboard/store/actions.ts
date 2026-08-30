@@ -121,7 +121,7 @@ export async function resetAgentStorePrice(bundleId: string) {
         revalidatePath(`/store/${user.storeSlug}`);
     }
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: "Failed to reset price" };
   }
 }

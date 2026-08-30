@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { BundleListItem } from "./BundleListItem";
 import { cn } from "@/lib/utils";
 
@@ -27,9 +27,7 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
         return aIdx - bIdx;
     });
   const defaultTab = networks.includes("Special Offers") ? "Special Offers" : networks.includes("MTN") ? "MTN" : (networks[0] || "");
-  const [activeTab, setActiveTab] = useState(defaultTab);
-
-  useEffect(() => {
+  const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const prefillBundleId = params.get("prefillBundleId");
@@ -37,13 +35,12 @@ export function BundleTabs({ bundles, agentId }: { bundles: Bundle[], agentId?: 
         const matchingBundle = bundles.find(b => b.id === prefillBundleId);
         if (matchingBundle) {
           const matchingNetwork = networks.find(n => n.toLowerCase() === matchingBundle.network.toLowerCase());
-          if (matchingNetwork) {
-            setActiveTab(matchingNetwork);
-          }
+          if (matchingNetwork) return matchingNetwork;
         }
       }
     }
-  }, [bundles, networks]);
+    return defaultTab;
+  });
 
   const filteredBundles = bundles.filter((b) => activeTab && b.network.toLowerCase() === activeTab.toLowerCase());
 

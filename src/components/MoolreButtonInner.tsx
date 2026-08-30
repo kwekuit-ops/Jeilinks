@@ -1,7 +1,6 @@
 "use client";
 
-import MoolrePay from "@moolre/moolrejs";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 interface MoolreButtonInnerProps {
     email: string;
@@ -17,26 +16,22 @@ interface MoolreButtonInnerProps {
     metadata?: any;
 }
 
+const emptySubscribe = () => () => {};
+
 export default function MoolreButtonInner({ 
     email, 
     amount, 
-    onSuccess, 
-    onClose, 
+    onSuccess: _onSuccess, 
+    onClose: _onClose, 
     label, 
     className,
     disabled,
     metadata
 }: MoolreButtonInnerProps) {
-    const [mounted, setMounted] = useState(false);
+    const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
     const [isLoading, setIsLoading] = useState(false);
     
-    const reference = useMemo(() => {
-        return `JL-${(new Date()).getTime()}-${Math.floor(Math.random() * 1000)}`;
-    }, []);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const [reference] = useState(() => `JL-${Date.now()}-${Math.floor(Math.random() * 1000)}`);
 
     const handlePayment = async () => {
         if (isLoading) return;

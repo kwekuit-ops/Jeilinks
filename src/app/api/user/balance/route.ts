@@ -24,7 +24,7 @@ export async function GET() {
         balance: Number(user.balance),
         commissionBalance: Number(user.commissionBalance)
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }

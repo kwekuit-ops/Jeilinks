@@ -1,53 +1,53 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
 import { X, Download, Smartphone, Share, PlusSquare } from "lucide-react";
 import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 
 export default function PWAInit() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showBanner, setShowBanner] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
+  const [isStandalone] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+  });
+  const [isIOS] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  });
+  const [showBanner, setShowBanner] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const standalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    if (ios && !standalone) {
+      return !localStorage.getItem('pwa-banner-dismissed');
+    }
+    return false;
+  });
   const isKeyboardVisible = useKeyboardVisible();
 
   useEffect(() => {
-    // 1. Check if already installed
-    const standalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
-    setIsStandalone(standalone);
-
-    // 2. Detect iOS
-    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    setIsIOS(ios);
-
-    // 3. Register Service Worker
+    // 1. Register Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').then((reg) => {
         console.log('SW Registered', reg);
       });
     }
 
-    // 4. Handle the Before Install Prompt (Android/Chrome)
+    // 2. Handle the Before Install Prompt (Android/Chrome)
     const handler = (e: any) => {
       e.preventDefault();
-      setDeferredPrompt(e);
-      if (!standalone) {
-        setShowBanner(true);
-      }
+      startTransition(() => {
+        setDeferredPrompt(e);
+        if (!isStandalone) {
+          setShowBanner(true);
+        }
+      });
     };
 
     window.addEventListener('beforeinstallprompt', handler);
 
-    // 5. For iOS, show banner if not standalone
-    if (ios && !standalone) {
-      const hasDismissed = localStorage.getItem('pwa-banner-dismissed');
-      if (!hasDismissed) {
-        setShowBanner(true);
-      }
-    }
-
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [isStandalone]);
 
   const handleInstall = async () => {
     if (isIOS) {
@@ -100,7 +100,7 @@ export default function PWAInit() {
           {isIOS ? (
             <div className="bg-white/5 rounded-2xl p-4 border border-white/10 space-y-3">
               <p className="text-[11px] text-slate-300 leading-relaxed">
-                To install, tap the <span className="inline-flex items-center px-1.5 py-0.5 bg-white/10 rounded-md mx-0.5"><Share className="h-3 w-3 inline" /></span> icon in Safari and select <span className="font-bold text-white uppercase tracking-wider mx-1 text-[10px]">"Add to Home Screen"</span>
+                To install, tap the <span className="inline-flex items-center px-1.5 py-0.5 bg-white/10 rounded-md mx-0.5"><Share className="h-3 w-3 inline" /></span> icon in Safari and select <span className="font-bold text-white uppercase tracking-wider mx-1 text-[10px]">&quot;Add to Home Screen&quot;</span>
               </p>
               <div className="flex justify-center pt-1">
                 <div className="animate-bounce">

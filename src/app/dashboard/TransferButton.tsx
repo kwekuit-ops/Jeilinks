@@ -31,7 +31,7 @@ export function TransferButton({ balance }: { balance: string }) {
       } else {
         toast.error(res.error || "Transfer failed");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An error occurred");
     } finally {
       setLoading(false);

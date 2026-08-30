@@ -10,7 +10,6 @@ import { redirect } from "next/navigation";
 import { TopUpButton } from "./TopUpButton";
 import { WithdrawButton } from "./WithdrawButton";
 import { TransferButton } from "./TransferButton";
-import { getActiveSupplier } from "@/lib/suppliers";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";
 import { getSystemSettings } from "../admin/settings/actions";
 import { SecuritySettings } from "./SecuritySettings";

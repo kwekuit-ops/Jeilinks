@@ -34,7 +34,7 @@ export default function CreateStoreModal({ isOpen, onClose }: CreateStoreModalPr
       } else {
         toast.error(res.error || "Failed to create store");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Something went wrong");
     } finally {
       setIsSubmitting(false);

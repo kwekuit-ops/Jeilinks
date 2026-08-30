@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { formatCurrency, cn } from "@/lib/utils";
 import { 
   ArrowLeft, CheckCircle, XCircle, Clock, 
-  Hash, User, Package, Phone, Calendar, 
+  Hash, User, Package, _Phone, Calendar, 
   CreditCard, Activity, HelpCircle, 
-  RefreshCcw, ShieldCheck, ExternalLink 
+  _RefreshCcw, ShieldCheck, _ExternalLink 
 } from "lucide-react";
 import Link from "next/link";
 import { RefreshOrderButton } from "@/components/RefreshOrderButton";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Store, Copy, ExternalLink, Loader2, Share2, Check, Trash2, Edit3, Save, X, RefreshCw, ShoppingBag } from "lucide-react";
+import { Store, Copy, ExternalLink, Loader2, Share2, Check, Trash2, Edit3, Save, X,  ShoppingBag } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { generateAdminStoreSlug, deleteAdminStore, updateStoreSlug } from "../actions";
 import { cn } from "@/lib/utils";

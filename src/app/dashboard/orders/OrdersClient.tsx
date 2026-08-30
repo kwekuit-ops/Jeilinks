@@ -83,6 +83,12 @@ export default function UserOrdersClient({ initialOrders, currentUserId, adminWh
                   <span>{order.supplierStatus || order.status}</span>
                 </span>
               </div>
+              
+              {order.status === "FAILED" && order.failureReason && (
+                <div className="bg-red-50 text-red-700 p-2 rounded-lg text-xs font-medium border border-red-100 mb-2">
+                  <span className="font-bold">Reason:</span> {order.failureReason}
+                </div>
+              )}
 
               
               <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dashed">
@@ -182,13 +188,20 @@ export default function UserOrdersClient({ initialOrders, currentUserId, adminWh
                         </div>
                     </td>
                     <td className="px-6 py-5">
-                      <span className={cn(
-                        "inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider",
-                        statusIcons[order.status]?.color || "bg-gray-100 text-gray-500"
-                      )}>
-                        <StatusIcon className="h-3.5 w-3.5" />
-                        <span>{order.supplierStatus || order.status}</span>
-                      </span>
+                      <div className="flex flex-col items-start gap-1">
+                        <span className={cn(
+                          "inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider",
+                          statusIcons[order.status]?.color || "bg-gray-100 text-gray-500"
+                        )}>
+                          <StatusIcon className="h-3.5 w-3.5" />
+                          <span>{order.supplierStatus || order.status}</span>
+                        </span>
+                        {order.status === "FAILED" && order.failureReason && (
+                           <span className="text-[10px] text-red-600 font-medium max-w-[200px] leading-tight">
+                             {order.failureReason}
+                           </span>
+                        )}
+                      </div>
                     </td>
 
                     <td className="px-6 py-5 text-muted-foreground">

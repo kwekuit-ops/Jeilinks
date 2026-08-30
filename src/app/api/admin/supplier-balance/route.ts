@@ -14,7 +14,7 @@ export async function GET() {
     const supplier = await getActiveSupplier();
     const balance = await supplier.fetchBalance();
     return NextResponse.json({ success: true, balance });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ success: false, balance: 0 }, { status: 500 });
   }
 }

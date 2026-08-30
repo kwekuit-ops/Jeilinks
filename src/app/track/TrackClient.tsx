@@ -32,7 +32,7 @@ export default function PublicTrackingPage() {
       } else {
         setError(data.message || "Order not found. Please check your reference.");
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An error occurred while fetching the order status.");
     } finally {
       setIsLoading(false);
@@ -55,7 +55,7 @@ export default function PublicTrackingPage() {
       } else {
         toast.error(result.error || "Failed to refresh");
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error("An error occurred");
     } finally {
       setIsLoading(false);
@@ -68,7 +68,7 @@ export default function PublicTrackingPage() {
         setReference(urlRef);
         // Trigger search
         hasSearched.current = true;
-        const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+        const _fakeEvent = { preventDefault: () => {} } as React.FormEvent;
         // We can't call handleTrack directly because it depends on the 'reference' state which might not be updated yet
         // So we define a helper or use the urlRef directly
         const autoSearch = async () => {
@@ -79,7 +79,7 @@ export default function PublicTrackingPage() {
                 const data = await res.json();
                 if (res.ok) setOrder(data);
                 else setError(data.message || "Order not found.");
-            } catch (err) {
+            } catch (_err) {
                 setError("An error occurred.");
             } finally {
                 setIsLoading(false);
