@@ -10,7 +10,7 @@ interface AdminStoreCardProps {
   adminName: string;
 }
 
-export default function AdminStoreCard({ initialSlug, _adminName }: AdminStoreCardProps) {
+export default function AdminStoreCard({ initialSlug }: AdminStoreCardProps) {
   const [slug, setSlug] = useState(initialSlug);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);

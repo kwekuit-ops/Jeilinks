@@ -7,10 +7,8 @@ import {
   Calendar, 
   TrendingUp, 
   ArrowDownRight, 
-  _ArrowUpRight, 
   DollarSign, 
   ShoppingCart,
-  _Download,
   Filter
 } from "lucide-react";
 
