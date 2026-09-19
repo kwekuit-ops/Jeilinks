@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 
-export function FloatingWhatsApp({ number, channelUrl }: { number: string; channelUrl?: string }) {
+export function FloatingWhatsApp({ number, channelUrl: _channelUrl }: { number: string; channelUrl?: string }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const isKeyboardVisible = useKeyboardVisible();
 
@@ -22,7 +22,7 @@ export function FloatingWhatsApp({ number, channelUrl }: { number: string; chann
     cleanNumber = '233' + cleanNumber.substring(1);
   }
 
-  const finalUrl = channelUrl || `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(message)}`;
+  const finalUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodeURIComponent(message)}`;
   const label = "Chat Support";
 
   if (isKeyboardVisible) return null;
