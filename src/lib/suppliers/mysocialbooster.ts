@@ -7,7 +7,9 @@ export class MySocialBoosterProvider implements SupplierProvider {
 
   constructor(apiKey: string, baseUrl: string) {
     this.apiKey = apiKey;
-    this.baseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    // Default to the v1.2.0 Agent API base URL if no override is configured.
+    const resolved = baseUrl || "https://mysocialbooster.online/api/v1/agent";
+    this.baseUrl = resolved.endsWith("/") ? resolved.slice(0, -1) : resolved;
   }
 
   private async request(endpoint: string, options: RequestInit = {}) {
@@ -29,7 +31,11 @@ export class MySocialBoosterProvider implements SupplierProvider {
 
       if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `MySocialBooster API error: ${response.statusText}`);
+          // Attach errorCode to the Error so callers (e.g. verifyRecipient) can map it
+          // to a user-friendly message. Without this, errorCode is silently dropped.
+          const err = new Error(errorData.message || `MySocialBooster API error: ${response.statusText}`) as any;
+          err.errorCode = errorData.errorCode || null;
+          throw err;
       }
 
       return response.json();
@@ -57,7 +63,52 @@ export class MySocialBoosterProvider implements SupplierProvider {
     }));
   }
 
+  /**
+   * Verifies a recipient number is eligible to receive an order before placing it.
+   * Uses the preferred body (productId + recipientNumber) so we also catch ORDER_UNAVAILABLE.
+   * Wallet is never charged when these error codes are returned.
+   */
+  private async verifyRecipient(
+    productId: string | number,
+    recipientNumber: string
+  ): Promise<{ ok: true } | { ok: false; message: string }> {
+    try {
+      await this.request("/recipients/verify", {
+        method: "POST",
+        body: JSON.stringify({
+          productId: productId.toString(),
+          recipientNumber,
+        }),
+      });
+      return { ok: true };
+    } catch (err: any) {
+      const errorCode: string = err.errorCode || "";
+      const messageMap: Record<string, string> = {
+        NUMBER_NOT_VERIFIED:
+          "This number is not yet verified on the network. Please try again later.",
+        NUMBER_VERIFICATION_PENDING:
+          "Number verification is still pending. Please wait a moment and try again.",
+        NUMBER_VERIFY_RETRY:
+          "Could not verify this number right now. Please try again shortly.",
+        ORDER_UNAVAILABLE:
+          "This bundle is currently unavailable for this number.",
+      };
+      const message =
+        messageMap[errorCode] ||
+        err.message ||
+        "Recipient verification failed. Please try again.";
+      return { ok: false, message };
+    }
+  }
+
   async placeOrder(productId: string | number, phone: string, _reference: string): Promise<OrderResponse> {
+    // Verify the recipient before placing the order to avoid failed orders.
+    // If verification fails, reject immediately — wallet is not charged.
+    const verification = await this.verifyRecipient(productId, phone);
+    if (!verification.ok) {
+      return { success: false, error: verification.message };
+    }
+
     try {
       const data = await this.request("/orders", {
         method: "POST",
@@ -101,9 +152,11 @@ export class MySocialBoosterProvider implements SupplierProvider {
       let normalizedStatus: string;
       if (["SUCCESS", "COMPLETED", "DELIVERED", "DONE"].includes(rawStatus)) {
         normalizedStatus = "completed";
-      } else if (["FAILED", "REJECTED", "CANCELLED", "DECLINED"].includes(rawStatus)) {
+      } else if (["FAILED", "REJECTED", "CANCELLED", "DECLINED", "PARTIAL"].includes(rawStatus)) {
+        // PARTIAL = some sub-orders failed; treat as failed to trigger a refund.
         normalizedStatus = "failed";
-      } else if (["PROCESSING", "IN_PROGRESS", "SENT"].includes(rawStatus)) {
+      } else if (["PROCESSING", "IN_PROGRESS", "SENT", "PENDING"].includes(rawStatus)) {
+        // PENDING is now an official status in v1.2.0 — keep polling.
         normalizedStatus = "processing";
       } else {
         normalizedStatus = rawStatus.toLowerCase();
