@@ -27,7 +27,6 @@ export default async function AdminUsersPage() {
         select: { id: true }
       }
     },
-    take: 500,
   });
 
   const users = rawUsers.map(u => ({

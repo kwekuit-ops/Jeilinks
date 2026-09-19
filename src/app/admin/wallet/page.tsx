@@ -25,6 +25,7 @@ export default async function AdminWalletPage() {
         id: true,
         name: true,
         email: true,
+        phone: true,
         balance: true,
         role: true,
         image: true

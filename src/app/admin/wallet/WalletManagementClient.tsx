@@ -22,6 +22,7 @@ interface UserType {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   balance: any;
   role: string;
 }
@@ -59,7 +60,8 @@ export default function WalletManagementClient({
   const filteredUsers = users.filter(
     (user) =>
       user.name?.toLowerCase().includes(search.toLowerCase()) ||
-      user.email?.toLowerCase().includes(search.toLowerCase())
+      user.email?.toLowerCase().includes(search.toLowerCase()) ||
+      user.phone?.toLowerCase().includes(search.toLowerCase())
   );
 
   const openModal = (userId: string, name: string, type: "CREDIT" | "DEBIT") => {

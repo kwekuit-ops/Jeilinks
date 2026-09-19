@@ -11,6 +11,7 @@ interface UserType {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   role: string;
   balance: any;
   createdAt: any;
@@ -30,7 +31,8 @@ export default function UserManagementClient({ users: initialUsers }: { users: U
   const filteredUsers = users
     .filter(u =>
       (u.name || "").toLowerCase().includes(search.toLowerCase()) ||
-      (u.email || "").toLowerCase().includes(search.toLowerCase())
+      (u.email || "").toLowerCase().includes(search.toLowerCase()) ||
+      (u.phone || "").toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => {
       switch (sortBy) {
