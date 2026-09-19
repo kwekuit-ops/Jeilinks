@@ -49,7 +49,7 @@ export function FloatingWhatsApp({ number, channelUrl }: { number: string; chann
         </div>
       )}
 
-      <div className="absolute inset-0 bg-whatsapp rounded-full animate-ping opacity-20 scale-125" />
+      {/* Removed the blinking (ping) animation div */}
       <a
         href={finalUrl}
         target="_blank"
