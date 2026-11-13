@@ -12,14 +12,20 @@ export default async function AdminLayout({
 }) {
   const session = await getServerSession(authOptions);
 
+  const userId = (session?.user as any)?.id;
+
+  if (!session || !userId) {
+    redirect("/login");
+  }
+
   // H3 FIX: Always re-fetch role from DB, never trust the JWT token for admin access.
   // A demoted admin would retain admin access for the full JWT lifetime without this check.
   const dbUser = await prisma.user.findUnique({
-    where: { id: (session?.user as any)?.id },
+    where: { id: userId },
     select: { role: true }
   });
 
-  if (!session || dbUser?.role !== "ADMIN") {
+  if (dbUser?.role !== "ADMIN") {
     redirect("/");
   }
 

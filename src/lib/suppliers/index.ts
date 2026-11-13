@@ -1,7 +1,8 @@
 import { FuzeServeProvider } from "./fuzeserve";
 import { MySocialBoosterProvider } from "./mysocialbooster";
+import { BrooksDataProvider } from "./brooksdata";
 import { SupplierProvider } from "./types";
-import prisma from "@/lib/prisma";
+import prisma from "../prisma";
 
 export async function getActiveSupplier(): Promise<SupplierProvider> {
   // Fetch all system settings from DB
@@ -21,6 +22,9 @@ export async function getActiveSupplier(): Promise<SupplierProvider> {
     
     case "MYSOCIALBOOSTER":
       return new MySocialBoosterProvider(apiKey || "", apiBase || "");
+
+    case "BROOKSDATA":
+      return new BrooksDataProvider(apiKey || "", apiBase || "");
       
     default:
       return new FuzeServeProvider(apiKey || "", apiBase || "");

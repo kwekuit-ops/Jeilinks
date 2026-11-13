@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { getActiveSupplier } from "./src/lib/suppliers";
+import { getActiveSupplier } from "./src/lib/suppliers/index";
 
 const prisma = new PrismaClient();
 
