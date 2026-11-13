@@ -22,17 +22,25 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        const rawEmail = credentials?.email?.trim().toLowerCase();
+        const rawPassword = credentials?.password?.trim();
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase() }
-        })
+        if (!rawEmail || !rawPassword) return null;
 
-        if (!user || !user.password) return null
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: rawEmail },
+              { phone: credentials?.email?.trim() }
+            ]
+          }
+        });
 
-        const isValid = await bcrypt.compare(credentials.password, user.password)
+        if (!user || !user.password) return null;
 
-        if (!isValid) return null
+        const isValid = await bcrypt.compare(rawPassword, user.password);
+
+        if (!isValid) return null;
 
         return {
           id: user.id,
