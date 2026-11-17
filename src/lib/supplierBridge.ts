@@ -1,5 +1,6 @@
 import { FuzeServeProvider } from "./suppliers/fuzeserve";
 import { MySocialBoosterProvider } from "./suppliers/mysocialbooster";
+import { BrooksDataProvider } from "./suppliers/brooksdata";
 import { SupplierProvider } from "./suppliers/types";
 import prisma from "@/lib/prisma";
 
@@ -14,11 +15,7 @@ export async function getSupplierForBundle(bundleId: string): Promise<{
   supplierType: string;
 }> {
   // Fetch system settings from DB first so they are available for both mappings and fallbacks
-  const settingsList = await prisma.systemSetting.findMany({
-    where: { key: { in: ["SUPPLIER_TYPE", "SUPPLIER_API_KEY", "SUPPLIER_API_BASE",
-                          "FUZESERVE_API_KEY", "FUZESERVE_API_BASE",
-                          "MYSOCIALBOOSTER_API_KEY", "MYSOCIALBOOSTER_API_BASE"] } }
-  });
+  const settingsList = await prisma.systemSetting.findMany();
   const settings: Record<string, string> = {};
   settingsList.forEach(s => settings[s.key] = s.value);
 
@@ -67,10 +64,13 @@ export async function getSupplierForBundle(bundleId: string): Promise<{
  * Reads API credentials from settings (DB-first, then env fallback).
  */
 export function buildSupplier(type: string, settings: Record<string, string> = {}): SupplierProvider {
-  const apiKey = settings[`${type}_API_KEY`] || settings["SUPPLIER_API_KEY"] || process.env.SUPPLIER_API_KEY || "";
-  const apiBase = settings[`${type}_API_BASE`] || settings["SUPPLIER_API_BASE"] || process.env.SUPPLIER_API_BASE || "";
+  const upperType = (type || "").toUpperCase();
+  const apiKey = settings[`${upperType}_API_KEY`] || settings["SUPPLIER_API_KEY"] || process.env.SUPPLIER_API_KEY || "";
+  const apiBase = settings[`${upperType}_API_BASE`] || settings["SUPPLIER_API_BASE"] || process.env.SUPPLIER_API_BASE || "";
 
-  switch (type.toUpperCase()) {
+  switch (upperType) {
+    case "BROOKSDATA":
+      return new BrooksDataProvider(apiKey, apiBase);
     case "FUZESERVE":
       return new FuzeServeProvider(apiKey, apiBase);
     case "MYSOCIALBOOSTER":
